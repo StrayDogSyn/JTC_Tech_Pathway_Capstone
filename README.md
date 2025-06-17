@@ -92,6 +92,21 @@ formatted_data = weather.format_weather_data(weather_data)
 print(f"Temperature in {formatted_data['city']}: {formatted_data['temperature']}°")
 ```
 
+#### 🧪 Test Subscription Status
+
+Verify your Developer API subscription is properly configured:
+
+```bash
+python test_subscription.py
+```
+
+This will validate:
+
+- API key configuration
+- Subscription plan details
+- Rate limits and endpoints
+- Feature availability
+
 #### Weather by Coordinates
 
 ```python
@@ -143,9 +158,10 @@ python weather_api.py
 ├── .env.example          # Environment variables template
 ├── .gitignore           # Git ignore rules
 ├── assets/              # Project assets (empty, ready for use)
-├── config.py            # Configuration management
+├── config.py            # Configuration management with subscription details
 ├── weather_api.py       # Core OpenWeatherMap API implementation
 ├── weather_gui.py       # Modern tkinter GUI application
+├── test_subscription.py # Test script for subscription validation
 ├── requirements.txt     # Python dependencies
 ├── LICENSE              # Project license (The Unlicense)
 └── README.md           # Complete documentation
