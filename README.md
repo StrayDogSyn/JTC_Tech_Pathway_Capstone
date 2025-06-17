@@ -163,9 +163,22 @@ python weather_api.py
 ├── weather_gui.py       # Modern tkinter GUI application
 ├── test_subscription.py # Test script for subscription validation
 ├── requirements.txt     # Python dependencies
+├── SECURITY.md          # Security guidelines and best practices
 ├── LICENSE              # Project license (The Unlicense)
 └── README.md           # Complete documentation
 ```
+
+### 🔒 Security
+
+This project implements comprehensive security measures for API key protection:
+
+- **Environment Variables**: API keys stored securely in `.env` file
+- **Git Protection**: `.env` file excluded from version control
+- **Key Masking**: API keys masked in logs and error messages
+- **Secure Configuration**: Uses `os.getenv()` for environment variable access
+- **Security Documentation**: See [SECURITY.md](./SECURITY.md) for detailed guidelines
+
+⚠️ **Important**: Never commit real API keys to version control. Always use the `.env.example` template.
 
 ### Environment Variables
 

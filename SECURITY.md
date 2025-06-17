@@ -2,7 +2,8 @@
 
 ## 🔐 API Key Security
 
-### ✅ Current Security Measures in Place:
+### ✅ Current Security Measures in Place
+
 - [x] API keys stored in `.env` file (not committed to git)
 - [x] `.env` file properly listed in `.gitignore`
 - [x] API key loaded via `os.getenv()` in config.py
@@ -10,9 +11,10 @@
 - [x] `.env.example` template provided with security warnings
 - [x] No hardcoded API keys in source code
 
-### ⚠️ Security Best Practices:
+### ⚠️ Security Best Practices
 
 #### 1. Environment Variables
+
 ```bash
 # ✅ DO: Use environment variables
 OPENWEATHER_API_KEY=your_actual_api_key_here
@@ -22,6 +24,7 @@ api_key = "3a113d811b8150d09780f9bf941c9b93"  # NEVER DO THIS!
 ```
 
 #### 2. Git Repository Security
+
 ```bash
 # Ensure .env is in .gitignore
 echo ".env" >> .gitignore
@@ -34,30 +37,35 @@ git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env'
 ```
 
 #### 3. API Key Rotation
+
 - Rotate API keys regularly (monthly/quarterly)
 - Monitor API usage in OpenWeatherMap dashboard
 - Set up usage alerts for unusual activity
 
 #### 4. Access Control
+
 - Limit API key permissions to required services only
 - Use different API keys for development/production environments
 - Implement rate limiting in your application
 
 #### 5. Monitoring & Logging
+
 - Log API usage without exposing the full key
 - Monitor for failed authentication attempts
 - Set up alerts for quota violations
 
 ## 🚨 Security Incidents Response
 
-### If API Key is Compromised:
+### If API Key is Compromised
+
 1. **Immediately** regenerate the API key in OpenWeatherMap dashboard
 2. Update `.env` file with new key
 3. Review git history to ensure key was never committed
 4. Check application logs for unauthorized usage
 5. Monitor API usage for next 24-48 hours
 
-### If API Key is Accidentally Committed:
+### If API Key is Accidentally Committed
+
 1. **Immediately** regenerate the API key
 2. Remove from git history using git filter-branch
 3. Force push to remote repository
@@ -65,19 +73,22 @@ git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env'
 
 ## 📊 Subscription Security
 
-### Developer Plan Security Features:
+### Developer Plan Security Features
+
 - Rate limiting: 60 calls/minute, 1,000,000/month
 - Premium endpoint: pro.openweathermap.org
-- Email support for security issues: support@openweathermap.org
+- Email support for security issues: [support@openweathermap.org](mailto:support@openweathermap.org)
 
-### Monitoring Usage:
-- Check usage regularly at: https://openweathermap.org/api/statistics
+### Monitoring Usage
+
+- Check usage regularly at: [OpenWeatherMap Statistics](https://openweathermap.org/api/statistics)
 - Set up billing alerts
 - Monitor for unexpected spikes in usage
 
 ## 🔍 Security Checklist
 
 Before deploying or sharing code:
+
 - [ ] No API keys in source code
 - [ ] `.env` file in `.gitignore`
 - [ ] API keys masked in logs/error messages
@@ -91,10 +102,10 @@ Before deploying or sharing code:
 
 ## 📞 Security Contacts
 
-- **OpenWeatherMap Support**: support@openweathermap.org
+- **OpenWeatherMap Support**: [support@openweathermap.org](mailto:support@openweathermap.org)
 - **Security Issues**: Report through official channels
-- **API Documentation**: https://openweathermap.org/api
-- **Account Management**: https://openweathermap.org/price
+- **API Documentation**: [https://openweathermap.org/api](https://openweathermap.org/api)
+- **Account Management**: [https://openweathermap.org/price](https://openweathermap.org/price)
 
 ---
 
