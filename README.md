@@ -2,16 +2,34 @@
 
 My project pages for my Justice Through Code ⚖ Capstone Project
 
-## OpenWeatherMap API Integration
+## OpenWeatherMap Developer API Integration
 
-This project includes integration with the OpenWeatherMap Current Weather API to fetch real-time weather data.
+This project includes integration with the OpenWeatherMap Developer API subscription to fetch real-time weather data with premium features and enhanced reliability.
+
+### 🔑 API Subscription Requirements
+
+#### OpenWeatherMap Developer Plan Required
+
+- **Plan**: Developer subscription ($40/month)
+- **API Calls**: 60 calls/minute, 1,000,000 calls/month
+- **Endpoint**: Premium endpoint (pro.openweathermap.org)
+- **Features**: Current weather, 5-day forecast, weather maps, alerts
+- **Support**: Email support included
+
+#### Get Your API Key
+
+1. Visit [OpenWeatherMap Pricing](https://openweathermap.org/price)
+2. Subscribe to the Developer plan
+3. Access your API key from your account dashboard
+4. Use the premium endpoint: `https://pro.openweathermap.org/data/2.5`
 
 ### Setup Instructions
 
-1. **Get an API Key**
-   - Visit [OpenWeatherMap](https://openweathermap.org/api)
-   - Sign up for a free account
-   - Generate an API key
+1. **Subscribe to Developer API**
+
+   - Visit [OpenWeatherMap](https://openweathermap.org/price)
+   - Subscribe to the Developer plan ($40/month)
+   - Get your API key from the dashboard
 
 2. **Install Dependencies**
 
@@ -38,7 +56,28 @@ This project includes integration with the OpenWeatherMap Current Weather API to
 
 ### Usage
 
-#### Basic Weather Query
+#### 🖥️ GUI Application (Recommended)
+
+Run the modern weather dashboard with a beautiful graphical interface:
+
+```bash
+python weather_gui.py
+```
+
+**Features:**
+
+- 🎨 **Modern dark theme** with gradient effects and smooth animations
+- 📱 **Fully responsive design** - adapts to any window size (400x300 minimum)
+- 📜 **Scrollable content** - all elements accessible regardless of viewport size
+- � **Dynamic font scaling** - text sizes adjust automatically to window size
+- ⚡ **Real-time updates** with threaded API calls (non-blocking UI)
+- 🕒 **Live clock display** with formatted date/time
+- 🌡️ **Complete weather data** - temperature, humidity, wind, pressure, visibility
+- 🔍 **Instant search** with Enter key support and loading states
+- 🖱️ **Mouse wheel scrolling** for easy navigation
+- ⚠️ **Robust error handling** with user-friendly messages
+
+#### 💻 Command Line Interface
 
 ```python
 from weather_api import WeatherAPI
@@ -68,12 +107,34 @@ python weather_api.py
 
 ### API Features
 
-- ✅ Current weather by city name
-- ✅ Current weather by coordinates (lat/lon)
-- ✅ Support for different temperature units (metric, imperial, kelvin)
-- ✅ Formatted, readable weather data output
-- ✅ Proper error handling for invalid cities/API keys
-- ✅ Environment variable configuration
+#### ✅ Available Features (Developer Subscription)
+
+- ✅ **Current weather by city name** - Real-time weather data
+- ✅ **Current weather by coordinates** - Lat/lon support
+- ✅ **5-day weather forecast** - Extended forecast data
+- ✅ **Weather maps** - Visual weather overlays
+- ✅ **Weather alerts** - Severe weather notifications
+- ✅ **Premium API endpoints** - Enhanced reliability (pro.openweathermap.org)
+- ✅ **Multiple temperature units** - Metric, imperial, kelvin support
+- ✅ **Modern GUI Application** - Beautiful tkinter interface with dark theme
+- ✅ **Real-time updates** - Live weather data with animations
+- ✅ **Responsive design** - Scales beautifully with window resizing
+- ✅ **Comprehensive error handling** - User-friendly error messages
+- ✅ **Secure configuration** - Environment variable API key management
+
+#### ❌ Not Available (Developer Subscription)
+
+- ❌ **History API** - Historical weather data (requires higher plan)
+- ❌ **Statistics API** - Weather statistics (requires higher plan)
+- ❌ **Solar Radiation API** - Solar irradiance data (requires higher plan)
+- ❌ **Road Risk API** - Weather-based road conditions (requires higher plan)
+
+#### 📞 Support & Documentation
+
+- **Technical Support**: [support@openweathermap.org](mailto:support@openweathermap.org) (Developer plan includes email support)
+- **API Documentation**: [https://openweathermap.org/api](https://openweathermap.org/api)
+- **Subscription Management**: [https://openweathermap.org/price#commonquestions](https://openweathermap.org/price#commonquestions)
+- **Rate Limits**: 60 calls/minute, 1,000,000 calls/month
 
 ### File Structure
 
@@ -83,10 +144,11 @@ python weather_api.py
 ├── .gitignore           # Git ignore rules
 ├── assets/              # Project assets (empty, ready for use)
 ├── config.py            # Configuration management
-├── weather_api.py       # Main weather API implementation
+├── weather_api.py       # Core OpenWeatherMap API implementation
+├── weather_gui.py       # Modern tkinter GUI application
 ├── requirements.txt     # Python dependencies
 ├── LICENSE              # Project license (The Unlicense)
-└── README.md           # This file
+└── README.md           # Complete documentation
 ```
 
 ### Environment Variables

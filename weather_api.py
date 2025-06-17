@@ -14,8 +14,53 @@ class WeatherAPI:
         """Initialize the WeatherAPI with configuration validation."""
         Config.validate_config()
         self.api_key = Config.OPENWEATHER_API_KEY
-        self.base_url = Config.OPENWEATHER_BASE_URL
+        self.base_url = Config.OPENWEATHER_BASE_URL  # Premium endpoint
+        self.fallback_url = Config.OPENWEATHER_FREE_URL  # Free endpoint fallback
         self.default_units = Config.TEMPERATURE_UNITS
+        self.subscription_info = Config.get_api_info()
+        
+    def _make_api_request(self, endpoint, params):
+        """Make API request with premium endpoint and fallback capability."""
+        # Try premium endpoint first
+        try:
+            url = f"{self.base_url}/{endpoint}"
+            print(f"🔄 Trying premium endpoint: {url}")
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.HTTPError as e:
+            # If premium endpoint fails, try fallback to free endpoint
+            if e.response and e.response.status_code in [401, 403]:
+                print(f"⚠️ Premium endpoint failed, trying free endpoint...")
+                try:
+                    fallback_url = f"{self.fallback_url}/{endpoint}"
+                    response = requests.get(fallback_url, params=params)
+                    response.raise_for_status()
+                    return response.json()
+                except requests.exceptions.HTTPError as fallback_error:
+                    # Handle errors from fallback endpoint
+                    if fallback_error.response and fallback_error.response.status_code == 401:
+                        raise ValueError(
+                            "❌ API Authentication Failed\n\n"
+                            "Developer API Subscription Details:\n"
+                            f"• API Key: {self.api_key[:8]}...\n"
+                            f"• Premium Endpoint: {self.base_url}\n"
+                            f"• Free Endpoint: {self.fallback_url}\n\n"
+                            "Troubleshooting:\n"
+                            "1. Verify your API key is activated\n"
+                            "2. Check subscription status at https://openweathermap.org/price\n"
+                            "3. New API keys take up to 2 hours to activate\n"
+                            "4. Contact support@openweathermap.org for assistance\n\n"
+                            "API Documentation: https://openweathermap.org/api"
+                        )
+                    elif fallback_error.response and fallback_error.response.status_code == 404:
+                        raise ValueError("City not found")
+                    else:
+                        raise requests.RequestException(f"API request failed: {fallback_error}")
+            else:
+                # Re-raise original error if not auth-related
+                raise e
     
     def get_current_weather(self, 
                           city: str, 
