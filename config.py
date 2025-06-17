@@ -13,6 +13,7 @@ class Config:
     
     # OpenWeatherMap Developer API configuration (Premium)
     OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
+    OPENWEATHER_API_KEY_BACKUP = os.getenv('OPENWEATHER_API_KEY_BACKUP')  # Backup key for redundancy
     OPENWEATHER_BASE_URL = "https://pro.openweathermap.org/data/2.5"  # Premium endpoint
     OPENWEATHER_FREE_URL = "https://api.openweathermap.org/data/2.5"  # Free endpoint fallback
       # OpenWeatherMap Developer API subscription details
@@ -76,7 +77,13 @@ class Config:
             )
         
         # Log subscription information (for debugging)
+        primary_key_display = f"{cls.OPENWEATHER_API_KEY[:8]}..." if cls.OPENWEATHER_API_KEY else "Not set"
+        backup_key_display = f"{cls.OPENWEATHER_API_KEY_BACKUP[:8]}..." if cls.OPENWEATHER_API_KEY_BACKUP else "Not set"
+        
         print(f"🔑 Using {cls.API_SUBSCRIPTION_TYPE} OpenWeatherMap API")
+        print(f"🔑 Primary API Key: {primary_key_display}")
+        if cls.OPENWEATHER_API_KEY_BACKUP:
+            print(f"🔑 Backup API Key: {backup_key_display} (configured)")
         print(f"🌐 Endpoint: {cls.OPENWEATHER_BASE_URL}")
         print(f"📊 Rate limits: {cls.API_CALLS_PER_MINUTE}/min, {cls.API_CALLS_PER_MONTH:,}/month")
         print(f"✅ Features: Current Weather, 5-Day Forecast, Weather Maps, Alerts")
