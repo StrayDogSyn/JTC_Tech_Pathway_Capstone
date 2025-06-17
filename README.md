@@ -78,10 +78,14 @@ python weather_api.py
 ### File Structure
 
 ```text
+├── .env                  # Your API keys (not in git)
 ├── .env.example          # Environment variables template
+├── .gitignore           # Git ignore rules
+├── assets/              # Project assets (empty, ready for use)
 ├── config.py            # Configuration management
 ├── weather_api.py       # Main weather API implementation
 ├── requirements.txt     # Python dependencies
+├── LICENSE              # Project license (The Unlicense)
 └── README.md           # This file
 ```
 
