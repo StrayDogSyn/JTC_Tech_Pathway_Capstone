@@ -41,10 +41,11 @@ class WeatherAPI:
                 except requests.exceptions.HTTPError as fallback_error:
                     # Handle errors from fallback endpoint
                     if fallback_error.response and fallback_error.response.status_code == 401:
+                        api_key_display = f"{self.api_key[:8]}..." if self.api_key else "Not set"
                         raise ValueError(
                             "❌ API Authentication Failed\n\n"
                             "Developer API Subscription Details:\n"
-                            f"• API Key: {self.api_key[:8]}...\n"
+                            f"• API Key: {api_key_display}\n"
                             f"• Premium Endpoint: {self.base_url}\n"
                             f"• Free Endpoint: {self.fallback_url}\n\n"
                             "Troubleshooting:\n"
