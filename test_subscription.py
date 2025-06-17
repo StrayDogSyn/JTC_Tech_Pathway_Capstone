@@ -64,5 +64,57 @@ def test_subscription_info():
         
     return True
 
+def test_security_measures():
+    """Test security measures for API key protection."""
+    print("🔒 Testing security measures...\n")
+    
+    try:
+        # Test 1: Check that API key is not None and not a placeholder
+        api_key = Config.OPENWEATHER_API_KEY
+        if not api_key:
+            print("⚠️  WARNING: No API key found in environment variables")
+            print("   Please set OPENWEATHER_API_KEY in your .env file")
+            return False
+        elif api_key in ['your_api_key_here', 'your_api_key_here_replace_with_actual_key', 'your_developer_api_key_here_replace_with_actual_key']:
+            print("⚠️  WARNING: API key appears to be a placeholder")
+            print("   Please replace with your actual OpenWeatherMap Developer API key")
+            return False
+        
+        # Test 2: Verify API key is properly masked in get_api_info
+        api_info = Config.get_api_info()
+        displayed_key = api_info['api_key']
+        if len(displayed_key) > 12:  # Should be 8 chars + "..."
+            print("⚠️  WARNING: API key may not be properly masked in API info")
+            return False
+        
+        # Test 3: Check that .env.example doesn't contain real API key
+        try:
+            with open('.env.example', 'r') as f:
+                env_example_content = f.read()
+                if api_key in env_example_content:
+                    print("❌ SECURITY ISSUE: Real API key found in .env.example file!")
+                    print("   Remove the real API key from .env.example immediately")
+                    return False
+        except FileNotFoundError:
+            print("⚠️  .env.example file not found")
+        
+        # Test 4: Verify API key length (OpenWeatherMap keys are typically 32 chars)
+        if len(api_key) != 32:
+            print(f"⚠️  WARNING: API key length ({len(api_key)}) is unusual for OpenWeatherMap")
+            print("   Standard OpenWeatherMap API keys are 32 characters long")
+        
+        print("✅ Security measures validated:")
+        print(f"   • API key loaded from environment: {displayed_key}")
+        print(f"   • API key properly masked in logs")
+        print(f"   • .env.example doesn't contain real key")
+        print()
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Security test failed: {e}")
+        return False
+
 if __name__ == "__main__":
     test_subscription_info()
+    test_security_measures()
