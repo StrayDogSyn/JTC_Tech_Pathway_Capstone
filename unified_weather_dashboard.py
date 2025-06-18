@@ -67,31 +67,27 @@ class StudentPackWeatherAPI:
         self.api_key = os.getenv('OPENWEATHER_API_KEY', '')
         self.backup_api_key = os.getenv('OPENWEATHER_API_KEY_BACKUP', '')
         self.base_url = "https://api.openweathermap.org/data/2.5"
-        self.onecall_url = "https://api.openweathermap.org/data/3.0/onecall"
+        self.forecast_url = "https://api.openweathermap.org/data/2.5/forecast"  # Free 5-day forecast
         self.geocoding_url = "https://api.openweathermap.org/geo/1.0"
         self.pollution_url = "https://api.openweathermap.org/data/2.5/air_pollution"
         self.maps_url = "https://tile.openweathermap.org/map"
         
-        # Student Pack configuration
+        # Free tier configuration (corrected for actual free tier limits)
         self.subscription_info = {
-            'plan': 'Student Educational Pack',
-            'pricing': 'Free for Educational Use',
+            'plan': 'Free Tier',
+            'pricing': 'Free',
             'rate_limits': {
-                'calls_per_minute': 3000,
-                'calls_per_month': 100000000,
-                'historical_per_day': 50000
+                'calls_per_minute': 60,
+                'calls_per_month': 1000000,
+                'historical_per_day': 0  # Not available on free tier
             },
             'features': [
                 'Current weather data',
-                'Extended forecasts (4-day hourly, 16-day daily)',
-                'Historical data (1-year archive)',
+                '5-day/3-hour forecasts',
                 'Air pollution monitoring',
-                'Interactive weather maps (15+ layers)',
-                'Statistical weather analysis',
-                'Accumulated parameters',
+                'Interactive weather maps',
                 'Advanced geocoding',
-                'Weather alerts',
-                'Premium endpoints'
+                'Basic weather alerts'
             ]
         }
         
@@ -150,8 +146,8 @@ class StudentPackWeatherAPI:
             feels_like=data['main']['feels_like'],
             humidity=data['main']['humidity'],
             pressure=data['main']['pressure'],
-            wind_speed=data.get('wind', {}).get('speed', 0),
-            wind_direction=data.get('wind', {}).get('deg', 0),            visibility=data.get('visibility', 0),
+            wind_speed=data.get('wind', {}).get('speed', 0),            wind_direction=data.get('wind', {}).get('deg', 0),
+            visibility=data.get('visibility', 0),
             description=data['weather'][0]['description'].title(),
             icon=data['weather'][0]['icon'],
             city=data['name'],
@@ -160,20 +156,22 @@ class StudentPackWeatherAPI:
         )
     
     def get_extended_forecast(self, lat: float, lon: float) -> Optional[ForecastData]:
-        """Get extended forecast (Student Pack: 4-day hourly, 16-day daily)."""
+        """Get extended forecast using free tier 5-day/3-hour forecast."""
         params = {
             'lat': lat,
             'lon': lon,
             'units': 'metric'
         }
         
-        data = self._make_request(f"{self.onecall_url}", params)
+        data = self._make_request(f"{self.forecast_url}", params)
         if not data:
             return None
-            
+              # Convert 5-day/3-hour forecast to our format
+        forecast_list = data.get('list', [])
+        
         return ForecastData(
-            hourly=data.get('hourly', [])[:96],  # 4 days of hourly data
-            daily=data.get('daily', [])[:16]     # 16 days of daily data
+            hourly=forecast_list[:40],  # 5 days * 8 periods per day = 40 periods
+            daily=self._convert_to_daily_forecast(forecast_list)
         )
     
     def get_air_pollution(self, lat: float, lon: float) -> Optional[Dict]:
@@ -188,31 +186,67 @@ class StudentPackWeatherAPI:
         return data if isinstance(data, list) else []
     
     def get_historical_weather(self, lat: float, lon: float, date: datetime) -> Optional[Dict]:
-        """Get historical weather data (Student Pack: 1-year archive)."""
-        timestamp = int(date.timestamp())
-        params = {
-            'lat': lat,
-            'lon': lon,
-            'dt': timestamp,
-            'units': 'metric'
-        }
-        
-        return self._make_request(f"{self.onecall_url}/timemachine", params)
+        """Historical weather data not available on free tier."""
+        print("Historical weather data requires a paid subscription (One Call API 3.0)")
+        return None
     
     def get_api_info(self) -> Dict:
         """Get comprehensive API information."""
         return {
             'api_key': f"{self.api_key[:10]}...{self.api_key[-4:]}",
-            'subscription': self.subscription_info,
-            'endpoints': {
+            'subscription': self.subscription_info,            'endpoints': {
                 'current_weather': self.base_url,
-                'extended_forecast': self.onecall_url,
+                'extended_forecast': self.forecast_url,
                 'geocoding': self.geocoding_url,
                 'air_pollution': self.pollution_url,
                 'weather_maps': self.maps_url
             },
             'map_layers': self.map_layers
         }
+    
+    def _convert_to_daily_forecast(self, forecast_list: List[Dict]) -> List[Dict]:
+        """Convert 3-hour forecast data to daily forecast."""
+        daily_data = []
+        current_date = None
+        daily_temps = []
+        daily_entry = None
+        
+        for item in forecast_list:
+            # Get date from timestamp
+            date = datetime.fromtimestamp(item['dt']).date()
+            
+            if current_date != date:
+                # Save previous day if exists
+                if daily_entry and daily_temps:
+                    daily_entry['temp'] = {
+                        'min': min(daily_temps),
+                        'max': max(daily_temps)
+                    }
+                    daily_data.append(daily_entry)
+                
+                # Start new day
+                current_date = date
+                daily_temps = []
+                daily_entry = {
+                    'dt': item['dt'],
+                    'weather': item['weather'],
+                    'humidity': item['main']['humidity'],
+                    'pressure': item['main']['pressure'],
+                    'wind_speed': item.get('wind', {}).get('speed', 0),
+                    'clouds': item.get('clouds', {}).get('all', 0)
+                }
+            
+            daily_temps.append(item['main']['temp'])
+        
+        # Add last day
+        if daily_entry and daily_temps:
+            daily_entry['temp'] = {
+                'min': min(daily_temps),
+                'max': max(daily_temps)
+            }
+            daily_data.append(daily_entry)
+        
+        return daily_data[:5]  # Return up to 5 days
 
 class ModernWeatherDashboard:
     """
