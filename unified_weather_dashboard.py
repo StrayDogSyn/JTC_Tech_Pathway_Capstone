@@ -39,32 +39,44 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Helper functions for enhanced UI styling
-def create_styled_button(parent, text: str, style_type: str = "primary", command=None, width: Optional[int] = None):
-    """Create a styled button with ttkbootstrap theming."""
-    btn = ttk.Button(parent, text=text, width=width)
-    if command:
-        btn.configure(command=command)
+# Helper functions for enhanced UI styling with ttkbootstrap
+def create_styled_button(parent, text: str, style_type: str = "primary", command=None, width: Optional[int] = None, **kwargs):
+    """Create a styled button with ttkbootstrap theming and enhanced features."""
+    button_kwargs = kwargs.copy()
+    if width is not None:
+        button_kwargs['width'] = width
     
-    # Try to apply bootstyle if available
+    if command:
+        btn = ttk.Button(parent, text=text, command=command, **button_kwargs)
+    else:
+        btn = ttk.Button(parent, text=text, **button_kwargs)
+    
+    # Try to apply bootstyle if available (ttkbootstrap specific)
     try:
-        btn.configure(bootstyle=style_type)
-    except (tk.TclError, TypeError):
+        if hasattr(btn, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            btn.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
         # Fallback styling with standard ttk
         pass  # Use default styling
     
+    # Add hover effects
+    btn.bind("<Enter>", lambda e: btn.configure(cursor="hand2"))
+    btn.bind("<Leave>", lambda e: btn.configure(cursor=""))
+    
     return btn
 
-def create_styled_label(parent, text: str, style_type: str = "default", font_size: int = 12, bold: bool = False):
+def create_styled_label(parent, text: str, style_type: str = "default", font_size: int = 12, bold: bool = False, **kwargs):
     """Create a styled label with ttkbootstrap theming."""
     font_weight = 'bold' if bold else 'normal'
-    label = ttk.Label(parent, text=text, font=('Segoe UI', font_size, font_weight))
+    label = ttk.Label(parent, text=text, font=('Segoe UI', font_size, font_weight), **kwargs)
     
-    # Try to apply bootstyle if available
+    # Try to apply bootstyle if available (ttkbootstrap specific)
     try:
-        if style_type != "default":
-            label.configure(bootstyle=style_type)
-    except (tk.TclError, TypeError):
+        if style_type != "default" and hasattr(label, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            label.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
         pass  # Use default styling
     
     return label
@@ -73,11 +85,12 @@ def create_styled_frame(parent, style_type: str = "default", **kwargs):
     """Create a styled frame with ttkbootstrap theming."""
     frame = ttk.Frame(parent, **kwargs)
     
-    # Try to apply bootstyle if available
+    # Try to apply bootstyle if available (ttkbootstrap specific)
     try:
-        if style_type != "default":
-            frame.configure(bootstyle=style_type)
-    except (tk.TclError, TypeError):
+        if style_type != "default" and hasattr(frame, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            frame.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
         pass  # Use default styling
     
     return frame
@@ -86,14 +99,110 @@ def create_styled_labelframe(parent, text: str, style_type: str = "default", **k
     """Create a styled labelframe with ttkbootstrap theming."""
     frame = ttk.LabelFrame(parent, text=text, **kwargs)
     
-    # Try to apply bootstyle if available
+    # Try to apply bootstyle if available (ttkbootstrap specific)
     try:
-        if style_type != "default":
-            frame.configure(bootstyle=style_type)
-    except (tk.TclError, TypeError):
+        if style_type != "default" and hasattr(frame, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            frame.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
         pass  # Use default styling
     
     return frame
+
+def create_metric_card(parent, title: str, value: str, icon: str = "", description: str = "", style_type: str = "secondary", **kwargs):
+    """Create a modern metric card with ttkbootstrap styling."""
+    card = create_styled_labelframe(parent, f"{icon} {title}" if icon else title, style_type=style_type, **kwargs)
+    try:
+        card.configure(padding=15)
+    except tk.TclError:
+        pass
+    
+    # Value display
+    value_label = create_styled_label(
+        card, 
+        str(value), 
+        font_size=18, 
+        bold=True, 
+        style_type=style_type
+    )
+    value_label.pack(anchor='w')
+    
+    # Description if provided
+    if description:
+        desc_label = create_styled_label(
+            card, 
+            description, 
+            font_size=10, 
+            style_type="light"
+        )
+        desc_label.pack(anchor='w', pady=(5, 0))
+    
+    return card
+
+def create_enhanced_entry(parent, textvariable: Optional[tk.Variable] = None, placeholder: str = "", style_type: str = "default", **kwargs):
+    """Create an enhanced entry widget with placeholder and styling."""
+    if textvariable:
+        entry = ttk.Entry(parent, textvariable=textvariable, **kwargs)
+    else:
+        entry = ttk.Entry(parent, **kwargs)
+    
+    # Try to apply bootstyle if available (ttkbootstrap specific)
+    try:
+        if style_type != "default" and hasattr(entry, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            entry.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
+        pass
+    
+    # Add placeholder functionality
+    if placeholder and textvariable:
+        def on_focus_in(event):
+            if textvariable.get() == placeholder:
+                textvariable.set("")
+                entry.configure(foreground='black')
+        
+        def on_focus_out(event):
+            if textvariable.get() == "":
+                textvariable.set(placeholder)
+                entry.configure(foreground='grey')
+        
+        # Set initial placeholder
+        if not textvariable.get():
+            textvariable.set(placeholder)
+            entry.configure(foreground='grey')
+        
+        entry.bind("<FocusIn>", on_focus_in)
+        entry.bind("<FocusOut>", on_focus_out)
+    
+    return entry
+
+def create_scrollable_frame(parent, **kwargs):
+    """Create a scrollable frame container."""
+    # Create canvas and scrollbar
+    canvas = tk.Canvas(parent, **kwargs)
+    scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+    scrollable_frame = ttk.Frame(canvas)
+    
+    # Configure scrolling
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+    
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+    
+    # Pack elements
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # Bind mousewheel to canvas
+    def _on_mousewheel(event):
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    canvas.bind("<MouseWheel>", _on_mousewheel)
+    
+    return scrollable_frame, canvas, scrollbar
 
 def bind_responsive_resize(widget, callback=None):
     """Bind resize events to a widget for responsive behavior."""
@@ -124,6 +233,38 @@ def bind_responsive_resize(widget, callback=None):
     
     widget.bind('<Configure>', on_resize)
     return on_resize
+
+def create_progress_indicator(parent, style_type: str = "info", **kwargs):
+    """Create a modern progress indicator."""
+    progress = ttk.Progressbar(parent, mode='indeterminate', **kwargs)
+    
+    # Try to apply bootstyle if available (ttkbootstrap specific)
+    try:
+        if hasattr(progress, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            progress.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
+        pass
+    
+    return progress
+
+def create_separator(parent, orient: str = "horizontal", style_type: str = "default", **kwargs):
+    """Create a styled separator."""
+    # Ensure orient is a valid value
+    if orient not in ["horizontal", "vertical"]:
+        orient = "horizontal"
+    
+    separator = ttk.Separator(parent, orient=orient, **kwargs)  # type: ignore
+    
+    # Try to apply bootstyle if available (ttkbootstrap specific)
+    try:
+        if style_type != "default" and hasattr(separator, 'configure'):
+            # Check if this is a ttkbootstrap widget that supports bootstyle
+            separator.configure(bootstyle=style_type)  # type: ignore
+    except (tk.TclError, TypeError, AttributeError):
+        pass
+    
+    return separator
 
 @dataclass
 class WeatherData:
@@ -421,9 +562,11 @@ class ModernWeatherDashboard:
         self.location_entry.delete(0, tk.END)
         self.location_entry.insert(0, f"{default_location['name']}")
         self.status_var.set(f"📍 Default location: {default_location['name']}")
-        
-        # Load initial weather data
+          # Load initial weather data
         threading.Thread(target=self._initial_data_load, daemon=True).start()
+        
+        # Setup enhanced responsiveness
+        self._setup_window_responsiveness()
     
     def _initial_data_load(self):
         """Load initial weather data in background."""
@@ -705,12 +848,12 @@ class ModernWeatherDashboard:
             
         Returns:
             ttk.Frame: Configured frame with responsive layout
-        """
-        # Create main frame with padding
+        """        # Create main frame with padding
         frame = ttk.Frame(self.notebook, padding=15)
         frame.grid_rowconfigure(1, weight=1)  # Content area gets most space
         frame.grid_columnconfigure(0, weight=1)
-          # Tab title
+        
+        # Tab title
         title_label = ttk.Label(
             frame,
             text=title,
@@ -725,7 +868,8 @@ class ModernWeatherDashboard:
         content_frame.grid_columnconfigure(0, weight=1)
         
         return frame
-      def setup_current_weather_tab(self):
+    
+    def setup_current_weather_tab(self):
         """
         Set up the Current Weather tab with modern ttkbootstrap components.
         Displays real-time weather conditions with detailed metrics.
@@ -745,13 +889,12 @@ class ModernWeatherDashboard:
         # Weather details frame
         self.current_weather_display = ttk.Frame(weather_card)
         self.current_weather_display.pack(fill='both', expand=True, padx=15, pady=15)
-        
-        # Loading placeholder
-        self.weather_loading_label = ttk.Label(
+          # Loading placeholder
+        self.weather_loading_label = self._create_info_label(
             self.current_weather_display,
-            text="🔄 Loading current weather data...",
-            bootstyle="info",
-            font=('Segoe UI', 14)
+            "🔄 Loading current weather data...",
+            style="info",
+            font_size=14
         )
         self.weather_loading_label.pack(pady=20)
         
@@ -759,35 +902,24 @@ class ModernWeatherDashboard:
         air_quality_card = self._create_weather_card(main_container, "🌬️ Air Quality", row=1)
         self.air_quality_display = ttk.Frame(air_quality_card)
         self.air_quality_display.pack(fill='both', expand=True, padx=15, pady=15)
-        
-        # Quick actions panel
-        actions_frame = ttk.LabelFrame(
-            main_container,
-            text="⚡ Quick Actions",
-            bootstyle="primary"
-        )
+          # Quick actions panel
+        actions_frame = self._create_responsive_frame(main_container, "⚡ Quick Actions")
         actions_frame.grid(row=2, column=0, sticky='ew', pady=(10, 0))
         
         # Action buttons
         buttons_frame = ttk.Frame(actions_frame)
-        buttons_frame.pack(fill='x', padx=15, pady=15)
-        
+        buttons_frame.pack(fill='x', padx=15, pady=15)        
         self._create_enhanced_button(
             buttons_frame, "🔄 Refresh Data", 
-            command=self.refresh_weather_data,
-            bootstyle="success"
-        ).pack(side='left', padx=(0, 10))
-        
+            command=self.refresh_weather_data
+        ).pack(side='left', padx=(0, 10))        
         self._create_enhanced_button(
-            buttons_frame, "� Current Location", 
-            command=self.get_current_location,
-            bootstyle="info"
-        ).pack(side='left', padx=(0, 10))
-        
+            buttons_frame, "📍 Current Location", 
+            command=self.get_current_location
+        ).pack(side='left', padx=(0, 10))        
         self._create_enhanced_button(
             buttons_frame, "🗺️ View Map", 
-            command=self.open_weather_map,
-            bootstyle="warning"
+            command=self.open_weather_map
         ).pack(side='left')
     
     def setup_forecast_tab(self):
@@ -1071,7 +1203,9 @@ For production use, upgrade to One Call API 3.0 for full historical data access.
 🔮 Pattern Prediction:
    • Weather system appears {"stable" if abs(self.current_weather.temperature - self.current_weather.feels_like) < 3 else "unstable"}
    • {"Clear skies expected" if self.current_weather.cloudiness < 25 else "Cloudy conditions" if self.current_weather.cloudiness < 75 else "Overcast sky"}
-   • Wind pattern suggests {"calm" if self.current_weather.wind_speed < 5 else "active"} atmospheric conditions"""
+   • Wind pattern suggests {"calm" if self.current_weather.wind_speed < 5 else "active"} atmospheric conditions
+
+📚 Learn more about weather patterns in our [Meteorological Insights](https://openweathermap.org/guide) section."""
             
         elif prediction_type == "Temperature Trends":
             temp_trend = "rising" if self.current_weather.temperature > self.current_weather.feels_like else "stable" if abs(self.current_weather.temperature - self.current_weather.feels_like) < 1 else "cooling"
@@ -1600,9 +1734,11 @@ if __name__ == "__main__":
             height = event.height
             
             # Adjust layout based on window size
-            if width < 1000:
+            if width < 800:
+                # Compact layout for small windows
                 self._switch_to_compact_layout()
             else:
+                # Standard layout for larger windows
                 self._switch_to_normal_layout()
             
             # Update any charts or maps that need resizing
@@ -1610,20 +1746,27 @@ if __name__ == "__main__":
     
     def _switch_to_compact_layout(self):
         """Switch to compact layout for smaller screens."""
-        # Stack elements vertically instead of side-by-side
         try:
-            # This would adjust the layout of weather cards, etc.
-            # Implementation depends on specific UI elements
-            pass
+            # Stack elements vertically instead of side-by-side
+            for tab_name in ['current_weather_frame', 'forecast_frame', 'comparison_frame', 'settings_frame']:
+                if hasattr(self, tab_name):
+                    frame = getattr(self, tab_name)
+                    # Reduce padding for compact view
+                    if hasattr(frame, 'configure'):
+                        frame.configure(padding=5)
         except Exception as e:
-            print(f"⚠️ Layout switch error: {e}")
+            print(f"⚠️ Compact layout switch error: {e}")
     
     def _switch_to_normal_layout(self):
         """Switch to normal layout for larger screens."""
-        # Use normal side-by-side layout
         try:
-            # This would restore the normal layout
-            pass
+            # Use normal side-by-side layout
+            for tab_name in ['current_weather_frame', 'forecast_frame', 'comparison_frame', 'settings_frame']:
+                if hasattr(self, tab_name):
+                    frame = getattr(self, tab_name)
+                    # Increase padding for full view
+                    if hasattr(frame, 'configure'):
+                        frame.configure(padding=15)
         except Exception as e:
             print(f"⚠️ Layout switch error: {e}")
     
@@ -1634,8 +1777,7 @@ if __name__ == "__main__":
         Args:
             width: New window width
             height: New window height
-        """
-        # This would resize any matplotlib charts, maps, or other dynamic content
+        """        # This would resize any matplotlib charts, maps, or other dynamic content
         # For now, just ensure proper grid configuration
         self._configure_responsive_grid()
     
@@ -1662,7 +1804,7 @@ if __name__ == "__main__":
         Args:
             parent: Parent widget
             text: Button text
-            command: Button command
+            command: Button command (callable or None)
             style_class: Style class name
             icon: Optional icon
             
@@ -1670,6 +1812,10 @@ if __name__ == "__main__":
             ttk.Button: Configured button widget
         """
         button_text = f"{icon} {text}" if icon else text
+        
+        # Ensure command is callable
+        if command is None:
+            command = lambda: None  # No-op function
         
         button = ttk.Button(
             parent,
@@ -1684,39 +1830,245 @@ if __name__ == "__main__":
         
         return button
     
-    def _create_metric_display(self, parent, label: str, value: str, icon: str = "", row: int = 0, column: int = 0):
+    def _create_weather_card(self, parent, title, row=0, column=0, columnspan=1):
         """
-        Create a metric display widget with consistent styling.
+        Create a styled weather information card.
         
         Args:
             parent: Parent widget
-            label: Metric label
-            value: Metric value
-            icon: Optional icon
-            row: Grid row
-            column: Grid column
+            title: Card title
+            row: Grid row position
+            column: Grid column position
+            columnspan: Column span for the card
             
         Returns:
-            ttk.Frame: Container frame for the metric
+            LabelFrame widget
         """
-        metric_frame = ttk.Frame(parent)
-        metric_frame.grid(row=row, column=column, sticky='w', padx=10, pady=5)
+        try:
+            # Try to create ttkbootstrap LabelFrame
+            import ttkbootstrap as ttk_boot
+            if hasattr(ttk_boot, 'LabelFrame'):
+                card = ttk_boot.LabelFrame(
+                    parent,
+                    text=title,
+                    padding=15
+                )
+                # Try to set bootstyle if supported
+                if hasattr(card, 'configure'):
+                    try:
+                        # Use a different approach for setting style
+                        pass
+                    except:
+                        pass  # Bootstyle not supported, continue without it
+            else:
+                raise ImportError("ttkbootstrap LabelFrame not available")
+        except (ImportError, TypeError, AttributeError):
+            # Fallback to regular ttk LabelFrame
+            card = ttk.LabelFrame(
+                parent,
+                text=title,
+                padding=15
+            )
         
-        # Label with icon
-        label_text = f"{icon} {label}" if icon else label
-        label_widget = ttk.Label(
-            metric_frame,
-            text=label_text,
-            style="Subtitle.TLabel"
-        )
-        label_widget.pack(anchor='w')
+        card.grid(row=row, column=column, columnspan=columnspan, 
+                 sticky='ew', padx=10, pady=5)
+        parent.grid_columnconfigure(column, weight=1)
         
-        # Value
-        value_widget = ttk.Label(
-            metric_frame,
-            text=str(value),
-            style="Metric.TLabel"
-        )
-        value_widget.pack(anchor='w')
+        return card
+    
+    def _create_info_label(self, parent, text, style="default", font_size=12):
+        """
+        Create a styled information label.
         
-        return metric_frame
+        Args:
+            parent: Parent widget
+            text: Label text
+            style: Style type (default, primary, success, info, warning, danger)
+            font_size: Font size
+            
+        Returns:
+            Label widget
+        """
+        try:
+            # Try to create ttkbootstrap label with bootstyle
+            import ttkbootstrap as ttk_boot
+            if hasattr(ttk_boot, 'Label'):
+                label = ttk_boot.Label(
+                    parent,
+                    text=text,
+                    font=('Segoe UI', font_size)
+                )                # Try to set bootstyle if supported
+                try:
+                    # Use a different approach for setting style
+                    pass  # Skip bootstyle configuration for now
+                except:
+                    pass  # Bootstyle not supported
+            else:
+                raise ImportError("ttkbootstrap Label not available")
+        except (ImportError, TypeError, AttributeError):
+            # Fallback to regular ttk label
+            label = ttk.Label(
+                parent,
+                text=text,
+                font=('Segoe UI', font_size)
+            )
+        return label
+    
+    def _create_responsive_frame(self, parent, title=None):
+        """
+        Create a responsive frame that adapts to window size.
+        
+        Args:
+            parent: Parent widget
+            title: Optional title for the frame
+            
+        Returns:
+            Responsive frame widget
+        """
+        if title:
+            try:
+                import ttkbootstrap as ttk_boot
+                if hasattr(ttk_boot, 'LabelFrame'):
+                    frame = ttk_boot.LabelFrame(parent, text=title, padding=10)                    # Try to set bootstyle if supported
+                    try:
+                        # Use a different approach for setting style
+                        pass  # Skip bootstyle configuration for now
+                    except:
+                        pass  # Bootstyle not supported
+                else:
+                    raise ImportError("ttkbootstrap LabelFrame not available")
+            except (ImportError, TypeError, AttributeError):
+                frame = ttk.LabelFrame(parent, text=title, padding=10)
+        else:
+            frame = ttk.Frame(parent, padding=10)
+        
+        # Bind resize events for responsiveness
+        frame.bind('<Configure>', self._on_frame_resize)
+        
+        return frame
+    
+    def _create_data_table(self, parent, headers, data, style="striped"):
+        """
+        Create a styled data table using Treeview.
+        
+        Args:
+            parent: Parent widget
+            headers: List of column headers
+            data: List of data rows
+            style: Table style
+            
+        Returns:
+            Treeview widget
+        """
+        # Create scrollable frame for table
+        table_frame = ttk.Frame(parent)
+        
+        # Create treeview with scrollbars
+        tree = ttk.Treeview(table_frame, columns=headers, show='headings', height=8)
+        
+        # Configure columns
+        for header in headers:
+            tree.heading(header, text=header)
+            tree.column(header, width=100, anchor='center')
+        
+        # Add data
+        for row in data:
+            tree.insert('', 'end', values=row)
+        
+        # Add scrollbars
+        v_scrollbar = ttk.Scrollbar(table_frame, orient='vertical', command=tree.yview)
+        h_scrollbar = ttk.Scrollbar(table_frame, orient='horizontal', command=tree.xview)
+        tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # Grid layout
+        tree.grid(row=0, column=0, sticky='nsew')
+        v_scrollbar.grid(row=0, column=1, sticky='ns')
+        h_scrollbar.grid(row=1, column=0, sticky='ew')
+        
+        table_frame.grid_rowconfigure(0, weight=1)
+        table_frame.grid_columnconfigure(0, weight=1)
+        
+        return table_frame, tree
+    
+    def _on_frame_resize(self, event):
+        """
+        Handle frame resize events for responsive design.
+        
+        Args:
+            event: Resize event
+        """
+        # Get the widget that triggered the event
+        widget = event.widget
+        
+        # Adjust layout based on size
+        if hasattr(widget, 'winfo_width'):
+            width = widget.winfo_width()
+            
+            # Adjust column configuration for responsive layout
+            if width < 800:
+                # Small screen layout
+                widget.grid_columnconfigure(0, weight=1)
+                for i in range(1, 10):
+                    try:
+                        widget.grid_columnconfigure(i, weight=0)
+                    except:
+                        pass
+            else:
+                # Large screen layout
+                for i in range(10):
+                    try:
+                        widget.grid_columnconfigure(i, weight=1)
+                    except:
+                        pass
+    
+    def get_current_location(self):
+        """
+        Get the user's current location using IP geolocation.
+        """
+        self.status_var.set("🌍 Getting current location...")
+        
+        def location_task():
+            try:
+                # Use a simple IP geolocation service
+                response = requests.get('http://ip-api.com/json/', timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data['status'] == 'success':
+                        self.current_location = {
+                            'name': f"{data['city']}, {data['regionName']}, {data['country']}",
+                            'lat': data['lat'],
+                            'lon': data['lon'],
+                            'country': data['countryCode']
+                        }
+                        # Update UI on main thread
+                        self.root.after(0, lambda: self._update_location_entry())
+                        self.root.after(0, lambda: self.status_var.set(f"📍 Current location: {self.current_location['name']}"))
+                        
+                        # Refresh weather data
+                        self.refresh_weather_data()
+                    else:
+                        raise Exception("Location service unavailable")
+                else:
+                    raise Exception(f"HTTP {response.status_code}")
+                    
+            except Exception as e:
+                self.root.after(0, lambda: self.status_var.set(f"❌ Location error: {str(e)}"))
+                self.root.after(0, lambda: messagebox.showwarning("Location Error", f"Could not get current location:\n{str(e)}"))
+        
+        # Run in background thread
+        threading.Thread(target=location_task, daemon=True).start()
+
+    def open_weather_map(self):
+        """
+        Open OpenWeatherMap in the browser for the current location.
+        """
+        if self.current_location:
+            lat = self.current_location['lat']
+            lon = self.current_location['lon']
+            url = f"https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat={lat}&lon={lon}&zoom=10"
+            webbrowser.open(url)
+            self.status_var.set(f"🗺️ Opened weather map for {self.current_location['name']}")
+        else:
+            messagebox.showwarning("No Location", "Please select a location first.")
+
+    # ...existing code...
