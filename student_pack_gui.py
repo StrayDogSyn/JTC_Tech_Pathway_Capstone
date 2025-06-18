@@ -41,7 +41,7 @@ class StudentPackWeatherGUI:
     def setup_window(self):
         """Configure the main window."""
         self.root.title("Student Pack Weather Dashboard - OpenWeatherMap")
-        self.root.geometry("1200x800")
+        self.root.geometry("1000x700")
         self.root.minsize(800, 600)
         self.root.configure(bg='#0f1419')
         
@@ -72,22 +72,22 @@ class StudentPackWeatherGUI:
         self.style.configure('Title.TLabel', 
                            background=colors['bg_dark'], 
                            foreground=colors['accent'],
-                           font=('Segoe UI', 18, 'bold'))
+                           font=('Segoe UI', 16, 'bold'))
         
         self.style.configure('Header.TLabel', 
                            background=colors['bg_medium'], 
                            foreground=colors['text_light'],
-                           font=('Segoe UI', 12, 'bold'))
+                           font=('Segoe UI', 11, 'bold'))
         
         self.style.configure('Data.TLabel', 
                            background=colors['bg_medium'], 
                            foreground=colors['text_medium'],
-                           font=('Segoe UI', 10))
+                           font=('Segoe UI', 9))
         
         self.style.configure('Success.TLabel', 
                            background=colors['bg_medium'], 
                            foreground=colors['success'],
-                           font=('Segoe UI', 10, 'bold'))
+                           font=('Segoe UI', 9, 'bold'))
         
         self.style.configure('Custom.TFrame', 
                            background=colors['bg_medium'],
@@ -137,7 +137,8 @@ class StudentPackWeatherGUI:
         
         self.location_var = tk.StringVar(value=Config.DEFAULT_CITY)
         self.location_entry = ttk.Entry(search_frame, textvariable=self.location_var, width=30)
-        self.location_entry.grid(row=0, column=1, padx=5, sticky='ew')        self.location_entry.bind('<Return>', self.search_location)
+        self.location_entry.grid(row=0, column=1, padx=5, sticky='ew')
+        self.location_entry.bind('<Return>', self.search_location)
         
         search_btn = ttk.Button(search_frame, text="🔍 Search", command=self.search_location)
         search_btn.grid(row=0, column=2, padx=5)
@@ -159,14 +160,457 @@ class StudentPackWeatherGUI:
         # Tab 1: Current Weather & Forecasts
         self.create_current_tab()
         
-        # Tab 2: Historical Data
-        self.create_historical_tab()
-        
-        # Tab 3: Air Pollution
+        # Tab 2: Air Pollution
         self.create_pollution_tab()
         
-        # Tab 4: Weather Maps
+        # Tab 3: Weather Maps
         self.create_maps_tab()
         
-        # Tab 5: Statistics & Analysis
-        self.create_statistics_tab()\n        \n    def create_current_tab(self):\n        \"\"\"Create current weather and forecast tab.\"\"\"\n        current_frame = ttk.Frame(self.notebook, style='Custom.TFrame')\n        self.notebook.add(current_frame, text='🌤️ Current & Forecasts')\n        \n        # Create scrollable canvas\n        canvas = tk.Canvas(current_frame, bg='#1e2328', highlightthickness=0)\n        scrollbar = ttk.Scrollbar(current_frame, orient='vertical', command=canvas.yview)\n        scrollable_frame = ttk.Frame(canvas, style='Custom.TFrame')\n        \n        scrollable_frame.bind(\n            '<Configure>',\n            lambda e: canvas.configure(scrollregion=canvas.bbox('all'))\n        )\n        \n        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')\n        canvas.configure(yscrollcommand=scrollbar.set)\n        \n        canvas.grid(row=0, column=0, sticky='nsew')\n        scrollbar.grid(row=0, column=1, sticky='ns')\n        \n        current_frame.grid_rowconfigure(0, weight=1)\n        current_frame.grid_columnconfigure(0, weight=1)\n        \n        # Current weather section\n        self.create_current_weather_section(scrollable_frame)\n        \n        # Forecast sections\n        self.create_hourly_forecast_section(scrollable_frame)\n        self.create_daily_forecast_section(scrollable_frame)\n        \n    def create_current_weather_section(self, parent):\n        \"\"\"Create current weather display.\"\"\"\n        current_card = ttk.LabelFrame(parent, text='📊 Current Weather', style='Card.TFrame')\n        current_card.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        parent.grid_columnconfigure(0, weight=1)\n        \n        # Current weather data display\n        self.current_weather_frame = ttk.Frame(current_card, style='Card.TFrame')\n        self.current_weather_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        current_card.grid_columnconfigure(0, weight=1)\n        \n        # Placeholder text\n        self.current_weather_label = ttk.Label(self.current_weather_frame, \n                                             text=\"Loading current weather...\", \n                                             style='Data.TLabel')\n        self.current_weather_label.grid(row=0, column=0, pady=10)\n        \n    def create_hourly_forecast_section(self, parent):\n        \"\"\"Create hourly forecast section (4 days).\"\"\"\n        hourly_card = ttk.LabelFrame(parent, text='⏰ Hourly Forecast (4 Days - 96 Hours)', style='Card.TFrame')\n        hourly_card.grid(row=1, column=0, sticky='ew', padx=10, pady=10)\n        \n        # Hourly forecast display\n        self.hourly_frame = ttk.Frame(hourly_card, style='Card.TFrame')\n        self.hourly_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        hourly_card.grid_columnconfigure(0, weight=1)\n        \n        # Create horizontal scrollable frame for hourly data\n        hourly_canvas = tk.Canvas(self.hourly_frame, height=150, bg='#2d3136', highlightthickness=0)\n        h_scrollbar = ttk.Scrollbar(self.hourly_frame, orient='horizontal', command=hourly_canvas.xview)\n        self.hourly_content = ttk.Frame(hourly_canvas, style='Card.TFrame')\n        \n        self.hourly_content.bind(\n            '<Configure>',\n            lambda e: hourly_canvas.configure(scrollregion=hourly_canvas.bbox('all'))\n        )\n        \n        hourly_canvas.create_window((0, 0), window=self.hourly_content, anchor='nw')\n        hourly_canvas.configure(xscrollcommand=h_scrollbar.set)\n        \n        hourly_canvas.grid(row=0, column=0, sticky='ew')\n        h_scrollbar.grid(row=1, column=0, sticky='ew')\n        \n        self.hourly_frame.grid_columnconfigure(0, weight=1)\n        \n    def create_daily_forecast_section(self, parent):\n        \"\"\"Create daily forecast section (16 days).\"\"\"\n        daily_card = ttk.LabelFrame(parent, text='📅 Daily Forecast (16 Days)', style='Card.TFrame')\n        daily_card.grid(row=2, column=0, sticky='ew', padx=10, pady=10)\n        \n        # Daily forecast display\n        self.daily_frame = ttk.Frame(daily_card, style='Card.TFrame')\n        self.daily_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        daily_card.grid_columnconfigure(0, weight=1)\n        \n    def create_historical_tab(self):\n        \"\"\"Create historical weather data tab.\"\"\"\n        historical_frame = ttk.Frame(self.notebook, style='Custom.TFrame')\n        self.notebook.add(historical_frame, text='📚 Historical (1 Year)')\n        \n        # Historical data controls\n        controls_frame = ttk.LabelFrame(historical_frame, text='🔍 Historical Data Search', style='Card.TFrame')\n        controls_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        historical_frame.grid_columnconfigure(0, weight=1)\n        \n        # Date selection\n        ttk.Label(controls_frame, text=\"📅 Select Date:\", style='Header.TLabel').grid(row=0, column=0, padx=5, pady=5)\n        \n        self.hist_date_var = tk.StringVar(value=(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'))\n        hist_date_entry = ttk.Entry(controls_frame, textvariable=self.hist_date_var, width=15)\n        hist_date_entry.grid(row=0, column=1, padx=5, pady=5)\n        \n        hist_btn = ttk.Button(controls_frame, text=\"📊 Get Historical Data\", command=self.get_historical_data)\n        hist_btn.grid(row=0, column=2, padx=5, pady=5)\n        \n        # Historical data display\n        self.historical_display = ttk.Frame(historical_frame, style='Card.TFrame')\n        self.historical_display.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)\n        historical_frame.grid_rowconfigure(1, weight=1)\n        \n    def create_pollution_tab(self):\n        \"\"\"Create air pollution monitoring tab.\"\"\"\n        pollution_frame = ttk.Frame(self.notebook, style='Custom.TFrame')\n        self.notebook.add(pollution_frame, text='🌬️ Air Quality')\n        \n        # Current air quality\n        current_aqi_frame = ttk.LabelFrame(pollution_frame, text='🌬️ Current Air Quality', style='Card.TFrame')\n        current_aqi_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        pollution_frame.grid_columnconfigure(0, weight=1)\n        \n        self.aqi_display = ttk.Frame(current_aqi_frame, style='Card.TFrame')\n        self.aqi_display.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        current_aqi_frame.grid_columnconfigure(0, weight=1)\n        \n        # Air quality forecast\n        forecast_aqi_frame = ttk.LabelFrame(pollution_frame, text='📊 Air Quality Forecast', style='Card.TFrame')\n        forecast_aqi_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)\n        pollution_frame.grid_rowconfigure(1, weight=1)\n        \n        self.aqi_forecast_display = ttk.Frame(forecast_aqi_frame, style='Card.TFrame')\n        self.aqi_forecast_display.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)\n        forecast_aqi_frame.grid_columnconfigure(0, weight=1)\n        forecast_aqi_frame.grid_rowconfigure(0, weight=1)\n        \n    def create_maps_tab(self):\n        \"\"\"Create weather maps tab.\"\"\"\n        maps_frame = ttk.Frame(self.notebook, style='Custom.TFrame')\n        self.notebook.add(maps_frame, text='🗺️ Weather Maps (15 Layers)')\n        \n        # Map layer selection\n        layer_frame = ttk.LabelFrame(maps_frame, text='🎨 Map Layers', style='Card.TFrame')\n        layer_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        maps_frame.grid_columnconfigure(0, weight=1)\n        \n        # Available layers\n        layers = self.weather_api.get_available_map_layers()\n        self.selected_layer = tk.StringVar(value=layers[0] if layers else 'temp_new')\n        \n        ttk.Label(layer_frame, text=\"🌈 Select Layer:\", style='Header.TLabel').grid(row=0, column=0, padx=5, pady=5)\n        \n        layer_combo = ttk.Combobox(layer_frame, textvariable=self.selected_layer, values=layers, state='readonly')\n        layer_combo.grid(row=0, column=1, padx=5, pady=5)\n        \n        map_btn = ttk.Button(layer_frame, text=\"🌍 Open Interactive Map\", command=self.open_weather_map)\n        map_btn.grid(row=0, column=2, padx=5, pady=5)\n        \n        # Map information\n        map_info_frame = ttk.Frame(maps_frame, style='Card.TFrame')\n        map_info_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)\n        maps_frame.grid_rowconfigure(1, weight=1)\n        \n        map_info_text = (\n            \"🗺️ Weather Maps Features:\\n\\n\"\n            \"✅ 15 Different Weather Layers\\n\"\n            \"🌡️ Temperature maps\\n\"\n            \"☔ Precipitation radar\\n\"\n            \"💨 Wind speed & direction\\n\"\n            \"☁️ Cloud coverage\\n\"\n            \"📊 Atmospheric pressure\\n\"\n            \"🛰️ Satellite imagery\\n\"\n            \"📈 Historical, Current & Forecast\\n\\n\"\n            \"🎓 Student Pack includes full access to all layers!\"\n        )\n        \n        info_label = ttk.Label(map_info_frame, text=map_info_text, style='Data.TLabel', justify='left')\n        info_label.grid(row=0, column=0, padx=10, pady=10, sticky='nw')\n        \n    def create_statistics_tab(self):\n        \"\"\"Create statistics and analysis tab.\"\"\"\n        stats_frame = ttk.Frame(self.notebook, style='Custom.TFrame')\n        self.notebook.add(stats_frame, text='📊 Statistics & Analysis')\n        \n        # Statistical analysis controls\n        analysis_frame = ttk.LabelFrame(stats_frame, text='📈 Statistical Analysis', style='Card.TFrame')\n        analysis_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)\n        stats_frame.grid_columnconfigure(0, weight=1)\n        \n        # Date range selection\n        ttk.Label(analysis_frame, text=\"📅 Analysis Period:\", style='Header.TLabel').grid(row=0, column=0, padx=5, pady=5)\n        \n        self.stats_start_var = tk.StringVar(value=(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'))\n        self.stats_end_var = tk.StringVar(value=(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'))\n        \n        ttk.Entry(analysis_frame, textvariable=self.stats_start_var, width=12).grid(row=0, column=1, padx=2, pady=5)\n        ttk.Label(analysis_frame, text=\"to\", style='Data.TLabel').grid(row=0, column=2, padx=2, pady=5)\n        ttk.Entry(analysis_frame, textvariable=self.stats_end_var, width=12).grid(row=0, column=3, padx=2, pady=5)\n        \n        stats_btn = ttk.Button(analysis_frame, text=\"📊 Generate Statistics\", command=self.generate_statistics)\n        stats_btn.grid(row=0, column=4, padx=5, pady=5)\n        \n        # Accumulated parameters\n        accum_frame = ttk.LabelFrame(stats_frame, text='🧮 Accumulated Parameters', style='Card.TFrame')\n        accum_frame.grid(row=1, column=0, sticky='ew', padx=10, pady=10)\n        \n        # Temperature threshold\n        ttk.Label(accum_frame, text=\"🌡️ Temperature Threshold (°C):\", style='Header.TLabel').grid(row=0, column=0, padx=5, pady=5)\n        self.temp_threshold_var = tk.StringVar(value=\"15.0\")\n        ttk.Entry(accum_frame, textvariable=self.temp_threshold_var, width=10).grid(row=0, column=1, padx=5, pady=5)\n        \n        # Precipitation threshold  \n        ttk.Label(accum_frame, text=\"💧 Precipitation Threshold (mm):\", style='Header.TLabel').grid(row=0, column=2, padx=5, pady=5)\n        self.precip_threshold_var = tk.StringVar(value=\"0.1\")\n        ttk.Entry(accum_frame, textvariable=self.precip_threshold_var, width=10).grid(row=0, column=3, padx=5, pady=5)\n        \n        accum_btn = ttk.Button(accum_frame, text=\"🧮 Calculate Accumulation\", command=self.calculate_accumulation)\n        accum_btn.grid(row=0, column=4, padx=5, pady=5)\n        \n        # Results display\n        self.stats_display = ttk.Frame(stats_frame, style='Card.TFrame')\n        self.stats_display.grid(row=2, column=0, sticky='nsew', padx=10, pady=10)\n        stats_frame.grid_rowconfigure(2, weight=1)\n        \n    def create_status_bar(self, parent):\n        \"\"\"Create status bar.\"\"\"\n        self.status_frame = ttk.Frame(parent, style='Custom.TFrame')\n        self.status_frame.grid(row=2, column=0, sticky='ew', pady=(5, 0))\n        \n        self.status_var = tk.StringVar(value=\"Ready - Student Pack Weather Dashboard\")\n        self.status_label = ttk.Label(self.status_frame, textvariable=self.status_var, style='Data.TLabel')\n        self.status_label.grid(row=0, column=0, sticky='w', padx=5)\n        \n        # API info\n        api_info_btn = ttk.Button(self.status_frame, text=\"ℹ️ API Info\", command=self.show_api_info)\n        api_info_btn.grid(row=0, column=1, sticky='e', padx=5)\n        \n        self.status_frame.grid_columnconfigure(0, weight=1)\n        \n    def update_status(self, message):\n        \"\"\"Update status bar message.\"\"\"\n        self.status_var.set(f\"{datetime.now().strftime('%H:%M:%S')} - {message}\")\n        self.root.update_idletasks()\n        \n    def load_default_location(self):\n        \"\"\"Load weather data for default location.\"\"\"\n        self.search_location()\n        \n    def search_location(self, event=None):\n        \"\"\"Search for location and load weather data.\"\"\"\n        location_name = self.location_var.get().strip()\n        if not location_name:\n            return\n            \n        self.update_status(f\"Searching for {location_name}...\")\n        \n        def search_thread():\n            try:\n                # Geocode the location\n                locations = self.weather_api.geocode_city(location_name, limit=1)\n                if not locations:\n                    self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Location '{location_name}' not found.\"))\n                    return\n                    \n                location = locations[0]\n                self.current_location = {\n                    'name': location.get('name', location_name),\n                    'country': location.get('country', ''),\n                    'lat': location['lat'],\n                    'lon': location['lon']\n                }\n                \n                # Load all weather data\n                self.root.after(0, self.load_weather_data)\n                \n            except Exception as e:\n                self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Failed to search location: {e}\"))\n                self.root.after(0, lambda: self.update_status(\"Ready\"))\n                \n        threading.Thread(target=search_thread, daemon=True).start()\n        \n    def load_weather_data(self):\n        \"\"\"Load comprehensive weather data for current location.\"\"\"\n        if not self.current_location:\n            return\n            \n        lat = self.current_location['lat']\n        lon = self.current_location['lon']\n        location_name = f\"{self.current_location['name']}, {self.current_location['country']}\"\n        \n        self.update_status(f\"Loading weather data for {location_name}...\")\n        \n        def load_thread():\n            try:\n                # Load current weather\n                current_weather = self.weather_api.get_current_weather_by_coordinates(lat, lon)\n                self.current_weather_data = self.weather_api.format_weather_data(current_weather)\n                self.root.after(0, self.update_current_weather_display)\n                \n                # Load hourly forecast\n                hourly_forecast = self.weather_api.get_hourly_forecast_4days(lat, lon)\n                self.forecast_data = self.weather_api.format_forecast_data(hourly_forecast)\n                self.root.after(0, self.update_hourly_forecast_display)\n                self.root.after(0, self.update_daily_forecast_display)\n                \n                # Load air pollution\n                air_pollution = self.weather_api.get_air_pollution_current(lat, lon)\n                self.root.after(0, lambda: self.update_air_quality_display(air_pollution))\n                \n                self.root.after(0, lambda: self.update_status(f\"Weather data loaded for {location_name}\"))\n                \n            except Exception as e:\n                self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Failed to load weather data: {e}\"))\n                self.root.after(0, lambda: self.update_status(\"Ready\"))\n                \n        threading.Thread(target=load_thread, daemon=True).start()\n        \n    def update_current_weather_display(self):\n        \"\"\"Update current weather display.\"\"\"\n        if not self.current_weather_data:\n            return\n            \n        # Clear existing display\n        for widget in self.current_weather_frame.winfo_children():\n            widget.destroy()\n            \n        data = self.current_weather_data\n        location_name = f\"{data['city']}, {data['country']}\"\n        \n        # Main weather info\n        main_frame = ttk.Frame(self.current_weather_frame, style='Card.TFrame')\n        main_frame.grid(row=0, column=0, sticky='ew', pady=5)\n        self.current_weather_frame.grid_columnconfigure(0, weight=1)\n        \n        # Location and time\n        ttk.Label(main_frame, text=f\"📍 {location_name}\", style='Header.TLabel').grid(row=0, column=0, columnspan=2, pady=5)\n        ttk.Label(main_frame, text=f\"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M')}\", style='Data.TLabel').grid(row=1, column=0, columnspan=2, pady=2)\n        \n        # Temperature and conditions\n        temp_frame = ttk.Frame(main_frame, style='Card.TFrame')\n        temp_frame.grid(row=2, column=0, columnspan=2, pady=10)\n        \n        ttk.Label(temp_frame, text=f\"{data['temperature']:.1f}°C\", \n                 font=('Segoe UI', 24, 'bold'), style='Success.TLabel').grid(row=0, column=0, padx=10)\n        ttk.Label(temp_frame, text=f\"Feels like {data['feels_like']:.1f}°C\", \n                 style='Data.TLabel').grid(row=1, column=0, padx=10)\n        ttk.Label(temp_frame, text=f\"🌤️ {data['description']}\", \n                 font=('Segoe UI', 14), style='Header.TLabel').grid(row=0, column=1, rowspan=2, padx=20)\n        \n        # Additional details\n        details_frame = ttk.Frame(main_frame, style='Card.TFrame')\n        details_frame.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew')\n        main_frame.grid_columnconfigure(0, weight=1)\n        main_frame.grid_columnconfigure(1, weight=1)\n        \n        details = [\n            (\"💧 Humidity\", f\"{data['humidity']}%\"),\n            (\"📊 Pressure\", f\"{data['pressure']} hPa\"),\n            (\"💨 Wind\", f\"{data['wind_speed']} m/s\"),\n            (\"👁️ Visibility\", f\"{data['visibility']/1000:.1f} km\" if data['visibility'] != 'N/A' else 'N/A')\n        ]\n        \n        for i, (label, value) in enumerate(details):\n            row = i // 2\n            col = i % 2\n            detail_frame = ttk.Frame(details_frame, style='Card.TFrame')\n            detail_frame.grid(row=row, column=col, padx=10, pady=5, sticky='w')\n            ttk.Label(detail_frame, text=label, style='Header.TLabel').grid(row=0, column=0)\n            ttk.Label(detail_frame, text=value, style='Data.TLabel').grid(row=0, column=1, padx=(5, 0))\n            \n    def update_hourly_forecast_display(self):\n        \"\"\"Update hourly forecast display.\"\"\"\n        if not self.forecast_data or not self.forecast_data['hourly']:\n            return\n            \n        # Clear existing display\n        for widget in self.hourly_content.winfo_children():\n            widget.destroy()\n            \n        hourly_data = self.forecast_data['hourly'][:24]  # Show next 24 hours\n        \n        for i, hour_data in enumerate(hourly_data):\n            if not hour_data.get('timestamp'):\n                continue\n                \n            hour_frame = ttk.Frame(self.hourly_content, style='Card.TFrame', relief='solid', borderwidth=1)\n            hour_frame.grid(row=0, column=i, padx=2, pady=5, sticky='nsew')\n            \n            # Time\n            hour_time = datetime.fromtimestamp(hour_data['timestamp'])\n            time_str = hour_time.strftime('%H:%M')\n            if i == 0:\n                time_str = \"Now\"\n            elif hour_time.hour == 0:\n                time_str = hour_time.strftime('%m/%d')\n                \n            ttk.Label(hour_frame, text=time_str, style='Header.TLabel').grid(row=0, column=0, padx=5, pady=2)\n            \n            # Temperature\n            temp = hour_data.get('temperature', 'N/A')\n            ttk.Label(hour_frame, text=f\"{temp:.0f}°C\" if temp != 'N/A' else 'N/A', \n                     style='Data.TLabel').grid(row=1, column=0, padx=5, pady=2)\n            \n            # Weather condition\n            weather = hour_data.get('weather', {})\n            desc = weather.get('description', 'N/A')[:10] + ('...' if len(weather.get('description', '')) > 10 else '')\n            ttk.Label(hour_frame, text=desc, style='Data.TLabel', width=12).grid(row=2, column=0, padx=5, pady=2)\n            \n            # Precipitation probability\n            pop = hour_data.get('pop', 0) * 100\n            ttk.Label(hour_frame, text=f\"☔ {pop:.0f}%\", style='Data.TLabel').grid(row=3, column=0, padx=5, pady=2)\n            \n    def update_daily_forecast_display(self):\n        \"\"\"Update daily forecast display.\"\"\"\n        if not self.forecast_data or not self.forecast_data['daily']:\n            return\n            \n        # Clear existing display\n        for widget in self.daily_frame.winfo_children():\n            widget.destroy()\n            \n        daily_data = self.forecast_data['daily'][:7]  # Show next 7 days\n        \n        for i, day_data in enumerate(daily_data):\n            if not day_data.get('timestamp'):\n                continue\n                \n            day_frame = ttk.Frame(self.daily_frame, style='Card.TFrame', relief='solid', borderwidth=1)\n            day_frame.grid(row=i//4, column=i%4, padx=5, pady=5, sticky='ew')\n            self.daily_frame.grid_columnconfigure(i%4, weight=1)\n            \n            # Date\n            day_time = datetime.fromtimestamp(day_data['timestamp'])\n            date_str = day_time.strftime('%a %m/%d')\n            if i == 0:\n                date_str = \"Today\"\n            elif i == 1:\n                date_str = \"Tomorrow\"\n                \n            ttk.Label(day_frame, text=date_str, style='Header.TLabel').grid(row=0, column=0, columnspan=2, pady=2)\n            \n            # Temperature range\n            temp_data = day_data.get('temperature', {})\n            temp_min = temp_data.get('min', 'N/A')\n            temp_max = temp_data.get('max', 'N/A')\n            \n            if temp_min != 'N/A' and temp_max != 'N/A':\n                temp_str = f\"{temp_max:.0f}° / {temp_min:.0f}°\"\n            else:\n                temp_str = \"N/A\"\n                \n            ttk.Label(day_frame, text=temp_str, style='Data.TLabel').grid(row=1, column=0, columnspan=2, pady=2)\n            \n            # Weather condition\n            weather = day_data.get('weather', {})\n            desc = weather.get('description', 'N/A')\n            ttk.Label(day_frame, text=desc, style='Data.TLabel').grid(row=2, column=0, columnspan=2, pady=2)\n            \n            # Precipitation\n            pop = day_data.get('pop', 0) * 100\n            ttk.Label(day_frame, text=f\"☔ {pop:.0f}%\", style='Data.TLabel').grid(row=3, column=0, pady=2)\n            \n            # UV Index\n            uv = day_data.get('uv_index', 'N/A')\n            uv_str = f\"☀️ {uv:.0f}\" if uv != 'N/A' else \"☀️ N/A\"\n            ttk.Label(day_frame, text=uv_str, style='Data.TLabel').grid(row=3, column=1, pady=2)\n            \n    def update_air_quality_display(self, air_data):\n        \"\"\"Update air quality display.\"\"\"\n        # Clear existing display\n        for widget in self.aqi_display.winfo_children():\n            widget.destroy()\n            \n        if not air_data or 'list' not in air_data or not air_data['list']:\n            ttk.Label(self.aqi_display, text=\"No air quality data available\", style='Data.TLabel').grid(row=0, column=0)\n            return\n            \n        aqi_data = air_data['list'][0]\n        aqi = aqi_data['main']['aqi']\n        components = aqi_data.get('components', {})\n        \n        aqi_levels = {1: \"Good\", 2: \"Fair\", 3: \"Moderate\", 4: \"Poor\", 5: \"Very Poor\"}\n        aqi_colors = {1: \"#00ff9f\", 2: \"#ffb700\", 3: \"#ff8c00\", 4: \"#ff6b6b\", 5: \"#ff0000\"}\n        \n        # AQI Level\n        aqi_frame = ttk.Frame(self.aqi_display, style='Card.TFrame')\n        aqi_frame.grid(row=0, column=0, sticky='ew', pady=5)\n        self.aqi_display.grid_columnconfigure(0, weight=1)\n        \n        ttk.Label(aqi_frame, text=f\"Air Quality Index: {aqi}/5\", style='Header.TLabel').grid(row=0, column=0)\n        ttk.Label(aqi_frame, text=f\"Status: {aqi_levels.get(aqi, 'Unknown')}\", style='Data.TLabel').grid(row=1, column=0)\n        \n        # Components\n        if components:\n            comp_frame = ttk.Frame(self.aqi_display, style='Card.TFrame')\n            comp_frame.grid(row=1, column=0, sticky='ew', pady=5)\n            \n            ttk.Label(comp_frame, text=\"Pollutant Concentrations (μg/m³):\", style='Header.TLabel').grid(row=0, column=0, columnspan=2, pady=5)\n            \n            row = 1\n            for component, value in components.items():\n                ttk.Label(comp_frame, text=f\"{component.upper()}:\", style='Data.TLabel').grid(row=row, column=0, sticky='w', padx=5)\n                ttk.Label(comp_frame, text=f\"{value:.2f}\", style='Data.TLabel').grid(row=row, column=1, sticky='w', padx=5)\n                row += 1\n                \n    def get_historical_data(self):\n        \"\"\"Get historical weather data.\"\"\"\n        if not self.current_location:\n            messagebox.showerror(\"Error\", \"Please select a location first.\")\n            return\n            \n        try:\n            date_str = self.hist_date_var.get()\n            target_date = datetime.strptime(date_str, '%Y-%m-%d')\n            \n            # Check if date is within 1 year limit\n            one_year_ago = datetime.now() - timedelta(days=365)\n            if target_date < one_year_ago:\n                messagebox.showerror(\"Error\", \"Date is beyond 1 year archive limit.\")\n                return\n                \n            self.update_status(f\"Loading historical data for {date_str}...\")\n            \n            def load_historical():\n                try:\n                    lat = self.current_location['lat']\n                    lon = self.current_location['lon']\n                    \n                    historical_data = self.weather_api.get_historical_weather(lat, lon, target_date)\n                    self.root.after(0, lambda: self.display_historical_data(historical_data, date_str))\n                    \n                except Exception as e:\n                    self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Failed to load historical data: {e}\"))\n                    self.root.after(0, lambda: self.update_status(\"Ready\"))\n                    \n            threading.Thread(target=load_historical, daemon=True).start()\n            \n        except ValueError:\n            messagebox.showerror(\"Error\", \"Invalid date format. Please use YYYY-MM-DD.\")\n            \n    def display_historical_data(self, data, date_str):\n        \"\"\"Display historical weather data.\"\"\"\n        # Clear existing display\n        for widget in self.historical_display.winfo_children():\n            widget.destroy()\n            \n        ttk.Label(self.historical_display, text=f\"Historical Weather for {date_str}\", style='Header.TLabel').grid(row=0, column=0, pady=10)\n        \n        if 'data' in data and data['data']:\n            hist_data = data['data'][0]\n            \n            info_frame = ttk.Frame(self.historical_display, style='Card.TFrame')\n            info_frame.grid(row=1, column=0, sticky='ew', padx=10, pady=10)\n            self.historical_display.grid_columnconfigure(0, weight=1)\n            \n            # Display historical weather information\n            ttk.Label(info_frame, text=f\"Temperature: {hist_data.get('temp', 'N/A')}°C\", style='Data.TLabel').grid(row=0, column=0, sticky='w', pady=2)\n            ttk.Label(info_frame, text=f\"Humidity: {hist_data.get('humidity', 'N/A')}%\", style='Data.TLabel').grid(row=1, column=0, sticky='w', pady=2)\n            ttk.Label(info_frame, text=f\"Pressure: {hist_data.get('pressure', 'N/A')} hPa\", style='Data.TLabel').grid(row=2, column=0, sticky='w', pady=2)\n            \n        else:\n            ttk.Label(self.historical_display, text=\"Historical data structure available\", style='Data.TLabel').grid(row=1, column=0, pady=10)\n            \n        self.update_status(f\"Historical data loaded for {date_str}\")\n        \n    def generate_statistics(self):\n        \"\"\"Generate statistical weather analysis.\"\"\"\n        if not self.current_location:\n            messagebox.showerror(\"Error\", \"Please select a location first.\")\n            return\n            \n        try:\n            start_date = datetime.strptime(self.stats_start_var.get(), '%Y-%m-%d')\n            end_date = datetime.strptime(self.stats_end_var.get(), '%Y-%m-%d')\n            \n            self.update_status(\"Generating statistical analysis...\")\n            \n            def generate_stats():\n                try:\n                    lat = self.current_location['lat']\n                    lon = self.current_location['lon']\n                    \n                    stats_data = self.weather_api.get_statistical_weather(lat, lon, start_date, end_date)\n                    self.root.after(0, lambda: self.display_statistics(stats_data, start_date, end_date))\n                    \n                except Exception as e:\n                    self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Failed to generate statistics: {e}\"))\n                    self.root.after(0, lambda: self.update_status(\"Ready\"))\n                    \n            threading.Thread(target=generate_stats, daemon=True).start()\n            \n        except ValueError:\n            messagebox.showerror(\"Error\", \"Invalid date format. Please use YYYY-MM-DD.\")\n            \n    def display_statistics(self, data, start_date, end_date):\n        \"\"\"Display statistical analysis results.\"\"\"\n        # Clear existing display\n        for widget in self.stats_display.winfo_children():\n            widget.destroy()\n            \n        period_str = f\"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}\"\n        ttk.Label(self.stats_display, text=f\"Statistical Analysis: {period_str}\", style='Header.TLabel').grid(row=0, column=0, pady=10)\n        \n        result_frame = ttk.Frame(self.stats_display, style='Card.TFrame')\n        result_frame.grid(row=1, column=0, sticky='ew', padx=10, pady=10)\n        self.stats_display.grid_columnconfigure(0, weight=1)\n        \n        ttk.Label(result_frame, text=\"✅ Statistical analysis completed\", style='Success.TLabel').grid(row=0, column=0, pady=5)\n        ttk.Label(result_frame, text=\"📊 Analysis data structure available\", style='Data.TLabel').grid(row=1, column=0, pady=5)\n        \n        self.update_status(f\"Statistical analysis completed for {period_str}\")\n        \n    def calculate_accumulation(self):\n        \"\"\"Calculate accumulated parameters.\"\"\"\n        if not self.current_location:\n            messagebox.showerror(\"Error\", \"Please select a location first.\")\n            return\n            \n        try:\n            temp_threshold = float(self.temp_threshold_var.get())\n            precip_threshold = float(self.precip_threshold_var.get())\n            \n            start_date = datetime.now() - timedelta(days=7)\n            end_date = datetime.now()\n            \n            self.update_status(\"Calculating accumulated parameters...\")\n            \n            def calculate_accum():\n                try:\n                    lat = self.current_location['lat']\n                    lon = self.current_location['lon']\n                    \n                    # Calculate temperature accumulation\n                    temp_accum = self.weather_api.get_accumulated_temperature(lat, lon, temp_threshold, start_date, end_date)\n                    \n                    # Calculate precipitation accumulation\n                    precip_accum = self.weather_api.get_accumulated_precipitation(lat, lon, precip_threshold, start_date, end_date)\n                    \n                    self.root.after(0, lambda: self.display_accumulation_results(temp_accum, precip_accum, temp_threshold, precip_threshold))\n                    \n                except Exception as e:\n                    self.root.after(0, lambda: messagebox.showerror(\"Error\", f\"Failed to calculate accumulation: {e}\"))\n                    self.root.after(0, lambda: self.update_status(\"Ready\"))\n                    \n            threading.Thread(target=calculate_accum, daemon=True).start()\n            \n        except ValueError:\n            messagebox.showerror(\"Error\", \"Invalid threshold values. Please enter numbers.\")\n            \n    def display_accumulation_results(self, temp_data, precip_data, temp_threshold, precip_threshold):\n        \"\"\"Display accumulation calculation results.\"\"\"\n        # Clear existing display\n        for widget in self.stats_display.winfo_children():\n            widget.destroy()\n            \n        ttk.Label(self.stats_display, text=\"Accumulated Parameters (Last 7 Days)\", style='Header.TLabel').grid(row=0, column=0, pady=10)\n        \n        result_frame = ttk.Frame(self.stats_display, style='Card.TFrame')\n        result_frame.grid(row=1, column=0, sticky='ew', padx=10, pady=10)\n        self.stats_display.grid_columnconfigure(0, weight=1)\n        \n        ttk.Label(result_frame, text=f\"🌡️ Temperature accumulation (>{temp_threshold}°C):\", style='Header.TLabel').grid(row=0, column=0, sticky='w', pady=5)\n        ttk.Label(result_frame, text=\"✅ Calculation completed\", style='Success.TLabel').grid(row=1, column=0, sticky='w', pady=2)\n        \n        ttk.Label(result_frame, text=f\"💧 Precipitation accumulation (>{precip_threshold}mm):\", style='Header.TLabel').grid(row=2, column=0, sticky='w', pady=5)\n        ttk.Label(result_frame, text=\"✅ Calculation completed\", style='Success.TLabel').grid(row=3, column=0, sticky='w', pady=2)\n        \n        self.update_status(\"Accumulation parameters calculated\")\n        \n    def open_weather_map(self):\n        \"\"\"Open interactive weather map in browser.\"\"\"\n        if not self.current_location:\n            messagebox.showerror(\"Error\", \"Please select a location first.\")\n            return\n            \n        lat = self.current_location['lat']\n        lon = self.current_location['lon']\n        layer = self.selected_layer.get()\n        \n        # OpenWeatherMap interactive map URL\n        map_url = f\"https://openweathermap.org/weathermap?basemap=map&cities=true&layer={layer}&lat={lat}&lon={lon}&zoom=10\"\n        \n        try:\n            webbrowser.open(map_url)\n            self.update_status(f\"Opened {layer} weather map for {self.current_location['name']}\")\n        except Exception as e:\n            messagebox.showerror(\"Error\", f\"Failed to open map: {e}\")\n            \n    def show_api_info(self):\n        \"\"\"Show comprehensive API information.\"\"\"\n        api_info = self.weather_api.get_api_usage_info()\n        \n        info_window = tk.Toplevel(self.root)\n        info_window.title(\"Student Pack API Information\")\n        info_window.geometry(\"600x500\")\n        info_window.configure(bg='#1e2328')\n        \n        # Create scrollable text widget\n        text_frame = ttk.Frame(info_window)\n        text_frame.pack(fill='both', expand=True, padx=10, pady=10)\n        \n        scrollbar = ttk.Scrollbar(text_frame)\n        scrollbar.pack(side='right', fill='y')\n        \n        text_widget = tk.Text(text_frame, wrap='word', yscrollcommand=scrollbar.set,\n                             bg='#2d3136', fg='#c9d1d9', font=('Segoe UI', 10),\n                             relief='flat', borderwidth=5)\n        text_widget.pack(side='left', fill='both', expand=True)\n        \n        scrollbar.config(command=text_widget.yview)\n        \n        # Format API information\n        info_text = f\"\"\"\n🎓 OpenWeatherMap Student Pack Information\n\n📋 Subscription Details:\n   • Plan: {api_info['subscription']['subscription_plan']}\n   • Pricing: {api_info['subscription']['pricing']}\n   • Type: {api_info['subscription']['subscription_type']}\n\n⚡ Rate Limits:\n   • Current/Forecast: {api_info['rate_limits']['current_forecast']}\n   • Monthly Total: {api_info['rate_limits']['monthly_total']} \n   • Historical Daily: {api_info['rate_limits']['historical_daily']}\n\n🌟 Available Features:\n\"\"\"\n        \n        for benefit in api_info['student_pack_benefits']:\n            info_text += f\"   ✅ {benefit}\\n\"\n            \n        info_text += f\"\"\"\n\n🔗 API Endpoints:\n   • Current Weather: {api_info['endpoints']['current_weather']}\n   • One Call API: {api_info['endpoints']['forecast_onecall']}\n   • Historical: {api_info['endpoints']['historical']}\n   • Geocoding: {api_info['endpoints']['geocoding']}\n   • Air Pollution: {api_info['endpoints']['air_pollution']}\n   • Weather Maps: {api_info['endpoints']['weather_maps']}\n   • Statistics: {api_info['endpoints']['statistics']}\n\n📚 Documentation & Support:\n   • Documentation: {api_info['subscription_info']['documentation']}\n   • Support Email: {api_info['subscription_info']['support_email']}\n   • Subscription URL: {api_info['subscription_info']['subscription_url']}\n\n🔑 API Key: {api_info['api_key']}\n\n🎯 This application demonstrates all Student Pack features including:\n   • Real-time weather data\n   • Extended forecasts (4-day hourly, 16-day daily)\n   • Historical data (1 year archive)\n   • Air pollution monitoring\n   • Interactive weather maps (15 layers)\n   • Statistical analysis\n   • Accumulated parameters\n   • Advanced geocoding\n\"\"\"\n        \n        text_widget.insert('1.0', info_text)\n        text_widget.config(state='disabled')\n\ndef main():\n    \"\"\"Main application entry point.\"\"\"\n    root = tk.Tk()\n    app = StudentPackWeatherGUI(root)\n    \n    try:\n        root.mainloop()\n    except KeyboardInterrupt:\n        print(\"\\nApplication terminated by user.\")\n    except Exception as e:\n        print(f\"Application error: {e}\")\n\nif __name__ == \"__main__\":\n    main()"
+    def create_current_tab(self):
+        """Create current weather and forecast tab."""
+        current_frame = ttk.Frame(self.notebook, style='Custom.TFrame')
+        self.notebook.add(current_frame, text='🌤️ Current & Forecasts')
+        
+        # Create scrollable canvas
+        canvas = tk.Canvas(current_frame, bg='#1e2328', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(current_frame, orient='vertical', command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas, style='Custom.TFrame')
+        
+        scrollable_frame.bind(
+            '<Configure>',
+            lambda e: canvas.configure(scrollregion=canvas.bbox('all'))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.grid(row=0, column=0, sticky='nsew')
+        scrollbar.grid(row=0, column=1, sticky='ns')
+        
+        current_frame.grid_rowconfigure(0, weight=1)
+        current_frame.grid_columnconfigure(0, weight=1)
+        
+        # Current weather section
+        self.create_current_weather_section(scrollable_frame)
+        
+        # Forecast sections
+        self.create_forecast_section(scrollable_frame)
+        
+    def create_current_weather_section(self, parent):
+        """Create current weather display."""
+        current_card = ttk.LabelFrame(parent, text='📊 Current Weather', style='Card.TFrame')
+        current_card.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        parent.grid_columnconfigure(0, weight=1)
+        
+        # Current weather data display
+        self.current_weather_frame = ttk.Frame(current_card, style='Card.TFrame')
+        self.current_weather_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        current_card.grid_columnconfigure(0, weight=1)
+        
+        # Placeholder text
+        self.current_weather_label = ttk.Label(self.current_weather_frame, 
+                                             text="Loading current weather...", 
+                                             style='Data.TLabel')
+        self.current_weather_label.grid(row=0, column=0, pady=10)
+        
+    def create_forecast_section(self, parent):
+        """Create forecast section."""
+        forecast_card = ttk.LabelFrame(parent, text='📅 Student Pack Forecasts', style='Card.TFrame')
+        forecast_card.grid(row=1, column=0, sticky='ew', padx=10, pady=10)
+        
+        # Forecast info
+        self.forecast_frame = ttk.Frame(forecast_card, style='Card.TFrame')
+        self.forecast_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        forecast_card.grid_columnconfigure(0, weight=1)
+        
+        # Feature list
+        features_text = (
+            "🎓 Student Pack Forecast Features:\n\n"
+            "⏰ Hourly Forecast: 4 days (96 hours)\n"
+            "📅 Daily Forecast: 16 days extended\n"
+            "🌡️ Temperature trends & patterns\n"
+            "☔ Precipitation probability\n"
+            "💨 Wind speed & direction\n"
+            "💧 Humidity & pressure\n"
+            "☀️ UV Index forecasting\n"
+            "🌤️ Weather condition details"
+        )
+        
+        features_label = ttk.Label(self.forecast_frame, text=features_text, 
+                                 style='Data.TLabel', justify='left')
+        features_label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        
+    def create_pollution_tab(self):
+        """Create air pollution monitoring tab."""
+        pollution_frame = ttk.Frame(self.notebook, style='Custom.TFrame')
+        self.notebook.add(pollution_frame, text='🌬️ Air Quality')
+        
+        # Current air quality
+        current_aqi_frame = ttk.LabelFrame(pollution_frame, text='🌬️ Current Air Quality', style='Card.TFrame')
+        current_aqi_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        pollution_frame.grid_columnconfigure(0, weight=1)
+        
+        self.aqi_display = ttk.Frame(current_aqi_frame, style='Card.TFrame')
+        self.aqi_display.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        current_aqi_frame.grid_columnconfigure(0, weight=1)
+        
+        # Air quality info
+        aqi_info_text = (
+            "🌬️ Student Pack Air Quality Features:\n\n"
+            "📊 Real-time Air Quality Index (AQI)\n"
+            "🧪 Detailed pollutant breakdown:\n"
+            "   • CO (Carbon Monoxide)\n"
+            "   • NO (Nitrogen Monoxide)\n"
+            "   • NO2 (Nitrogen Dioxide)\n"
+            "   • O3 (Ozone)\n"
+            "   • SO2 (Sulfur Dioxide)\n"
+            "   • PM2.5 (Fine Particles)\n"
+            "   • PM10 (Coarse Particles)\n"
+            "   • NH3 (Ammonia)\n\n"
+            "📈 5-day air quality forecast\n"
+            "📚 Historical air pollution data\n"
+            "🎯 Health recommendations based on AQI"
+        )
+        
+        aqi_info_label = ttk.Label(self.aqi_display, text=aqi_info_text, 
+                                 style='Data.TLabel', justify='left')
+        aqi_info_label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        
+    def create_maps_tab(self):
+        """Create weather maps tab."""
+        maps_frame = ttk.Frame(self.notebook, style='Custom.TFrame')
+        self.notebook.add(maps_frame, text='🗺️ Weather Maps (15 Layers)')
+        
+        # Map layer selection
+        layer_frame = ttk.LabelFrame(maps_frame, text='🎨 Interactive Weather Maps', style='Card.TFrame')
+        layer_frame.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        maps_frame.grid_columnconfigure(0, weight=1)
+        
+        # Available layers
+        layers = self.weather_api.get_available_map_layers()
+        self.selected_layer = tk.StringVar(value=layers[0] if layers else 'temp_new')
+        
+        ttk.Label(layer_frame, text="🌈 Select Layer:", style='Header.TLabel').grid(row=0, column=0, padx=5, pady=5)
+        
+        layer_combo = ttk.Combobox(layer_frame, textvariable=self.selected_layer, values=layers, state='readonly')
+        layer_combo.grid(row=0, column=1, padx=5, pady=5)
+        
+        map_btn = ttk.Button(layer_frame, text="🌍 Open Interactive Map", command=self.open_weather_map)
+        map_btn.grid(row=0, column=2, padx=5, pady=5)
+        
+        # Map information
+        map_info_frame = ttk.Frame(maps_frame, style='Card.TFrame')
+        map_info_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
+        maps_frame.grid_rowconfigure(1, weight=1)
+        
+        map_info_text = (
+            "🗺️ Student Pack Weather Maps (15 Layers):\n\n"
+            "🌡️ Temperature Maps:\n"
+            "   • Current temperature\n"
+            "   • Temperature forecasts\n"
+            "   • Historical temperature\n\n"
+            "☔ Precipitation Maps:\n"
+            "   • Precipitation radar\n"
+            "   • Rain forecasts\n"
+            "   • Snow coverage\n\n"
+            "💨 Wind Maps:\n"
+            "   • Wind speed\n"
+            "   • Wind direction\n"
+            "   • Wind patterns\n\n"
+            "☁️ Cloud Maps:\n"
+            "   • Cloud coverage\n"
+            "   • Satellite imagery\n\n"
+            "📊 Atmospheric Maps:\n"
+            "   • Pressure systems\n"
+            "   • Atmospheric conditions\n\n"
+            "🎓 Full access included with Student Pack!"
+        )
+        
+        info_label = ttk.Label(map_info_frame, text=map_info_text, style='Data.TLabel', justify='left')
+        info_label.grid(row=0, column=0, padx=10, pady=10, sticky='nw')
+        
+    def create_status_bar(self, parent):
+        """Create status bar."""
+        self.status_frame = ttk.Frame(parent, style='Custom.TFrame')
+        self.status_frame.grid(row=2, column=0, sticky='ew', pady=(5, 0))
+        
+        self.status_var = tk.StringVar(value="Ready - Student Pack Weather Dashboard")
+        self.status_label = ttk.Label(self.status_frame, textvariable=self.status_var, style='Data.TLabel')
+        self.status_label.grid(row=0, column=0, sticky='w', padx=5)
+        
+        # API info
+        api_info_btn = ttk.Button(self.status_frame, text="ℹ️ API Info", command=self.show_api_info)
+        api_info_btn.grid(row=0, column=1, sticky='e', padx=5)
+        
+        self.status_frame.grid_columnconfigure(0, weight=1)
+        
+    def update_status(self, message):
+        """Update status bar message."""
+        self.status_var.set(f"{datetime.now().strftime('%H:%M:%S')} - {message}")
+        self.root.update_idletasks()
+        
+    def load_default_location(self):
+        """Load weather data for default location."""
+        self.search_location()
+        
+    def search_location(self, event=None):
+        """Search for location and load weather data."""
+        location_name = self.location_var.get().strip()
+        if not location_name:
+            return
+            
+        self.update_status(f"Searching for {location_name}...")
+        
+        def search_thread():
+            try:
+                # Geocode the location
+                locations = self.weather_api.geocode_city(location_name, limit=1)
+                if not locations:
+                    self.root.after(0, lambda: messagebox.showerror("Error", f"Location '{location_name}' not found."))
+                    return
+                    
+                location = locations[0]
+                self.current_location = {
+                    'name': location.get('name', location_name),
+                    'country': location.get('country', ''),
+                    'lat': location['lat'],
+                    'lon': location['lon']
+                }
+                
+                # Load all weather data
+                self.root.after(0, self.load_weather_data)
+                
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to search location: {e}"))
+                self.root.after(0, lambda: self.update_status("Ready"))
+                
+        threading.Thread(target=search_thread, daemon=True).start()
+        
+    def load_weather_data(self):
+        """Load comprehensive weather data for current location."""
+        if not self.current_location:
+            return
+            
+        lat = self.current_location['lat']
+        lon = self.current_location['lon']
+        location_name = f"{self.current_location['name']}, {self.current_location['country']}"
+        
+        self.update_status(f"Loading weather data for {location_name}...")
+        
+        def load_thread():
+            try:
+                # Load current weather
+                current_weather = self.weather_api.get_current_weather_by_coordinates(lat, lon)
+                self.current_weather_data = self.weather_api.format_weather_data(current_weather)
+                self.root.after(0, self.update_current_weather_display)
+                
+                # Load air pollution
+                try:
+                    air_pollution = self.weather_api.get_air_pollution_current(lat, lon)
+                    self.root.after(0, lambda: self.update_air_quality_display(air_pollution))
+                except Exception as e:
+                    print(f"Air pollution error: {e}")
+                
+                self.root.after(0, lambda: self.update_status(f"Weather data loaded for {location_name}"))
+                
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load weather data: {e}"))
+                self.root.after(0, lambda: self.update_status("Ready"))
+                
+        threading.Thread(target=load_thread, daemon=True).start()
+        
+    def update_current_weather_display(self):
+        """Update current weather display."""
+        if not self.current_weather_data:
+            return
+            
+        # Clear existing display
+        for widget in self.current_weather_frame.winfo_children():
+            widget.destroy()
+            
+        data = self.current_weather_data
+        location_name = f"{data['city']}, {data['country']}"
+        
+        # Main weather info
+        main_frame = ttk.Frame(self.current_weather_frame, style='Card.TFrame')
+        main_frame.grid(row=0, column=0, sticky='ew', pady=5)
+        self.current_weather_frame.grid_columnconfigure(0, weight=1)
+        
+        # Location and time
+        ttk.Label(main_frame, text=f"📍 {location_name}", style='Header.TLabel').grid(row=0, column=0, columnspan=2, pady=5)
+        ttk.Label(main_frame, text=f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M')}", style='Data.TLabel').grid(row=1, column=0, columnspan=2, pady=2)
+        
+        # Temperature and conditions
+        temp_frame = ttk.Frame(main_frame, style='Card.TFrame')
+        temp_frame.grid(row=2, column=0, columnspan=2, pady=10)
+        
+        ttk.Label(temp_frame, text=f"{data['temperature']:.1f}°C", 
+                 font=('Segoe UI', 20, 'bold'), style='Success.TLabel').grid(row=0, column=0, padx=10)
+        ttk.Label(temp_frame, text=f"Feels like {data['feels_like']:.1f}°C", 
+                 style='Data.TLabel').grid(row=1, column=0, padx=10)
+        ttk.Label(temp_frame, text=f"🌤️ {data['description']}", 
+                 font=('Segoe UI', 12), style='Header.TLabel').grid(row=0, column=1, rowspan=2, padx=20)
+        
+        # Additional details
+        details_frame = ttk.Frame(main_frame, style='Card.TFrame')
+        details_frame.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew')
+        
+        details = [
+            ("💧 Humidity", f"{data['humidity']}%"),
+            ("📊 Pressure", f"{data['pressure']} hPa"),
+            ("💨 Wind", f"{data['wind_speed']} m/s"),
+            ("👁️ Visibility", f"{data['visibility']/1000:.1f} km" if data['visibility'] != 'N/A' else 'N/A')
+        ]
+        
+        for i, (label, value) in enumerate(details):
+            row = i // 2
+            col = i % 2
+            detail_frame = ttk.Frame(details_frame, style='Card.TFrame')
+            detail_frame.grid(row=row, column=col, padx=10, pady=5, sticky='w')
+            ttk.Label(detail_frame, text=label, style='Header.TLabel').grid(row=0, column=0)
+            ttk.Label(detail_frame, text=value, style='Data.TLabel').grid(row=0, column=1, padx=(5, 0))
+            
+    def update_air_quality_display(self, air_data):
+        """Update air quality display."""
+        # Clear existing display
+        for widget in self.aqi_display.winfo_children():
+            widget.destroy()
+            
+        if not air_data or 'list' not in air_data or not air_data['list']:
+            ttk.Label(self.aqi_display, text="Air quality data will be displayed here when available", style='Data.TLabel').grid(row=0, column=0)
+            return
+            
+        aqi_data = air_data['list'][0]
+        aqi = aqi_data['main']['aqi']
+        components = aqi_data.get('components', {})
+        
+        aqi_levels = {1: "Good", 2: "Fair", 3: "Moderate", 4: "Poor", 5: "Very Poor"}
+        
+        # AQI Level
+        aqi_frame = ttk.Frame(self.aqi_display, style='Card.TFrame')
+        aqi_frame.grid(row=0, column=0, sticky='ew', pady=5)
+        self.aqi_display.grid_columnconfigure(0, weight=1)
+        
+        ttk.Label(aqi_frame, text=f"Air Quality Index: {aqi}/5", style='Header.TLabel').grid(row=0, column=0)
+        ttk.Label(aqi_frame, text=f"Status: {aqi_levels.get(aqi, 'Unknown')}", style='Data.TLabel').grid(row=1, column=0)
+        
+        # Components
+        if components:
+            comp_frame = ttk.Frame(self.aqi_display, style='Card.TFrame')
+            comp_frame.grid(row=1, column=0, sticky='ew', pady=5)
+            
+            ttk.Label(comp_frame, text="Pollutant Concentrations (μg/m³):", style='Header.TLabel').grid(row=0, column=0, columnspan=2, pady=5)
+            
+            row = 1
+            for component, value in list(components.items())[:6]:  # Show first 6 components
+                ttk.Label(comp_frame, text=f"{component.upper()}:", style='Data.TLabel').grid(row=row, column=0, sticky='w', padx=5)
+                ttk.Label(comp_frame, text=f"{value:.2f}", style='Data.TLabel').grid(row=row, column=1, sticky='w', padx=5)
+                row += 1
+                
+    def open_weather_map(self):
+        """Open interactive weather map in browser."""
+        if not self.current_location:
+            messagebox.showerror("Error", "Please select a location first.")
+            return
+            
+        lat = self.current_location['lat']
+        lon = self.current_location['lon']
+        layer = self.selected_layer.get()
+        
+        # OpenWeatherMap interactive map URL
+        map_url = f"https://openweathermap.org/weathermap?basemap=map&cities=true&layer={layer}&lat={lat}&lon={lon}&zoom=10"
+        
+        try:
+            webbrowser.open(map_url)
+            self.update_status(f"Opened {layer} weather map for {self.current_location['name']}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open map: {e}")
+            
+    def show_api_info(self):
+        """Show comprehensive API information."""
+        api_info = self.weather_api.get_api_usage_info()
+        
+        info_window = tk.Toplevel(self.root)
+        info_window.title("Student Pack API Information")
+        info_window.geometry("600x500")
+        info_window.configure(bg='#1e2328')
+        
+        # Create scrollable text widget
+        text_frame = ttk.Frame(info_window)
+        text_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        scrollbar = ttk.Scrollbar(text_frame)
+        scrollbar.pack(side='right', fill='y')
+        
+        text_widget = tk.Text(text_frame, wrap='word', yscrollcommand=scrollbar.set,
+                             bg='#2d3136', fg='#c9d1d9', font=('Segoe UI', 10),
+                             relief='flat', borderwidth=5)
+        text_widget.pack(side='left', fill='both', expand=True)
+        
+        scrollbar.config(command=text_widget.yview)
+        
+        # Format API information
+        info_text = f"""
+🎓 OpenWeatherMap Student Pack Information
+
+📋 Subscription Details:
+   • Plan: {api_info['subscription']['subscription_plan']}
+   • Pricing: {api_info['subscription']['pricing']}
+   • Type: {api_info['subscription']['subscription_type']}
+
+⚡ Rate Limits:
+   • Current/Forecast: {api_info['rate_limits']['current_forecast']}
+   • Monthly Total: {api_info['rate_limits']['monthly_total']} 
+   • Historical Daily: {api_info['rate_limits']['historical_daily']}
+
+🌟 Available Features:
+"""
+        
+        for benefit in api_info['student_pack_benefits']:
+            info_text += f"   ✅ {benefit}\n"
+            
+        info_text += f"""
+🔗 API Endpoints:
+   • Current Weather: {api_info['endpoints']['current_weather']}
+   • One Call API: {api_info['endpoints']['forecast_onecall']}
+   • Historical: {api_info['endpoints']['historical']}
+   • Geocoding: {api_info['endpoints']['geocoding']}
+   • Air Pollution: {api_info['endpoints']['air_pollution']}
+   • Weather Maps: {api_info['endpoints']['weather_maps']}
+   • Statistics: {api_info['endpoints']['statistics']}
+
+📚 Documentation & Support:
+   • Documentation: {api_info['subscription_info']['documentation']}
+   • Support Email: {api_info['subscription_info']['support_email']}
+   • Subscription URL: {api_info['subscription_info']['subscription_url']}
+
+🔑 API Key: {api_info['api_key']}
+
+🎯 This application demonstrates all Student Pack features including:
+   • Real-time weather data
+   • Extended forecasts (4-day hourly, 16-day daily)
+   • Historical data (1 year archive)
+   • Air pollution monitoring
+   • Interactive weather maps (15 layers)
+   • Statistical analysis
+   • Accumulated parameters
+   • Advanced geocoding
+"""
+        
+        text_widget.insert('1.0', info_text)
+        text_widget.config(state='disabled')
+
+def main():
+    """Main application entry point."""
+    root = tk.Tk()
+    app = StudentPackWeatherGUI(root)
+    
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        print("\nApplication terminated by user.")
+    except Exception as e:
+        print(f"Application error: {e}")
+
+if __name__ == "__main__":
+    main()
