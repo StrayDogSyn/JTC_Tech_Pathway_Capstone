@@ -1,6 +1,7 @@
 """
 Test script for the Complete Weather Dashboard
 Verifies that all components can be imported and initialized properly.
+Tests the main dashboard, COBRA styling system, and machine learning functionality.
 """
 
 import sys
@@ -129,34 +130,19 @@ def test_complete_dashboard_import():
         print(f"❌ Error during testing: {e}")
         return False
 
-def test_enhanced_dashboard_import():
-    """Test importing the enhanced dashboard module."""
-    print("\n🔮 Testing enhanced dashboard import...")
+def test_cobra_styling_import():
+    """Test importing the COBRA styling components."""
+    print("\n🐍 Testing COBRA styling import...")
     
     try:
-        from enhanced_weather_dashboard import WeatherApp, WeatherPredictor
-        print("✅ Enhanced dashboard components imported successfully")
+        from cobra_style import COBRA_COLORS, apply_cobra_theme, CobraChartAnimator
+        print("✅ COBRA styling components imported successfully")
         return True
     except ImportError as e:
-        print(f"❌ Enhanced dashboard import failed: {e}")
+        print(f"❌ COBRA styling import failed: {e}")
         return False
     except Exception as e:
-        print(f"❌ Error during enhanced dashboard testing: {e}")
-        return False
-
-def test_unified_dashboard_import():
-    """Test importing the unified dashboard module."""
-    print("\n🌤️ Testing unified dashboard import...")
-    
-    try:
-        from unified_weather_dashboard import ModernWeatherDashboard, WeatherAPI
-        print("✅ Unified dashboard components imported successfully")
-        return True
-    except ImportError as e:
-        print(f"❌ Unified dashboard import failed: {e}")
-        return False
-    except Exception as e:
-        print(f"❌ Error during unified dashboard testing: {e}")
+        print(f"❌ Error during COBRA styling testing: {e}")
         return False
 
 def test_ml_functionality():
@@ -197,8 +183,7 @@ def run_all_tests():
         ("Import Dependencies", test_imports),
         ("API Key Configuration", test_api_key),
         ("Complete Dashboard", test_complete_dashboard_import),
-        ("Enhanced Dashboard", test_enhanced_dashboard_import),
-        ("Unified Dashboard", test_unified_dashboard_import),
+        ("COBRA Styling", test_cobra_styling_import),
         ("ML Functionality", test_ml_functionality),
     ]
     

@@ -22,8 +22,7 @@ A comprehensive weather application combining real-time data, machine learning p
 
 ### 🔮 Additional Applications
 
-- **Unified Weather Dashboard** (`unified_weather_dashboard.py`) - Comprehensive Student Pack showcase
-- **Enhanced Weather Dashboard** (`enhanced_weather_dashboard.py`) - ML-focused implementation
+- **COBRA Commander Weather App** (`cobra_weather_app.py`) - Sci-fi villain themed styling demo
 
 ### 🛠️ Technology Stack
 
@@ -65,11 +64,13 @@ A comprehensive weather application combining real-time data, machine learning p
 4. **Configure your API key:**
    - Create a `.env` file in the project root
    - Add your OpenWeatherMap API key:
+
      ```env
      OPENWEATHER_API_KEY=your_api_key_here
      ```
 
 5. **Run the complete application (Recommended):**
+
    ```bash
    python complete_weather_dashboard.py
    ```
@@ -77,18 +78,22 @@ A comprehensive weather application combining real-time data, machine learning p
 ### Alternative Launch Options
 
 **Using the Launcher:**
+
 ```bash
 python launcher.py
 # Then select option 1 for the complete dashboard
+# Or option 2 for the COBRA styled demo
 ```
 
 **Individual Applications:**
+
 ```bash
-python unified_weather_dashboard.py      # Original comprehensive dashboard
-python enhanced_weather_dashboard.py     # ML-focused implementation
+python complete_weather_dashboard.py     # Main integrated application
+python cobra_weather_app.py              # COBRA Commander styled demo
 ```
 
 **Testing:**
+
 ```bash
 python test_complete_app.py              # Comprehensive test suite
 ```
@@ -100,12 +105,14 @@ python test_complete_app.py              # Comprehensive test suite
 The integrated application provides four main tabs:
 
 #### 🌤️ Current Weather & Predictions
+
 - **Large temperature display** with feels-like temperature
 - **Detailed weather metrics** (humidity, wind, pressure, clouds)
 - **Machine learning predictions** for next 12 hours using scikit-learn
 - **Weather description** and current conditions
 
 #### 📊 Forecast Charts
+
 - **Interactive matplotlib visualizations** with professional styling
 - **Selectable chart types:**
   - Temperature Trend (24-hour)
@@ -116,18 +123,21 @@ The integrated application provides four main tabs:
 - **Dark theme integration** matching the UI
 
 #### 🗺️ Maps & Air Quality
+
 - **Air Quality Index** with health recommendations
 - **Weather map layer selection** (temperature, precipitation, pressure, wind, clouds)
 - **Direct browser integration** with OpenWeatherMap maps
 - **Pollution monitoring** with detailed pollutant breakdown
 
 #### 📈 Analytics & Historical Data
+
 - **Historical analysis controls** with date range selection
 - **Educational insights** about weather patterns
 - **Student Pack feature demonstrations**
 - **Seasonal pattern recognition** and trend analysis
 
 ### User Interface Features
+
 - **Modern dark theme** with ttkbootstrap styling
 - **Multiple theme options** (10+ available themes)
 - **Responsive design** that adapts to window size
@@ -145,6 +155,7 @@ python test_complete_app.py
 ```
 
 The test suite validates:
+
 - ✅ Required dependencies (tkinter, ttkbootstrap, matplotlib, scikit-learn, etc.)
 - ✅ API key configuration and validity
 - ✅ Application components and imports
@@ -160,6 +171,7 @@ python launcher.py
 ```
 
 Features:
+
 - Interactive menu system
 - Built-in dependency checking
 - Direct command-line arguments support
@@ -251,26 +263,31 @@ All required packages are listed in `requirements.txt`:
 ### Common Issues
 
 #### "API key not found" error
+
 - Ensure your `.env` file exists in the project root
 - Verify your API key is correct and active
 - Check the variable name is `OPENWEATHER_API_KEY`
 
 #### Import or dependency errors
+
 ```bash
 pip install --upgrade -r requirements.txt
 ```
 
 #### "Location not found" error
+
 - Try different location formats (city name, coordinates)
 - Use more specific location names (e.g., "London, UK" instead of "London")
 - Check spelling and verify the location exists
 
 #### Chart or visualization issues
+
 - Verify matplotlib backend compatibility
 - Check system graphics drivers
 - Restart application after theme changes
 
 #### Network connectivity issues
+
 - Check your internet connection
 - Verify firewall settings allow API requests
 - Ensure you haven't exceeded rate limits
@@ -278,6 +295,7 @@ pip install --upgrade -r requirements.txt
 ### Getting Help
 
 If you encounter issues:
+
 1. Run the test suite: `python test_complete_app.py`
 2. Check console output for detailed error messages
 3. Verify your API key and internet connection
@@ -286,6 +304,7 @@ If you encounter issues:
 ## 📈 Future Enhancements
 
 ### Potential Improvements
+
 - **Weather alerts** and notifications
 - **Export functionality** for charts and data
 - **Database integration** for historical storage

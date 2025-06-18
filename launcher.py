@@ -7,9 +7,8 @@ Usage:
     python launcher.py [app_choice]
     
 Where app_choice is:
-    1 or complete    - Complete Weather Dashboard (recommended)
-    2 or unified     - Unified Weather Dashboard
-    3 or enhanced    - Enhanced Weather Dashboard
+    1 or complete    - Complete Weather Dashboard (main application)
+    2 or cobra       - COBRA Commander Styled Weather App (demo)
     test            - Run test suite
 """
 
@@ -27,23 +26,18 @@ def show_banner():
 
 Available Applications:
 
-1. 🌟 Complete Weather Dashboard (RECOMMENDED)
-   └─ Combined features from all applications
+1. 🌟 Complete Weather Dashboard (MAIN APPLICATION)
+   └─ Comprehensive weather monitoring solution
    └─ Machine learning predictions
-   └─ Advanced visualizations
+   └─ Advanced visualizations & forecasts
    └─ Modern UI with multiple themes
+   └─ All-in-one integrated features
 
-2. 🌤️ Unified Weather Dashboard
-   └─ Comprehensive OpenWeatherMap showcase
-   └─ Student Pack API features
-   └─ Professional interface
-   └─ Multiple tabs and analytics
-
-3. 🔮 Enhanced Weather Dashboard
-   └─ Machine learning focused
-   └─ Matplotlib visualizations
-   └─ Predictive modeling
-   └─ Compact interface
+2. 🐍 COBRA Commander Weather App (DEMO)
+   └─ Sci-fi villain themed styling demo
+   └─ COBRA Commander inspired interface
+   └─ Demonstrates custom styling system
+   └─ Showcase for styling framework
 
 🧪 Test Suite
    └─ Verify all dependencies
@@ -56,21 +50,19 @@ Available Applications:
 def get_user_choice():
     """Get user's application choice."""
     while True:
-        choice = input("Select an application (1-3) or 'test' for test suite: ").strip().lower()
+        choice = input("Select an application (1-2) or 'test' for test suite: ").strip().lower()
         
         if choice in ['1', 'complete']:
             return 'complete'
-        elif choice in ['2', 'unified']:
-            return 'unified'
-        elif choice in ['3', 'enhanced']:
-            return 'enhanced'
+        elif choice in ['2', 'cobra']:
+            return 'cobra'
         elif choice in ['test', 't']:
             return 'test'
         elif choice in ['exit', 'quit', 'q']:
             print("👋 Goodbye!")
             sys.exit(0)
         else:
-            print("❌ Invalid choice. Please enter 1, 2, 3, or 'test'")
+            print("❌ Invalid choice. Please enter 1, 2, or 'test'")
 
 def run_application(app_choice):
     """Run the selected application."""
@@ -78,8 +70,7 @@ def run_application(app_choice):
     
     apps = {
         'complete': 'complete_weather_dashboard.py',
-        'unified': 'unified_weather_dashboard.py',
-        'enhanced': 'enhanced_weather_dashboard.py',
+        'cobra': 'cobra_weather_app.py',
         'test': 'test_complete_app.py'
     }
     
@@ -154,16 +145,13 @@ def check_dependencies():
 def main():
     """Main launcher function."""
     show_banner()
-    
-    # Handle command line arguments
+      # Handle command line arguments
     if len(sys.argv) > 1:
         arg = sys.argv[1].lower()
         if arg in ['1', 'complete']:
             app_choice = 'complete'
-        elif arg in ['2', 'unified']:
-            app_choice = 'unified'
-        elif arg in ['3', 'enhanced']:
-            app_choice = 'enhanced'
+        elif arg in ['2', 'cobra']:
+            app_choice = 'cobra'
         elif arg in ['test', 't']:
             app_choice = 'test'
         elif arg in ['help', '-h', '--help']:
