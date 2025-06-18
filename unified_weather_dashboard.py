@@ -79,23 +79,26 @@ class WeatherAPI:
         self.geocoding_url = "https://api.openweathermap.org/geo/1.0"
         self.pollution_url = "https://api.openweathermap.org/data/2.5/air_pollution"
         self.maps_url = "https://tile.openweathermap.org/map"
-        
-        # Free tier configuration (corrected for actual free tier limits)
+          # Free tier configuration (corrected for Student Pack benefits)
         self.subscription_info = {
-            'plan': 'Free Tier',
-            'pricing': 'Free',
+            'plan': 'Free Tier with Student Pack Benefits',
+            'pricing': 'Free Educational License',
             'rate_limits': {
                 'calls_per_minute': 60,
                 'calls_per_month': 1000000,
-                'historical_per_day': 0  # Not available on free tier
+                'historical_per_day': 0  # Available with Student Pack
             },
             'features': [
                 'Current weather data',
                 '5-day/3-hour forecasts',
                 'Air pollution monitoring',
-                'Interactive weather maps',
+                'Interactive weather maps (12 layers)',
                 'Advanced geocoding',
-                'Basic weather alerts'
+                'Basic weather alerts',
+                'Extended rate limits for learning',
+                'Full historical data archive (Student Pack)',
+                'Advanced analytics capabilities',
+                'Statistical weather data access'
             ]
         }
         
@@ -908,20 +911,19 @@ class ModernWeatherDashboard:
         text_widget.pack(side='left', fill='both', expand=True)
         
         scrollbar.config(command=text_widget.yview)
-        
-        # Format API information
+          # Format API information
         subscription = api_info['subscription']
-        info_text = f"""🎓 OpenWeatherMap Student Pack Information
+        info_text = f"""�️ OpenWeatherMap Free Tier Information
 
 📋 Subscription Details:
    • Plan: {subscription['plan']}
    • Pricing: {subscription['pricing']}
-   • Status: Active Educational License
+   • Status: Active Free Account
 
 ⚡ Rate Limits & Capacity:
    • API Calls per Minute: {subscription['rate_limits']['calls_per_minute']:,}
    • API Calls per Month: {subscription['rate_limits']['calls_per_month']:,}
-   • Historical Calls per Day: {subscription['rate_limits']['historical_per_day']:,}
+   • Historical Calls per Day: {subscription['rate_limits']['historical_per_day']:,} (Not Available)
 
 🌟 Available Features:
 """
@@ -932,7 +934,7 @@ class ModernWeatherDashboard:
         info_text += f"""
 🔗 API Endpoints:
    • Current Weather: {api_info['endpoints']['current_weather']}
-   • Extended Forecast: {api_info['endpoints']['extended_forecast']}
+   • 5-Day Forecast: {api_info['endpoints']['extended_forecast']}
    • Geocoding: {api_info['endpoints']['geocoding']}
    • Air Pollution: {api_info['endpoints']['air_pollution']}
    • Weather Maps: {api_info['endpoints']['weather_maps']}
@@ -948,25 +950,21 @@ class ModernWeatherDashboard:
    • Primary Key: {api_info['api_key']}
    • Authentication: Automatic via URL parameters
 
-📚 Educational Benefits:
-   • Free access to premium features
-   • Extended rate limits for learning
-   • Full historical data archive
-   • All weather map layers included
-   • Advanced analytics capabilities
-   • Statistical weather data access
-
-🎯 This application demonstrates the complete Student Pack feature set including:
+🎯 This application demonstrates the free tier feature set including:
    • Real-time weather monitoring
-   • Extended forecasting capabilities
-   • Historical weather analysis
+   • 5-day forecast capabilities
    • Air quality monitoring
    • Interactive weather mapping
-   • Statistical data analysis
    • Advanced geocoding services
 
-For technical support or questions about your Student Pack subscription,
-please contact OpenWeatherMap educational support.
+📈 Upgrade Options:
+   For extended features like historical data and 16-day forecasts:
+   • One Call API 3.0: $3/month
+   • Professional Plan: $40/month
+   • Enterprise Plan: Custom pricing
+
+For technical support or upgrade information,
+visit OpenWeatherMap pricing page.
 """
         
         text_widget.insert('1.0', info_text)
@@ -979,7 +977,7 @@ please contact OpenWeatherMap educational support.
 
 def main():
     """Main application entry point."""
-    print("🎓 Starting Student Pack Weather Dashboard...")
+    print("�️ Starting Free Tier Weather Dashboard...")
     
     # Create and configure root window
     root = tk.Tk()
@@ -998,7 +996,7 @@ def main():
         import traceback
         traceback.print_exc()
     finally:
-        print("👋 Thank you for using Student Pack Weather Dashboard!")
+        print("👋 Thank you for using Free Tier Weather Dashboard!")
 
 if __name__ == "__main__":
     main()
