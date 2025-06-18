@@ -39,6 +39,92 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Helper functions for enhanced UI styling
+def create_styled_button(parent, text: str, style_type: str = "primary", command=None, width: Optional[int] = None):
+    """Create a styled button with ttkbootstrap theming."""
+    btn = ttk.Button(parent, text=text, width=width)
+    if command:
+        btn.configure(command=command)
+    
+    # Try to apply bootstyle if available
+    try:
+        btn.configure(bootstyle=style_type)
+    except (tk.TclError, TypeError):
+        # Fallback styling with standard ttk
+        pass  # Use default styling
+    
+    return btn
+
+def create_styled_label(parent, text: str, style_type: str = "default", font_size: int = 12, bold: bool = False):
+    """Create a styled label with ttkbootstrap theming."""
+    font_weight = 'bold' if bold else 'normal'
+    label = ttk.Label(parent, text=text, font=('Segoe UI', font_size, font_weight))
+    
+    # Try to apply bootstyle if available
+    try:
+        if style_type != "default":
+            label.configure(bootstyle=style_type)
+    except (tk.TclError, TypeError):
+        pass  # Use default styling
+    
+    return label
+
+def create_styled_frame(parent, style_type: str = "default", **kwargs):
+    """Create a styled frame with ttkbootstrap theming."""
+    frame = ttk.Frame(parent, **kwargs)
+    
+    # Try to apply bootstyle if available
+    try:
+        if style_type != "default":
+            frame.configure(bootstyle=style_type)
+    except (tk.TclError, TypeError):
+        pass  # Use default styling
+    
+    return frame
+
+def create_styled_labelframe(parent, text: str, style_type: str = "default", **kwargs):
+    """Create a styled labelframe with ttkbootstrap theming."""
+    frame = ttk.LabelFrame(parent, text=text, **kwargs)
+    
+    # Try to apply bootstyle if available
+    try:
+        if style_type != "default":
+            frame.configure(bootstyle=style_type)
+    except (tk.TclError, TypeError):
+        pass  # Use default styling
+    
+    return frame
+
+def bind_responsive_resize(widget, callback=None):
+    """Bind resize events to a widget for responsive behavior."""
+    def on_resize(event):
+        if event.widget == widget:
+            # Get current dimensions
+            width = widget.winfo_width()
+            height = widget.winfo_height()
+            
+            # Call custom callback if provided
+            if callback:
+                callback(width, height)
+            
+            # Default responsive behavior
+            if hasattr(widget, 'configure'):
+                if width < 800:
+                    # Compact layout for small windows
+                    try:
+                        widget.configure(padding=10)
+                    except tk.TclError:
+                        pass
+                else:
+                    # Standard layout for larger windows
+                    try:
+                        widget.configure(padding=20)
+                    except tk.TclError:
+                        pass
+    
+    widget.bind('<Configure>', on_resize)
+    return on_resize
+
 @dataclass
 class WeatherData:
     """Data class for weather information."""
@@ -493,8 +579,7 @@ class ModernWeatherDashboard:
                     if hasattr(self, 'status_var'):
                         self.status_var.set(f"❌ Theme change failed: {str(e2)}")
                     return
-            
-            # Update status message
+              # Update status message
             if hasattr(self, 'status_var'):
                 self.status_var.set(f"✅ Theme changed to: {new_theme.title()}")
     
@@ -503,7 +588,8 @@ class ModernWeatherDashboard:
         Create the main interface layout with modern ttkbootstrap components.
         Uses responsive grid layout with a Notebook widget containing four main tabs.
         Each tab is designed with proper spacing and modern flat UI elements.
-        """        # Main container frame with responsive grid layout
+        """
+        # Main container frame with responsive grid layout
         main_frame = ttk.Frame(self.root, padding=20)
         main_frame.grid(row=0, column=0, sticky='nsew')
         main_frame.grid_rowconfigure(1, weight=1)  # Notebook gets most space
@@ -639,8 +725,7 @@ class ModernWeatherDashboard:
         content_frame.grid_columnconfigure(0, weight=1)
         
         return frame
-    
-    def setup_current_weather_tab(self):
+      def setup_current_weather_tab(self):
         """
         Set up the Current Weather tab with modern ttkbootstrap components.
         Displays real-time weather conditions with detailed metrics.
@@ -648,25 +733,62 @@ class ModernWeatherDashboard:
         # Get the content area from the frame
         content_frame = self.current_weather_frame.winfo_children()[1]  # Skip title
         
-        # Weather display card
-        weather_card = ttk.LabelFrame(
-            content_frame,
-            text="🌤️ Current Conditions",
-            padding=20
-        )
-        weather_card.grid(row=0, column=0, sticky='ew', padx=10, pady=10)
+        # Create main weather display container
+        main_container = ttk.Frame(content_frame)
+        main_container.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)
         content_frame.grid_columnconfigure(0, weight=1)
+        content_frame.grid_rowconfigure(0, weight=1)
         
-        # Placeholder content
+        # Current conditions card
+        weather_card = self._create_weather_card(main_container, "🌤️ Current Conditions", row=0)
+        
+        # Weather details frame
         self.current_weather_display = ttk.Frame(weather_card)
-        self.current_weather_display.grid(row=0, column=0, sticky='ew')
-        weather_card.grid_columnconfigure(0, weight=1)
+        self.current_weather_display.pack(fill='both', expand=True, padx=15, pady=15)
         
-        ttk.Label(
+        # Loading placeholder
+        self.weather_loading_label = ttk.Label(
             self.current_weather_display,
             text="🔄 Loading current weather data...",
+            bootstyle="info",
             font=('Segoe UI', 14)
-        ).grid(row=0, column=0, pady=20)
+        )
+        self.weather_loading_label.pack(pady=20)
+        
+        # Air quality card  
+        air_quality_card = self._create_weather_card(main_container, "🌬️ Air Quality", row=1)
+        self.air_quality_display = ttk.Frame(air_quality_card)
+        self.air_quality_display.pack(fill='both', expand=True, padx=15, pady=15)
+        
+        # Quick actions panel
+        actions_frame = ttk.LabelFrame(
+            main_container,
+            text="⚡ Quick Actions",
+            bootstyle="primary"
+        )
+        actions_frame.grid(row=2, column=0, sticky='ew', pady=(10, 0))
+        
+        # Action buttons
+        buttons_frame = ttk.Frame(actions_frame)
+        buttons_frame.pack(fill='x', padx=15, pady=15)
+        
+        self._create_enhanced_button(
+            buttons_frame, "🔄 Refresh Data", 
+            command=self.refresh_weather_data,
+            bootstyle="success"
+        ).pack(side='left', padx=(0, 10))
+        
+        self._create_enhanced_button(
+            buttons_frame, "� Current Location", 
+            command=self.get_current_location,
+            bootstyle="info"
+        ).pack(side='left', padx=(0, 10))
+        
+        self._create_enhanced_button(
+            buttons_frame, "🗺️ View Map", 
+            command=self.open_weather_map,
+            bootstyle="warning"
+        ).pack(side='left')
     
     def setup_forecast_tab(self):
         """
@@ -1409,4 +1531,192 @@ def main():
         print("👋 Thank you for using Student Pack Weather Dashboard!")
 
 if __name__ == "__main__":
-    main()
+    main()    # Enhanced UI Methods for Better Styling and Responsiveness
+    
+    def _apply_enhanced_styling(self):
+        """
+        Apply enhanced styling to the interface using ttkbootstrap features.
+        Configures modern styling for all UI components.
+        """
+        try:
+            # Configure button styles with bootstrap themes
+            style = self.root.style if hasattr(self.root, 'style') else ttk.Style()
+            
+            # Custom button styles
+            style.configure(
+                "Primary.TButton",
+                font=('Segoe UI', 10, 'bold')
+            )
+            
+            style.configure(
+                "Success.TButton", 
+                font=('Segoe UI', 10)
+            )
+            
+            style.configure(
+                "Info.TButton",
+                font=('Segoe UI', 9)
+            )
+            
+            # Enhanced label styles
+            style.configure(
+                "Title.TLabel",
+                font=('Segoe UI', 16, 'bold')
+            )
+            
+            style.configure(
+                "Subtitle.TLabel",
+                font=('Segoe UI', 12, 'bold')
+            )
+            
+            style.configure(
+                "Metric.TLabel",
+                font=('Segoe UI', 14)
+            )
+            
+        except Exception as e:
+            print(f"⚠️ Could not apply enhanced styling: {e}")
+    
+    def _make_responsive(self):
+        """
+        Add responsive behavior to the interface.
+        Binds resize events and configures adaptive layouts.
+        """
+        # Bind window resize events
+        self.root.bind('<Configure>', self._on_window_resize)
+        
+        # Configure grid weights for responsiveness
+        self._configure_responsive_grid()
+    
+    def _on_window_resize(self, event):
+        """
+        Handle window resize events for responsive design.
+        
+        Args:
+            event: The resize event
+        """
+        if event.widget == self.root:
+            width = event.width
+            height = event.height
+            
+            # Adjust layout based on window size
+            if width < 1000:
+                self._switch_to_compact_layout()
+            else:
+                self._switch_to_normal_layout()
+            
+            # Update any charts or maps that need resizing
+            self._resize_dynamic_content(width, height)
+    
+    def _switch_to_compact_layout(self):
+        """Switch to compact layout for smaller screens."""
+        # Stack elements vertically instead of side-by-side
+        try:
+            # This would adjust the layout of weather cards, etc.
+            # Implementation depends on specific UI elements
+            pass
+        except Exception as e:
+            print(f"⚠️ Layout switch error: {e}")
+    
+    def _switch_to_normal_layout(self):
+        """Switch to normal layout for larger screens."""
+        # Use normal side-by-side layout
+        try:
+            # This would restore the normal layout
+            pass
+        except Exception as e:
+            print(f"⚠️ Layout switch error: {e}")
+    
+    def _resize_dynamic_content(self, width: int, height: int):
+        """
+        Resize dynamic content like charts and maps.
+        
+        Args:
+            width: New window width
+            height: New window height
+        """
+        # This would resize any matplotlib charts, maps, or other dynamic content
+        # For now, just ensure proper grid configuration
+        self._configure_responsive_grid()
+    
+    def _configure_responsive_grid(self):
+        """Configure grid weights for responsive behavior."""
+        try:
+            # Main window responsiveness
+            self.root.grid_rowconfigure(0, weight=1)
+            self.root.grid_columnconfigure(0, weight=1)
+            
+            # Notebook responsiveness
+            if hasattr(self, 'notebook'):
+                for i in range(4):  # Four tabs
+                    self.notebook.grid_rowconfigure(i, weight=1)
+                    self.notebook.grid_columnconfigure(0, weight=1)
+                    
+        except Exception as e:
+            print(f"⚠️ Grid configuration error: {e}")
+    
+    def _create_enhanced_button(self, parent, text: str, command=None, style_class: str = "Primary.TButton", icon: str = ""):
+        """
+        Create an enhanced button with consistent styling.
+        
+        Args:
+            parent: Parent widget
+            text: Button text
+            command: Button command
+            style_class: Style class name
+            icon: Optional icon
+            
+        Returns:
+            ttk.Button: Configured button widget
+        """
+        button_text = f"{icon} {text}" if icon else text
+        
+        button = ttk.Button(
+            parent,
+            text=button_text,
+            command=command,
+            style=style_class
+        )
+        
+        # Add hover effects
+        button.bind("<Enter>", lambda e: button.configure(cursor="hand2"))
+        button.bind("<Leave>", lambda e: button.configure(cursor=""))
+        
+        return button
+    
+    def _create_metric_display(self, parent, label: str, value: str, icon: str = "", row: int = 0, column: int = 0):
+        """
+        Create a metric display widget with consistent styling.
+        
+        Args:
+            parent: Parent widget
+            label: Metric label
+            value: Metric value
+            icon: Optional icon
+            row: Grid row
+            column: Grid column
+            
+        Returns:
+            ttk.Frame: Container frame for the metric
+        """
+        metric_frame = ttk.Frame(parent)
+        metric_frame.grid(row=row, column=column, sticky='w', padx=10, pady=5)
+        
+        # Label with icon
+        label_text = f"{icon} {label}" if icon else label
+        label_widget = ttk.Label(
+            metric_frame,
+            text=label_text,
+            style="Subtitle.TLabel"
+        )
+        label_widget.pack(anchor='w')
+        
+        # Value
+        value_widget = ttk.Label(
+            metric_frame,
+            text=str(value),
+            style="Metric.TLabel"
+        )
+        value_widget.pack(anchor='w')
+        
+        return metric_frame
