@@ -14,8 +14,8 @@ class WeatherAPI:
         """Initialize the WeatherAPI with configuration validation."""
         Config.validate_config()
         self.api_key = Config.OPENWEATHER_API_KEY
-        self.base_url = Config.OPENWEATHER_BASE_URL  # Premium endpoint
-        self.fallback_url = Config.OPENWEATHER_FREE_URL  # Free endpoint fallback
+        self.base_url = Config.OPENWEATHER_BASE_URL  # Student Pack endpoint
+        self.fallback_url = "https://api.openweathermap.org/data/2.5"  # Free endpoint fallback
         self.default_units = Config.TEMPERATURE_UNITS
         self.subscription_info = Config.get_api_info()
         
@@ -44,15 +44,18 @@ class WeatherAPI:
                         api_key_display = f"{self.api_key[:8]}..." if self.api_key else "Not set"
                         raise ValueError(
                             "❌ API Authentication Failed\n\n"
-                            "Developer API Subscription Details:\n"
+                            "Student Pack API Subscription Details:\n"
                             f"• API Key: {api_key_display}\n"
-                            f"• Premium Endpoint: {self.base_url}\n"
-                            f"• Free Endpoint: {self.fallback_url}\n\n"
+                            f"• Plan: {self.subscription_info['subscription_plan']}\n"
+                            f"• Rate Limits: {self.subscription_info['rate_limits']['per_minute']:,}/min, "
+                            f"{self.subscription_info['rate_limits']['per_month']:,}/month\n"
+                            f"• Student Endpoint: {self.base_url}\n"
+                            f"• Fallback Endpoint: {self.fallback_url}\n\n"
                             "Troubleshooting:\n"
-                            "1. Verify your API key is activated\n"
-                            "2. Check subscription status at https://openweathermap.org/price\n"
+                            "1. Verify your API key is activated for Student Pack\n"
+                            "2. Check subscription status at https://openweathermap.org/price#student\n"
                             "3. New API keys take up to 2 hours to activate\n"
-                            "4. Contact support@openweathermap.org for assistance\n\n"
+                            "4. Contact support@openweathermap.org for student verification\n\n"
                             "API Documentation: https://openweathermap.org/api"
                         )
                     elif fallback_error.response and fallback_error.response.status_code == 404:
