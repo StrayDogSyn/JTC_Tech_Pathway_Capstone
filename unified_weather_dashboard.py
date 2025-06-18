@@ -1,19 +1,27 @@
 """
-🎓 OpenWeatherMap Student Pack Dashboard
-A comprehensive, modern weather application showcasing all Student Pack features.
+�️ OpenWeatherMap Free Tier Weather Dashboard
+A modern weather application showcasing OpenWeatherMap's free tier capabilities.
 
 Features:
-- Real-time weather data with advanced metrics
-- Extended forecasts (4-day hourly, 16-day daily)
-- Interactive weather maps (15+ layers)
+- Real-time weather data with comprehensive metrics
+- 5-day/3-hour weather forecasts (free tier)
+- Interactive weather maps (12 available layers)
 - Air quality monitoring with detailed pollutants
-- Historical weather data (1-year archive)
-- Statistical analysis and accumulated parameters
-- Advanced geocoding and location search
+- Advanced geocoding and locatio          
+        # Title
+        title_label = ttk.Label(header_frame, 
+                               text="🌤️ Free Tier Weather Dashboard",
+                               style='Title.TLabel')
+        title_label.grid(row=0, column=0, columnspan=3, pady=(0, 10)) # Title
+        title_label = ttk.Label(header_frame, 
+                               text="🌤️ Free Tier Weather Dashboard",
+                               style='Title.TLabel')earch
 - Modern, responsive dark-themed GUI
 - Comprehensive API information and monitoring
 
-Author: Student Pack Implementation
+Note: Historical data and extended forecasts require paid subscription.
+
+Author: Free Tier Implementation
 Date: June 2025
 License: Educational Use Only
 """
@@ -56,11 +64,11 @@ class ForecastData:
     hourly: List[Dict]
     daily: List[Dict]
 
-class StudentPackWeatherAPI:
+class WeatherAPI:
     """
-    Enhanced Weather API client for OpenWeatherMap Student Pack.
-    Provides access to all Student Pack features including extended forecasts,
-    historical data, air pollution, weather maps, and statistical analysis.
+    Weather API client for OpenWeatherMap Free Tier.
+    Provides access to all free tier features including current weather,
+    5-day forecasts, air pollution, weather maps, and geocoding.
     """
     
     def __init__(self):
@@ -98,7 +106,7 @@ class StudentPackWeatherAPI:
             'wind', 'clouds'
         ]
         
-        print("🎓 Student Pack Weather API initialized")
+        print("�️ Free Tier Weather API initialized")
         if self.api_key:
             print(f"🔑 API Key: {self.api_key[:10]}...")
         else:
@@ -256,7 +264,7 @@ class ModernWeatherDashboard:
     
     def __init__(self, root):
         self.root = root
-        self.api = StudentPackWeatherAPI()
+        self.api = WeatherAPI()
         
         # State management
         self.current_location = None
@@ -272,7 +280,7 @@ class ModernWeatherDashboard:
     
     def setup_window(self):
         """Configure main window."""
-        self.root.title("🎓 Student Pack Weather Dashboard - OpenWeatherMap")
+        self.root.title("�️ Free Tier Weather Dashboard - OpenWeatherMap")
         self.root.geometry("1200x800")
         self.root.minsize(1000, 700)
         self.root.configure(bg='#0a0e14')
@@ -377,9 +385,8 @@ class ModernWeatherDashboard:
         header_frame.grid(row=0, column=0, sticky='ew', pady=(0, 15))
         header_frame.grid_columnconfigure(1, weight=1)
         
-        # Title
-        title_label = ttk.Label(header_frame, 
-                               text="🎓 Student Pack Weather Dashboard",
+        # Title        title_label = ttk.Label(header_frame, 
+                               text="�️ Free Tier Weather Dashboard",
                                style='Title.TLabel')
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 10))
         
@@ -460,21 +467,20 @@ class ModernWeatherDashboard:
         # Placeholder
         ttk.Label(self.weather_display, text="🔄 Loading weather data...", 
                  style='Data.TLabel').grid(row=0, column=0, pady=20)
-    
-    def create_forecast_tab(self):
-        """Extended forecast tab (4-day hourly, 16-day daily)."""
+      def create_forecast_tab(self):
+        """5-day forecast tab (free tier)."""
         tab_frame = ttk.Frame(self.notebook)
-        self.notebook.add(tab_frame, text='📅 Extended Forecasts')
+        self.notebook.add(tab_frame, text='📅 5-Day Forecast')
         
         # Forecast content
         forecast_info = ttk.Label(tab_frame, 
-                                text="🎓 Student Pack Extended Forecasts\n\n"
-                                     "⏰ Hourly Forecast: 96 hours (4 days)\n"
-                                     "📅 Daily Forecast: 16 days\n"
+                                text="📅 Free Tier 5-Day Forecast\n\n"
+                                     "⏰ 3-hour intervals for 5 days (40 data points)\n"
                                      "🌡️ Temperature trends & patterns\n"
                                      "☔ Precipitation probability\n"
                                      "💨 Wind speed & direction\n"
-                                     "☀️ UV Index forecasting",
+                                     "☁️ Cloud coverage\n\n"
+                                     "Note: Extended forecasts (16-day) require paid subscription",
                                 style='Data.TLabel',
                                 justify='left')
         forecast_info.grid(row=0, column=0, padx=20, pady=20, sticky='nw')
@@ -513,46 +519,46 @@ class ModernWeatherDashboard:
         map_btn = ttk.Button(controls_frame, text="🌍 Open Interactive Map",
                             command=self.open_weather_map)
         map_btn.grid(row=0, column=2, padx=10, pady=10)
-        
-        # Map info
+          # Map info
         map_info = ttk.Label(tab_frame,
-                           text="🗺️ Student Pack Weather Maps (15+ Layers):\n\n"
-                                "🌡️ Temperature Maps (Current, Forecast, Historical)\n"
-                                "☔ Precipitation Maps (Rain, Snow, Radar)\n"
-                                "💨 Wind Maps (Speed, Direction, Patterns)\n"
-                                "☁️ Cloud Maps (Coverage, Satellite)\n"
-                                "📊 Atmospheric Maps (Pressure, Conditions)\n\n"
-                                "🎓 Full access included with Student Pack!",
+                           text="🗺️ Free Tier Weather Maps (12 Layers):\n\n"
+                                "🌡️ Temperature Maps (Current)\n"
+                                "☔ Precipitation Maps (Rain, Snow)\n"
+                                "💨 Wind Maps (Speed, Direction)\n"
+                                "☁️ Cloud Maps (Coverage)\n"
+                                "📊 Atmospheric Maps (Pressure)\n\n"
+                                "�️ All map layers included with free tier!",
                            style='Data.TLabel',
                            justify='left')
         map_info.grid(row=1, column=0, padx=20, pady=20, sticky='nw')
-    
-    def create_historical_tab(self):
-        """Historical weather data tab."""
+      def create_historical_tab(self):
+        """Historical weather data tab - Shows upgrade information."""
         tab_frame = ttk.Frame(self.notebook)
         self.notebook.add(tab_frame, text='📚 Historical Data')
         
-        # Historical controls
-        controls_frame = ttk.LabelFrame(tab_frame, text='Historical Weather Data (1 Year Archive)')
-        controls_frame.grid(row=0, column=0, sticky='ew', padx=20, pady=20)
+        # Historical info (not available on free tier)
+        info_frame = ttk.LabelFrame(tab_frame, text='Historical Weather Data - Upgrade Required')
+        info_frame.grid(row=0, column=0, sticky='ew', padx=20, pady=20)
         tab_frame.grid_columnconfigure(0, weight=1)
         
-        ttk.Label(controls_frame, text="📅 Select Date:", style='Header.TLabel').grid(row=0, column=0, padx=10, pady=10)
+        upgrade_info = ttk.Label(info_frame,
+                               text="� Historical Weather Data\n\n"
+                                    "⚠️ Historical data is not available on the free tier.\n\n"
+                                    "To access historical weather data:\n"
+                                    "• Upgrade to One Call API 3.0 ($3/month)\n"
+                                    "• Access 1+ years of historical data\n"
+                                    "• Hourly historical weather data\n"
+                                    "• Statistical aggregation\n\n"
+                                    "Visit OpenWeatherMap pricing page for details.",
+                               style='Data.TLabel',
+                               justify='left')
+        upgrade_info.grid(row=0, column=0, padx=15, pady=15)
         
-        self.hist_date_var = tk.StringVar(value=(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'))
-        date_entry = ttk.Entry(controls_frame, textvariable=self.hist_date_var, width=15)
-        date_entry.grid(row=0, column=1, padx=10, pady=10)
-        
-        hist_btn = ttk.Button(controls_frame, text="📊 Get Historical Data",
-                             command=self.get_historical_data)
-        hist_btn.grid(row=0, column=2, padx=10, pady=10)
-        
-        # Historical display
-        self.historical_display = ttk.Frame(tab_frame)
-        self.historical_display.grid(row=1, column=0, sticky='nsew', padx=20, pady=20)
-        tab_frame.grid_rowconfigure(1, weight=1)
-    
-    def create_analytics_tab(self):
+        # Upgrade button
+        upgrade_btn = ttk.Button(info_frame, text="🔗 View Pricing Plans",
+                               command=lambda: webbrowser.open("https://openweathermap.org/price"))
+        upgrade_btn.grid(row=1, column=0, padx=15, pady=(0, 15))
+      def create_analytics_tab(self):
         """Analytics and API information tab."""
         tab_frame = ttk.Frame(self.notebook)
         self.notebook.add(tab_frame, text='📊 Analytics & API Info')
@@ -562,19 +568,20 @@ class ModernWeatherDashboard:
                            command=self.show_api_info)
         api_btn.grid(row=0, column=0, padx=20, pady=20)
         
-        # Analytics info
-        analytics_info = ttk.Label(tab_frame,
-                                 text="📊 Student Pack Analytics Features:\n\n"
-                                      "📈 Statistical Weather Analysis\n"
-                                      "🧮 Accumulated Parameters\n"
-                                      "📉 Temperature & Precipitation Trends\n"
-                                      "🔍 Advanced Data Mining\n"
-                                      "📋 Comprehensive Reporting\n"
-                                      "🎯 Educational Data Insights\n\n"
-                                      "🎓 All analytics included with Student Pack!",
+        # Free tier info
+        free_tier_info = ttk.Label(tab_frame,
+                                 text="📊 Free Tier Weather Information:\n\n"
+                                      "✅ Real-time weather data\n"
+                                      "✅ 5-day/3-hour forecasts\n"
+                                      "✅ Air quality monitoring\n"
+                                      "✅ Interactive weather maps\n"
+                                      "✅ Advanced geocoding\n"
+                                      "✅ API usage monitoring\n\n"
+                                      "🔄 For advanced analytics and historical data,\n"
+                                      "consider upgrading to a paid plan.",
                                  style='Data.TLabel',
                                  justify='left')
-        analytics_info.grid(row=1, column=0, padx=20, pady=20, sticky='nw')
+        free_tier_info.grid(row=1, column=0, padx=20, pady=20, sticky='nw')
     
     def create_status_bar(self, parent):
         """Create status bar."""
@@ -582,7 +589,7 @@ class ModernWeatherDashboard:
         status_frame.grid(row=2, column=0, sticky='ew')
         status_frame.grid_columnconfigure(0, weight=1)
         
-        self.status_var = tk.StringVar(value="Ready - Student Pack Weather Dashboard")
+        self.status_var = tk.StringVar(value="Ready - Free Tier Weather Dashboard")
         status_label = ttk.Label(status_frame, textvariable=self.status_var, style='Muted.TLabel')
         status_label.grid(row=0, column=0, sticky='w', padx=5, pady=5)
         
@@ -592,7 +599,7 @@ class ModernWeatherDashboard:
     def update_time(self):
         """Update current time in status bar."""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.status_var.set(f"Ready - Student Pack Weather Dashboard | {current_time}")
+        self.status_var.set(f"Ready - Free Tier Weather Dashboard | {current_time}")
         self.root.after(1000, self.update_time)
     
     def load_default_location(self):
@@ -880,7 +887,7 @@ class ModernWeatherDashboard:
         api_info = self.api.get_api_info()
         
         info_window = tk.Toplevel(self.root)
-        info_window.title("🎓 Student Pack API Information")
+        info_window.title("�️ Free Tier API Information")
         info_window.geometry("700x600")
         info_window.configure(bg='#0a0e14')
         
