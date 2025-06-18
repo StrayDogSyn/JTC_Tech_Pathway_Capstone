@@ -520,10 +520,10 @@ class CompleteWeatherDashboard:
             self.current_weather = self.api.get_current_weather(geo['lat'], geo['lon'])
             self.forecast_data = self.api.get_extended_forecast(geo['lat'], geo['lon'])
             self.air_quality_data = self.api.get_air_pollution(geo['lat'], geo['lon'])
-            
-            # Update UI on main thread
+              # Update UI on main thread
             self.root.after(0, self.update_all_displays)
-            self.root.after(0, lambda: self.status_var.set(f"✅ Weather loaded for {self.current_location['name']}"))
+            location_name = self.current_location['name'] if self.current_location else 'Unknown'
+            self.root.after(0, lambda: self.status_var.set(f"✅ Weather loaded for {location_name}"))
 
         threading.Thread(target=task, daemon=True).start()
 
@@ -663,36 +663,52 @@ class CompleteWeatherDashboard:
             return
         
         try:
-            # Prepare data
-            forecast_type = self.forecast_type_var.get()
-            times = [datetime.fromtimestamp(d["dt"]) for d in self.forecast_data.hourly[:24]]
+            # Import matplotlib dates for proper datetime handling
+            import matplotlib.dates as mdates
             
-            # Create matplotlib figure
+            # Prepare data with proper null checks
+            forecast_type = self.forecast_type_var.get()
+            hourly_data = self.forecast_data.hourly if self.forecast_data and hasattr(self.forecast_data, 'hourly') and self.forecast_data.hourly else []
+            
+            if not hourly_data:
+                ttk.Label(self.chart_frame, text="No hourly forecast data available").pack(pady=50)
+                return
+            
+            # Ensure we have valid data
+            valid_data = [d for d in hourly_data[:24] if d and "dt" in d and "main" in d]
+            if not valid_data:
+                ttk.Label(self.chart_frame, text="Invalid forecast data format").pack(pady=50)
+                return
+                
+            times = [datetime.fromtimestamp(d["dt"]) for d in valid_data]
+            # Convert datetime objects to matplotlib date numbers for proper plotting
+            times_numeric = mdates.date2num(times)
+              # Create matplotlib figure
             fig, ax = plt.subplots(figsize=(10, 6))
             fig.patch.set_facecolor('#2b3e50')
             ax.set_facecolor('#34495e')
             
             if forecast_type == "Temperature Trend":
-                temps = [d["main"]["temp"] for d in self.forecast_data.hourly[:24]]
-                ax.plot(times, temps, marker='o', linewidth=2, color='#e74c3c', label='Temperature')
+                temps = [d["main"]["temp"] for d in valid_data]
+                ax.plot_date(times_numeric, temps, marker='o', linestyle='-', linewidth=2, color='#e74c3c', label='Temperature')
                 ax.set_ylabel("Temperature (°C)", color='white')
                 ax.set_title("24-Hour Temperature Forecast", color='white', fontsize=14, fontweight='bold')
                 
             elif forecast_type == "Humidity & Pressure":
-                humidity = [d["main"]["humidity"] for d in self.forecast_data.hourly[:24]]
-                pressure = [d["main"]["pressure"] for d in self.forecast_data.hourly[:24]]
+                humidity = [d["main"]["humidity"] for d in valid_data]
+                pressure = [d["main"]["pressure"] for d in valid_data]
                 
                 ax2 = ax.twinx()
-                ax.plot(times, humidity, marker='o', linewidth=2, color='#3498db', label='Humidity (%)')
-                ax2.plot(times, pressure, marker='s', linewidth=2, color='#f39c12', label='Pressure (hPa)')
+                ax.plot_date(times_numeric, humidity, marker='o', linestyle='-', linewidth=2, color='#3498db', label='Humidity (%)')
+                ax2.plot_date(times_numeric, pressure, marker='s', linestyle='-', linewidth=2, color='#f39c12', label='Pressure (hPa)')
                 
                 ax.set_ylabel("Humidity (%)", color='white')
                 ax2.set_ylabel("Pressure (hPa)", color='white')
                 ax.set_title("Humidity & Pressure Forecast", color='white', fontsize=14, fontweight='bold')
                 
             elif forecast_type == "Wind Patterns":
-                wind_speed = [d.get("wind", {}).get("speed", 0) for d in self.forecast_data.hourly[:24]]
-                ax.plot(times, wind_speed, marker='o', linewidth=2, color='#27ae60', label='Wind Speed')
+                wind_speed = [d.get("wind", {}).get("speed", 0) for d in valid_data]
+                ax.plot_date(times_numeric, wind_speed, marker='o', linestyle='-', linewidth=2, color='#27ae60', label='Wind Speed')
                 ax.set_ylabel("Wind Speed (m/s)", color='white')
                 ax.set_title("Wind Speed Forecast", color='white', fontsize=14, fontweight='bold')
             
@@ -701,8 +717,7 @@ class CompleteWeatherDashboard:
             ax.grid(True, alpha=0.3)
             ax.legend()
             
-            # Format x-axis
-            import matplotlib.dates as mdates
+            # Format x-axis for dates
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, color='white')
