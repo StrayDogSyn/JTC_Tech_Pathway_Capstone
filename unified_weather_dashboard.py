@@ -1641,162 +1641,121 @@ visit OpenWeatherMap pricing page.
         )
         refresh_btn.pack(side='right', padx=5)
 
-def main():
-    """Main application entry point."""
-    print("🌤️ Starting Student Pack Weather Dashboard...")
-    
-    # Create and configure root window
-    root = tk.Tk()
-    
-    # Initialize application
-    app = ModernWeatherDashboard(root)
-    
-    try:
-        print("✅ Application initialized successfully")
-        print("🚀 Launching GUI...")
-        root.mainloop()
-    except KeyboardInterrupt:
-        print("\n⚠️ Application terminated by user")
-    except Exception as e:
-        print(f"❌ Application error: {e}")
-        import traceback
-        traceback.print_exc()
-    finally:
-        print("👋 Thank you for using Student Pack Weather Dashboard!")
-
-if __name__ == "__main__":
-    main()    # Enhanced UI Methods for Better Styling and Responsiveness
-    
-    def _apply_enhanced_styling(self):
+    def _setup_window_responsiveness(self):
         """
-        Apply enhanced styling to the interface using ttkbootstrap features.
-        Configures modern styling for all UI components.
+        Setup window responsiveness and event bindings.
         """
         try:
-            # Configure button styles with bootstrap themes
-            style = self.root.style if hasattr(self.root, 'style') else ttk.Style()
-            
-            # Custom button styles
-            style.configure(
-                "Primary.TButton",
-                font=('Segoe UI', 10, 'bold')
-            )
-            
-            style.configure(
-                "Success.TButton", 
-                font=('Segoe UI', 10)
-            )
-            
-            style.configure(
-                "Info.TButton",
-                font=('Segoe UI', 9)
-            )
-            
-            # Enhanced label styles
-            style.configure(
-                "Title.TLabel",
-                font=('Segoe UI', 16, 'bold')
-            )
-            
-            style.configure(
-                "Subtitle.TLabel",
-                font=('Segoe UI', 12, 'bold')
-            )
-            
-            style.configure(
-                "Metric.TLabel",
-                font=('Segoe UI', 14)
-            )
-            
-        except Exception as e:
-            print(f"⚠️ Could not apply enhanced styling: {e}")
-    
-    def _make_responsive(self):
-        """
-        Add responsive behavior to the interface.
-        Binds resize events and configures adaptive layouts.
-        """
-        # Bind window resize events
-        self.root.bind('<Configure>', self._on_window_resize)
-        
-        # Configure grid weights for responsiveness
-        self._configure_responsive_grid()
-    
-    def _on_window_resize(self, event):
-        """
-        Handle window resize events for responsive design.
-        
-        Args:
-            event: The resize event
-        """
-        if event.widget == self.root:
-            width = event.width
-            height = event.height
-            
-            # Adjust layout based on window size
-            if width < 800:
-                # Compact layout for small windows
-                self._switch_to_compact_layout()
-            else:
-                # Standard layout for larger windows
-                self._switch_to_normal_layout()
-            
-            # Update any charts or maps that need resizing
-            self._resize_dynamic_content(width, height)
-    
-    def _switch_to_compact_layout(self):
-        """Switch to compact layout for smaller screens."""
-        try:
-            # Stack elements vertically instead of side-by-side
-            for tab_name in ['current_weather_frame', 'forecast_frame', 'comparison_frame', 'settings_frame']:
-                if hasattr(self, tab_name):
-                    frame = getattr(self, tab_name)
-                    # Reduce padding for compact view
-                    if hasattr(frame, 'configure'):
-                        frame.configure(padding=5)
-        except Exception as e:
-            print(f"⚠️ Compact layout switch error: {e}")
-    
-    def _switch_to_normal_layout(self):
-        """Switch to normal layout for larger screens."""
-        try:
-            # Use normal side-by-side layout
-            for tab_name in ['current_weather_frame', 'forecast_frame', 'comparison_frame', 'settings_frame']:
-                if hasattr(self, tab_name):
-                    frame = getattr(self, tab_name)
-                    # Increase padding for full view
-                    if hasattr(frame, 'configure'):
-                        frame.configure(padding=15)
-        except Exception as e:
-            print(f"⚠️ Layout switch error: {e}")
-    
-    def _resize_dynamic_content(self, width: int, height: int):
-        """
-        Resize dynamic content like charts and maps.
-        
-        Args:
-            width: New window width
-            height: New window height
-        """        # This would resize any matplotlib charts, maps, or other dynamic content
-        # For now, just ensure proper grid configuration
-        self._configure_responsive_grid()
-    
-    def _configure_responsive_grid(self):
-        """Configure grid weights for responsive behavior."""
-        try:
-            # Main window responsiveness
+            # Configure main window responsiveness
             self.root.grid_rowconfigure(0, weight=1)
             self.root.grid_columnconfigure(0, weight=1)
             
-            # Notebook responsiveness
-            if hasattr(self, 'notebook'):
-                for i in range(4):  # Four tabs
-                    self.notebook.grid_rowconfigure(i, weight=1)
-                    self.notebook.grid_columnconfigure(0, weight=1)
-                    
+            # Bind window resize events
+            self.root.bind('<Configure>', self._on_window_resize)
+            
         except Exception as e:
-            print(f"⚠️ Grid configuration error: {e}")
-    
+            print(f"⚠️ Could not setup window responsiveness: {e}")
+
+    def _create_weather_card(self, parent, title, row=0, column=0, columnspan=1):
+        """
+        Create a styled weather information card.
+        
+        Args:
+            parent: Parent widget
+            title: Card title
+            row: Grid row position
+            column: Grid column position
+            columnspan: Column span for the card
+            
+        Returns:
+            LabelFrame widget
+        """
+        try:
+            # Try to create ttkbootstrap LabelFrame
+            import ttkbootstrap as ttk_boot
+            if hasattr(ttk_boot, 'LabelFrame'):
+                card = ttk_boot.LabelFrame(
+                    parent,
+                    text=title,
+                    padding=15
+                )
+            else:
+                raise ImportError("ttkbootstrap LabelFrame not available")
+        except (ImportError, TypeError, AttributeError):
+            # Fallback to regular ttk LabelFrame
+            card = ttk.LabelFrame(
+                parent,
+                text=title,
+                padding=15
+            )
+        
+        card.grid(row=row, column=column, columnspan=columnspan, 
+                 sticky='ew', padx=10, pady=5)
+        parent.grid_columnconfigure(column, weight=1)
+        
+        return card
+
+    def _create_info_label(self, parent, text, style="default", font_size=12):
+        """
+        Create a styled information label.
+        
+        Args:
+            parent: Parent widget
+            text: Label text
+            style: Style type (default, primary, success, info, warning, danger)
+            font_size: Font size
+            
+        Returns:
+            Label widget
+        """
+        try:
+            # Try to create ttkbootstrap label with bootstyle
+            import ttkbootstrap as ttk_boot
+            if hasattr(ttk_boot, 'Label'):
+                label = ttk_boot.Label(
+                    parent,
+                    text=text,
+                    font=('Segoe UI', font_size)
+                )
+            else:
+                raise ImportError("ttkbootstrap Label not available")
+        except (ImportError, TypeError, AttributeError):
+            # Fallback to regular ttk label
+            label = ttk.Label(
+                parent,
+                text=text,
+                font=('Segoe UI', font_size)
+            )
+        return label
+
+    def _create_responsive_frame(self, parent, title=None):
+        """
+        Create a responsive frame that adapts to window size.
+        
+        Args:
+            parent: Parent widget
+            title: Optional title for the frame
+            
+        Returns:
+            Responsive frame widget
+        """
+        if title:
+            try:
+                import ttkbootstrap as ttk_boot
+                if hasattr(ttk_boot, 'LabelFrame'):
+                    frame = ttk_boot.LabelFrame(parent, text=title, padding=10)
+                else:
+                    raise ImportError("ttkbootstrap LabelFrame not available")
+            except (ImportError, TypeError, AttributeError):
+                frame = ttk.LabelFrame(parent, text=title, padding=10)
+        else:
+            frame = ttk.Frame(parent, padding=10)
+        
+        # Bind resize events for responsiveness
+        frame.bind('<Configure>', self._on_frame_resize)
+        
+        return frame
+
     def _create_enhanced_button(self, parent, text: str, command=None, style_class: str = "Primary.TButton", icon: str = ""):
         """
         Create an enhanced button with consistent styling.
@@ -1829,167 +1788,83 @@ if __name__ == "__main__":
         button.bind("<Leave>", lambda e: button.configure(cursor=""))
         
         return button
-    
-    def _create_weather_card(self, parent, title, row=0, column=0, columnspan=1):
+
+    def _on_window_resize(self, event):
         """
-        Create a styled weather information card.
+        Handle window resize events for responsive design.
         
         Args:
-            parent: Parent widget
-            title: Card title
-            row: Grid row position
-            column: Grid column position
-            columnspan: Column span for the card
-            
-        Returns:
-            LabelFrame widget
+            event: The resize event
         """
-        try:
-            # Try to create ttkbootstrap LabelFrame
-            import ttkbootstrap as ttk_boot
-            if hasattr(ttk_boot, 'LabelFrame'):
-                card = ttk_boot.LabelFrame(
-                    parent,
-                    text=title,
-                    padding=15
-                )
-                # Try to set bootstyle if supported
-                if hasattr(card, 'configure'):
-                    try:
-                        # Use a different approach for setting style
-                        pass
-                    except:
-                        pass  # Bootstyle not supported, continue without it
+        if event.widget == self.root:
+            width = event.width
+            height = event.height
+            
+            # Adjust layout based on window size
+            if width < 800:
+                # Compact layout for small windows
+                self._switch_to_compact_layout()
             else:
-                raise ImportError("ttkbootstrap LabelFrame not available")
-        except (ImportError, TypeError, AttributeError):
-            # Fallback to regular ttk LabelFrame
-            card = ttk.LabelFrame(
-                parent,
-                text=title,
-                padding=15
-            )
-        
-        card.grid(row=row, column=column, columnspan=columnspan, 
-                 sticky='ew', padx=10, pady=5)
-        parent.grid_columnconfigure(column, weight=1)
-        
-        return card
-    
-    def _create_info_label(self, parent, text, style="default", font_size=12):
-        """
-        Create a styled information label.
-        
-        Args:
-            parent: Parent widget
-            text: Label text
-            style: Style type (default, primary, success, info, warning, danger)
-            font_size: Font size
+                # Standard layout for larger windows
+                self._switch_to_normal_layout()
             
-        Returns:
-            Label widget
-        """
+            # Update any charts or maps that need resizing
+            self._resize_dynamic_content(width, height)
+
+    def _switch_to_compact_layout(self):
+        """Switch to compact layout for smaller screens."""
         try:
-            # Try to create ttkbootstrap label with bootstyle
-            import ttkbootstrap as ttk_boot
-            if hasattr(ttk_boot, 'Label'):
-                label = ttk_boot.Label(
-                    parent,
-                    text=text,
-                    font=('Segoe UI', font_size)
-                )                # Try to set bootstyle if supported
-                try:
-                    # Use a different approach for setting style
-                    pass  # Skip bootstyle configuration for now
-                except:
-                    pass  # Bootstyle not supported
-            else:
-                raise ImportError("ttkbootstrap Label not available")
-        except (ImportError, TypeError, AttributeError):
-            # Fallback to regular ttk label
-            label = ttk.Label(
-                parent,
-                text=text,
-                font=('Segoe UI', font_size)
-            )
-        return label
-    
-    def _create_responsive_frame(self, parent, title=None):
+            # Stack elements vertically instead of side-by-side
+            for tab_name in ['current_weather_frame', 'forecast_frame', 'historical_frame', 'insights_frame']:
+                if hasattr(self, tab_name):
+                    frame = getattr(self, tab_name)
+                    # Reduce padding for compact view
+                    if hasattr(frame, 'configure'):
+                        frame.configure(padding=5)
+        except Exception as e:
+            print(f"⚠️ Compact layout switch error: {e}")
+
+    def _switch_to_normal_layout(self):
+        """Switch to normal layout for larger screens."""
+        try:
+            # Use normal side-by-side layout
+            for tab_name in ['current_weather_frame', 'forecast_frame', 'historical_frame', 'insights_frame']:
+                if hasattr(self, tab_name):
+                    frame = getattr(self, tab_name)
+                    # Increase padding for full view
+                    if hasattr(frame, 'configure'):
+                        frame.configure(padding=15)
+        except Exception as e:
+            print(f"⚠️ Layout switch error: {e}")
+
+    def _resize_dynamic_content(self, width: int, height: int):
         """
-        Create a responsive frame that adapts to window size.
+        Resize dynamic content like charts and maps.
         
         Args:
-            parent: Parent widget
-            title: Optional title for the frame
+            width: New window width
+            height: New window height
+        """
+        # This would resize any matplotlib charts, maps, or other dynamic content
+        # For now, just ensure proper grid configuration
+        self._configure_responsive_grid()
+
+    def _configure_responsive_grid(self):
+        """Configure grid weights for responsive behavior."""
+        try:
+            # Main window responsiveness
+            self.root.grid_rowconfigure(0, weight=1)
+            self.root.grid_columnconfigure(0, weight=1)
             
-        Returns:
-            Responsive frame widget
-        """
-        if title:
-            try:
-                import ttkbootstrap as ttk_boot
-                if hasattr(ttk_boot, 'LabelFrame'):
-                    frame = ttk_boot.LabelFrame(parent, text=title, padding=10)                    # Try to set bootstyle if supported
-                    try:
-                        # Use a different approach for setting style
-                        pass  # Skip bootstyle configuration for now
-                    except:
-                        pass  # Bootstyle not supported
-                else:
-                    raise ImportError("ttkbootstrap LabelFrame not available")
-            except (ImportError, TypeError, AttributeError):
-                frame = ttk.LabelFrame(parent, text=title, padding=10)
-        else:
-            frame = ttk.Frame(parent, padding=10)
-        
-        # Bind resize events for responsiveness
-        frame.bind('<Configure>', self._on_frame_resize)
-        
-        return frame
-    
-    def _create_data_table(self, parent, headers, data, style="striped"):
-        """
-        Create a styled data table using Treeview.
-        
-        Args:
-            parent: Parent widget
-            headers: List of column headers
-            data: List of data rows
-            style: Table style
-            
-        Returns:
-            Treeview widget
-        """
-        # Create scrollable frame for table
-        table_frame = ttk.Frame(parent)
-        
-        # Create treeview with scrollbars
-        tree = ttk.Treeview(table_frame, columns=headers, show='headings', height=8)
-        
-        # Configure columns
-        for header in headers:
-            tree.heading(header, text=header)
-            tree.column(header, width=100, anchor='center')
-        
-        # Add data
-        for row in data:
-            tree.insert('', 'end', values=row)
-        
-        # Add scrollbars
-        v_scrollbar = ttk.Scrollbar(table_frame, orient='vertical', command=tree.yview)
-        h_scrollbar = ttk.Scrollbar(table_frame, orient='horizontal', command=tree.xview)
-        tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
-        
-        # Grid layout
-        tree.grid(row=0, column=0, sticky='nsew')
-        v_scrollbar.grid(row=0, column=1, sticky='ns')
-        h_scrollbar.grid(row=1, column=0, sticky='ew')
-        
-        table_frame.grid_rowconfigure(0, weight=1)
-        table_frame.grid_columnconfigure(0, weight=1)
-        
-        return table_frame, tree
-    
+            # Notebook responsiveness
+            if hasattr(self, 'notebook'):
+                for i in range(4):  # Four tabs
+                    self.notebook.grid_rowconfigure(i, weight=1)
+                    self.notebook.grid_columnconfigure(0, weight=1)
+                    
+        except Exception as e:
+            print(f"⚠️ Grid configuration error: {e}")
+
     def _on_frame_resize(self, event):
         """
         Handle frame resize events for responsive design.
@@ -2020,7 +1895,7 @@ if __name__ == "__main__":
                         widget.grid_columnconfigure(i, weight=1)
                     except:
                         pass
-    
+
     def get_current_location(self):
         """
         Get the user's current location using IP geolocation.
@@ -2040,9 +1915,12 @@ if __name__ == "__main__":
                             'lon': data['lon'],
                             'country': data['countryCode']
                         }
+                        # Capture location name to avoid potential issues with self.current_location changing
+                        location_name = self.current_location['name']
+                        
                         # Update UI on main thread
                         self.root.after(0, lambda: self._update_location_entry())
-                        self.root.after(0, lambda: self.status_var.set(f"📍 Current location: {self.current_location['name']}"))
+                        self.root.after(0, lambda name=location_name: self.status_var.set(f"📍 Current location: {name}"))
                         
                         # Refresh weather data
                         self.refresh_weather_data()
@@ -2070,5 +1948,3 @@ if __name__ == "__main__":
             self.status_var.set(f"🗺️ Opened weather map for {self.current_location['name']}")
         else:
             messagebox.showwarning("No Location", "Please select a location first.")
-
-    # ...existing code...
