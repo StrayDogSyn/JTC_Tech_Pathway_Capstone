@@ -687,10 +687,9 @@ class CompleteWeatherDashboard:
             fig, ax = plt.subplots(figsize=(10, 6))
             fig.patch.set_facecolor('#2b3e50')
             ax.set_facecolor('#34495e')
-            
-            if forecast_type == "Temperature Trend":
+              if forecast_type == "Temperature Trend":
                 temps = [d["main"]["temp"] for d in valid_data]
-                ax.plot_date(times_numeric, temps, marker='o', linestyle='-', linewidth=2, color='#e74c3c', label='Temperature')
+                ax.plot(times_numeric, temps, marker='o', linestyle='-', linewidth=2, color='#e74c3c', label='Temperature')
                 ax.set_ylabel("Temperature (°C)", color='white')
                 ax.set_title("24-Hour Temperature Forecast", color='white', fontsize=14, fontweight='bold')
                 
