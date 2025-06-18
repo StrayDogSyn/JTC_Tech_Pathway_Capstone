@@ -673,8 +673,7 @@ class CompleteWeatherDashboard:
             if not hourly_data:
                 ttk.Label(self.chart_frame, text="No hourly forecast data available").pack(pady=50)
                 return
-            
-            # Ensure we have valid data
+              # Ensure we have valid data
             valid_data = [d for d in hourly_data[:24] if d and "dt" in d and "main" in d]
             if not valid_data:
                 ttk.Label(self.chart_frame, text="Invalid forecast data format").pack(pady=50)
@@ -683,11 +682,12 @@ class CompleteWeatherDashboard:
             times = [datetime.fromtimestamp(d["dt"]) for d in valid_data]
             # Convert datetime objects to matplotlib date numbers for proper plotting
             times_numeric = mdates.date2num(times)
-              # Create matplotlib figure
+            # Create matplotlib figure
             fig, ax = plt.subplots(figsize=(10, 6))
             fig.patch.set_facecolor('#2b3e50')
             ax.set_facecolor('#34495e')
-              if forecast_type == "Temperature Trend":
+            
+            if forecast_type == "Temperature Trend":
                 temps = [d["main"]["temp"] for d in valid_data]
                 ax.plot(times_numeric, temps, marker='o', linestyle='-', linewidth=2, color='#e74c3c', label='Temperature')
                 ax.set_ylabel("Temperature (°C)", color='white')
