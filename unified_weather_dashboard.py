@@ -368,10 +368,12 @@ class ModernWeatherDashboard:
                         'lat': location['lat'],
                         'lon': location['lon'],
                         'country': location.get('country', '')
-                    }
-                      # Update UI on main thread
+                    }                    # Update UI on main thread
                     self.root.after(0, lambda: self._update_location_entry())
-                    self.root.after(0, lambda: self.status_var.set(f"📍 Location found: {self.current_location['name']}"))
+                    
+                    # Safe status update with location name
+                    location_name = self.current_location.get('name', 'Unknown') if self.current_location else 'Unknown'
+                    self.root.after(0, lambda: self.status_var.set(f"📍 Location found: {location_name}"))
                     
                     # Refresh weather data
                     self.refresh_weather_data()
@@ -410,8 +412,7 @@ class ModernWeatherDashboard:
             x = (self.root.winfo_screenwidth() // 2) - (width // 2)
             y = (self.root.winfo_screenheight() // 2) - (height // 2)
             self.root.geometry(f'+{x}+{y}')
-        
-        # Configure responsive grid layout
+          # Configure responsive grid layout
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
     
@@ -426,6 +427,7 @@ class ModernWeatherDashboard:
         ttk.Label(theme_frame, text="🎨", font=('Segoe UI', 12)).grid(row=0, column=0, padx=(0, 5))
         
         self.theme_var = tk.StringVar(value=self.current_theme)
+        
         theme_combo = ttk.Combobox(
             theme_frame, 
             textvariable=self.theme_var,
@@ -446,12 +448,55 @@ class ModernWeatherDashboard:
         new_theme = self.theme_var.get()
         if new_theme != self.current_theme:
             self.current_theme = new_theme
-            # Apply new theme to the root window
-            self.root.style.theme_use(new_theme)
+              # Apply new theme - different methods for ttkbootstrap vs regular tkinter
+            try:
+                if hasattr(self.root, 'style') and hasattr(self.root.style, 'theme_use'):
+                    # For ttkbootstrap Window with direct style access
+                    self.root.style.theme_use(new_theme)
+                elif hasattr(self.root, '_style'):
+                    # For ttkbootstrap Window with _style attribute
+                    self.root._style.theme_use(new_theme)
+                else:
+                    # For regular tkinter with ttk.Style
+                    import ttkbootstrap as ttk
+                    style = ttk.Style()
+                    style.theme_use(new_theme)
+                    
+            except Exception as e:
+                # If theme change fails, try creating a new ttkbootstrap window
+                try:
+                    # Get current geometry
+                    geometry = self.root.geometry()
+                      # Create new window with the selected theme
+                    old_root = self.root
+                    import ttkbootstrap as ttk
+                    self.root = ttk.Window(
+                        title="🌤️ Student Pack Weather Dashboard - OpenWeatherMap",
+                        themename=new_theme,
+                        size=(1200, 800),
+                        minsize=(1000, 700),
+                        resizable=(True, True)
+                    )
+                    
+                    # Copy geometry
+                    self.root.geometry(geometry)
+                    
+                    # Recreate interface
+                    self.setup_window()
+                    self.create_interface()
+                    
+                    # Close old window
+                    old_root.destroy()
+                    
+                except Exception as e2:
+                    # If all else fails, show error message
+                    if hasattr(self, 'status_var'):
+                        self.status_var.set(f"❌ Theme change failed: {str(e2)}")
+                    return
             
             # Update status message
             if hasattr(self, 'status_var'):
-                self.status_var.set(f"Theme changed to: {new_theme.title()}")
+                self.status_var.set(f"✅ Theme changed to: {new_theme.title()}")
     
     def create_interface(self):
         """
@@ -1085,14 +1130,15 @@ Current {season.title()} Conditions:
         if (self.forecast_data and 
             hasattr(self.forecast_data, 'hourly') and 
             self.forecast_data.hourly and 
-            isinstance(self.forecast_data.hourly, list)):
-            # Type assertion for the linter
-            hourly_data: List[Dict] = self.forecast_data.hourly
-            for item in hourly_data[:40]:  # 5 days * 8 items per day
-                date = datetime.fromtimestamp(item['dt']).strftime('%Y-%m-%d')
-                if date not in daily_forecasts:
-                    daily_forecasts[date] = []
-                daily_forecasts[date].append(item)
+            isinstance(self.forecast_data.hourly, list)):            # Type-safe iteration with explicit casting
+            hourly_list = self.forecast_data.hourly
+            if hourly_list:  # Additional check to satisfy type checker
+                for item in hourly_list[:40]:  # type: ignore # 5 days * 8 items per day
+                    if item and 'dt' in item:  # Safety check
+                        date = datetime.fromtimestamp(item['dt']).strftime('%Y-%m-%d')
+                        if date not in daily_forecasts:
+                            daily_forecasts[date] = []
+                        daily_forecasts[date].append(item)
         else:
             # No forecast data available
             ttk.Label(

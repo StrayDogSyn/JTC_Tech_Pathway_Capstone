@@ -47,8 +47,7 @@ def test_unified_app():
         # Test API initialization
         api = WeatherAPI()
         print("✅ WeatherAPI initialized successfully")
-        
-        # Test data classes
+          # Test data classes
         sample_weather = WeatherData(
             temperature=25.0,
             feels_like=27.0,
@@ -61,7 +60,8 @@ def test_unified_app():
             icon="01d",
             city="Test City",
             country="TC",
-            timestamp=int(datetime.now().timestamp())
+            timestamp=int(datetime.now().timestamp()),
+            cloudiness=20
         )
         print("✅ WeatherData class works correctly")
         
