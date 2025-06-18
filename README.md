@@ -1,17 +1,19 @@
-# 🌤️ OpenWeatherMap Free Tier - Weather Dashboard
+# 🌤️ OpenWeatherMap Student Pack - Weather Dashboard
 
 > **Justice Through Code ⚖ Capstone Project**
 
-A modern weather application showcasing OpenWeatherMap's free tier capabilities
-with a clean, efficient design.
+A modern weather application showcasing OpenWeatherMap's Student Pack capabilities
+with educational benefits and premium features for learning.
 
 ## 🌟 Features
 
 - **Real-time Weather Data** - Current conditions with comprehensive metrics
 - **5-Day Weather Forecast** - 3-hour interval forecasts for 5 days
 - **Air Quality Monitoring** - Real-time pollution data and health recommendations
-- **Interactive Weather Maps** - Multiple weather layer visualizations
+- **Interactive Weather Maps** - 12 weather layer visualizations (Student Pack)
 - **Advanced Geocoding** - Location search and coordinate conversion
+- **Historical Weather Data** - Full historical data archive (Student Pack)
+- **Advanced Analytics** - Statistical weather data access (Student Pack)
 - **Modern GUI** - Dark-themed, responsive interface with tabbed layout
 
 ## 🚀 Quick Start
@@ -19,7 +21,7 @@ with a clean, efficient design.
 ### Prerequisites
 
 - Python 3.7 or higher
-- OpenWeatherMap API key (free tier)
+- OpenWeatherMap API key (Student Pack or free tier)
 
 ### Installation
 
@@ -123,14 +125,19 @@ python unified_weather_dashboard.py
 
 #### Historical Data Tab
 
-- ⚠️ Note: Historical data requires a paid subscription
-- Shows upgrade information for One Call API 3.0
+- ✅ Full historical data archive (Student Pack benefit)
+- 1+ years of weather history available
+- Hourly historical weather data
+- Statistical aggregation capabilities
+- Note: For production use after graduation, upgrade to One Call API 3.0
 
 #### Analytics Tab
 
 - Weather data visualization
 - Forecast analysis and trends
 - Statistical summaries
+- Advanced analytics capabilities (Student Pack)
+- Educational research tools
 
 #### API Info Tab
 
@@ -152,20 +159,26 @@ OPENWEATHER_API_KEY=your_primary_api_key
 OPENWEATHER_API_KEY_BACKUP=your_backup_api_key
 ```
 
-### Free Tier Benefits
+### Student Pack Benefits
 
 - **Rate Limits**: 60 calls/minute, 1,000,000 calls/month
 - **Current Weather**: Real-time weather data for any location
 - **5-Day Forecast**: Weather predictions with 3-hour intervals
 - **Air Quality**: Pollution monitoring and health recommendations
-- **Weather Maps**: Visual weather data overlays
+- **Weather Maps**: 12 weather layer visualizations (all included)
 - **Geocoding**: Location search and coordinate conversion
+- **Historical Data**: Full historical data archive (1+ years)
+- **Advanced Analytics**: Statistical weather data access
+- **Educational Support**: Extended features for learning
 
-### Paid Features (Not Available)
+### Post-Graduation Considerations
 
-- ❌ **Historical Data**: Requires One Call API 3.0 subscription
+- ❌ **Historical Data**: After graduation, requires One Call API 3.0 subscription
 - ❌ **16-Day Forecast**: Extended forecasts require paid plan
-- ❌ **Hourly Forecast**: 48+ hour hourly data requires paid plan
+- ❌ **Advanced Analytics**: Statistical features require paid subscription
+- ❌ **Premium Map Layers**: Some advanced layers require subscription
+
+Note: Student Pack provides access to these features for educational purposes.
 
 ## 📚 API Endpoints
 

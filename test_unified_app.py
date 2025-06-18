@@ -38,7 +38,8 @@ def test_imports():
 def test_unified_app():
     """Test the unified weather dashboard application."""
     print("\n🔍 Testing unified weather dashboard...")
-      try:
+    
+    try:
         # Import the main components
         from unified_weather_dashboard import WeatherAPI, WeatherData, ForecastData
         print("✅ Main classes imported successfully")
