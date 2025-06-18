@@ -681,8 +681,7 @@ class CompleteWeatherDashboard:
                 
             times = [datetime.fromtimestamp(d["dt"]) for d in valid_data]
             # Convert datetime objects to matplotlib date numbers for proper plotting
-            times_numeric = mdates.date2num(times)
-            # Create matplotlib figure
+            times_numeric = mdates.date2num(times)            # Create matplotlib figure
             fig, ax = plt.subplots(figsize=(10, 6))
             fig.patch.set_facecolor('#2b3e50')
             ax.set_facecolor('#34495e')
@@ -698,8 +697,8 @@ class CompleteWeatherDashboard:
                 pressure = [d["main"]["pressure"] for d in valid_data]
                 
                 ax2 = ax.twinx()
-                ax.plot_date(times_numeric, humidity, marker='o', linestyle='-', linewidth=2, color='#3498db', label='Humidity (%)')
-                ax2.plot_date(times_numeric, pressure, marker='s', linestyle='-', linewidth=2, color='#f39c12', label='Pressure (hPa)')
+                ax.plot(times_numeric, humidity, marker='o', linestyle='-', linewidth=2, color='#3498db', label='Humidity (%)')
+                ax2.plot(times_numeric, pressure, marker='s', linestyle='-', linewidth=2, color='#f39c12', label='Pressure (hPa)')
                 
                 ax.set_ylabel("Humidity (%)", color='white')
                 ax2.set_ylabel("Pressure (hPa)", color='white')
@@ -707,7 +706,7 @@ class CompleteWeatherDashboard:
                 
             elif forecast_type == "Wind Patterns":
                 wind_speed = [d.get("wind", {}).get("speed", 0) for d in valid_data]
-                ax.plot_date(times_numeric, wind_speed, marker='o', linestyle='-', linewidth=2, color='#27ae60', label='Wind Speed')
+                ax.plot(times_numeric, wind_speed, marker='o', linestyle='-', linewidth=2, color='#27ae60', label='Wind Speed')
                 ax.set_ylabel("Wind Speed (m/s)", color='white')
                 ax.set_title("Wind Speed Forecast", color='white', fontsize=14, fontweight='bold')
             
