@@ -685,6 +685,7 @@ class CompleteWeatherDashboard:
             fig, ax = plt.subplots(figsize=(10, 6))
             fig.patch.set_facecolor('#2b3e50')
             ax.set_facecolor('#34495e')
+            ax2 = None  # Initialize ax2 for later use
             
             if forecast_type == "Temperature Trend":
                 temps = [d["main"]["temp"] for d in valid_data]
@@ -713,7 +714,17 @@ class CompleteWeatherDashboard:
             # Style the chart
             ax.tick_params(colors='white')
             ax.grid(True, alpha=0.3)
-            ax.legend()
+              # Handle legend based on forecast type
+            if forecast_type == "Humidity & Pressure" and ax2 is not None:
+                # Combine legends from both axes
+                lines1, labels1 = ax.get_legend_handles_labels()
+                lines2, labels2 = ax2.get_legend_handles_labels()
+                ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+            else:
+                # Standard legend for single axis plots
+                handles, labels = ax.get_legend_handles_labels()
+                if handles:  # Only create legend if there are labeled plots
+                    ax.legend()
             
             # Format x-axis for dates
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
