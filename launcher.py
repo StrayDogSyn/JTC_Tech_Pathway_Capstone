@@ -70,7 +70,7 @@ def run_application(app_choice):
     
     apps = {
         'complete': 'complete_weather_dashboard.py',
-        'cobra': 'cobra_weather_app.py',
+        'cobra': 'Weather Dominator/cobra_weather_app.py',
         'test': 'test_complete_app.py'
     }
     
