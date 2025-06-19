@@ -732,8 +732,7 @@ class CompleteWeatherDashboard:
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, color='white')
             
             fig.tight_layout()
-            
-            # Add to GUI
+              # Add to GUI
             canvas = FigureCanvasTkAgg(fig, master=self.chart_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill="both", expand=True)
@@ -748,24 +747,25 @@ class CompleteWeatherDashboard:
             widget.destroy()
         
         period = self.period_var.get()
+        location_name = self.current_location['name'] if self.current_location else 'Unknown'
+        
+        # Analyze current and forecast data for insights
+        analysis_results = self.generate_weather_analysis()
         
         analysis_text = f"""📈 Historical Weather Analysis
 
 📅 Analysis Period: {period}
-📍 Location: {self.current_location['name'] if self.current_location else 'None'}
+📍 Location: {location_name}
 
 🔍 Analysis Results:
-✅ Temperature trends analyzed
-✅ Weather patterns identified  
-✅ Seasonal variations calculated
-✅ Climate insights generated
+{analysis_results}
 
-📚 Note: This demonstrates analytical capabilities.
-For production use, upgrade to One Call API 3.0 for full historical data access.
+📚 Note: Analysis based on current weather conditions and 5-day forecast data.
+For complete historical analysis, upgrade to One Call API 3.0.
 
 🎓 Student Pack Benefits:
 • Extended rate limits for learning
-• Access to weather map layers
+• Access to weather map layers  
 • Air quality monitoring
 • Advanced geocoding services
 """
@@ -784,6 +784,190 @@ For production use, upgrade to One Call API 3.0 for full historical data access.
         text_widget.pack(fill="both", expand=True)
         text_widget.insert('1.0', analysis_text)
         text_widget.config(state='disabled')
+
+    def generate_weather_analysis(self):
+        """Generate actual weather analysis based on current and forecast data."""
+        if not self.current_weather:
+            return "❌ No current weather data available for analysis."
+        
+        analysis = []
+        
+        # Current conditions analysis
+        current_temp = self.current_weather.temperature
+        current_humidity = self.current_weather.humidity
+        current_pressure = self.current_weather.pressure
+        current_wind = self.current_weather.wind_speed
+        current_desc = self.current_weather.description
+        
+        analysis.append(f"🌡️ Current Temperature: {current_temp}°C")
+        analysis.append(f"   • Classification: {self.classify_temperature(current_temp)}")
+        
+        # Humidity analysis
+        analysis.append(f"💧 Current Humidity: {current_humidity}%")
+        analysis.append(f"   • Classification: {self.classify_humidity(current_humidity)}")
+        
+        # Pressure analysis
+        analysis.append(f"🌀 Current Pressure: {current_pressure} hPa")
+        analysis.append(f"   • Classification: {self.classify_pressure(current_pressure)}")
+        
+        # Wind analysis
+        analysis.append(f"💨 Current Wind: {current_wind} m/s")
+        analysis.append(f"   • Classification: {self.classify_wind(current_wind)}")
+        
+        # Weather pattern analysis
+        analysis.append(f"☁️ Current Conditions: {current_desc.title()}")
+        
+        # Forecast trend analysis
+        if hasattr(self, 'forecast_data') and self.forecast_data:
+            forecast_analysis = self.analyze_forecast_trends()
+            analysis.extend(forecast_analysis)
+        
+        # Comfort index
+        comfort = self.calculate_comfort_index(current_temp, current_humidity, current_wind)
+        analysis.append(f"😊 Comfort Index: {comfort}")
+        
+        return "\n".join(analysis)
+    
+    def classify_temperature(self, temp):
+        """Classify temperature into categories."""
+        if temp < 0:
+            return "Freezing"
+        elif temp < 10:
+            return "Cold"
+        elif temp < 20:
+            return "Cool"
+        elif temp < 25:
+            return "Comfortable"
+        elif temp < 30:
+            return "Warm"
+        else:
+            return "Hot"
+    
+    def classify_humidity(self, humidity):
+        """Classify humidity levels."""
+        if humidity < 30:
+            return "Dry"
+        elif humidity < 60:
+            return "Comfortable"
+        elif humidity < 80:
+            return "Humid"
+        else:
+            return "Very Humid"
+    
+    def classify_pressure(self, pressure):
+        """Classify atmospheric pressure."""
+        if pressure < 1000:
+            return "Low (Storm approaching)"
+        elif pressure < 1020:
+            return "Normal"
+        else:
+            return "High (Clear weather)"
+    
+    def classify_wind(self, wind_speed):
+        """Classify wind speed using Beaufort scale."""
+        if wind_speed < 0.3:
+            return "Calm"
+        elif wind_speed < 1.6:
+            return "Light air"
+        elif wind_speed < 3.4:
+            return "Light breeze"
+        elif wind_speed < 5.5:
+            return "Gentle breeze"
+        elif wind_speed < 8.0:
+            return "Moderate breeze"
+        elif wind_speed < 10.8:
+            return "Fresh breeze"
+        else:
+            return "Strong wind"
+    
+    def analyze_forecast_trends(self):
+        """Analyze forecast data for trends."""
+        try:
+            if not self.forecast_data or not hasattr(self.forecast_data, 'hourly') or not self.forecast_data.hourly:
+                return ["📊 Forecast Trends: No hourly data available"]
+            
+            # Ensure we have a valid list to work with
+            hourly_data = self.forecast_data.hourly
+            if not isinstance(hourly_data, list) or len(hourly_data) == 0:
+                return ["📊 Forecast Trends: No valid hourly data"]
+            
+            trends = []
+            # Use only the first 24 hours for analysis - explicitly type as list
+            data_slice = list(hourly_data[:24])
+            
+            # Temperature trend analysis
+            temps = []
+            try:
+                for d in data_slice:
+                    if d and isinstance(d, dict) and 'main' in d and isinstance(d['main'], dict):
+                        temp = d['main'].get('temp', None)
+                        if temp is not None:
+                            temps.append(float(temp))
+            except (TypeError, AttributeError):
+                pass
+            
+            if temps and len(temps) > 1:
+                temp_trend = "rising" if temps[-1] > temps[0] else "falling" if temps[-1] < temps[0] else "stable"
+                min_temp = min(temps)
+                max_temp = max(temps)
+                trends.append(f"📊 Temperature Trend (24h): {temp_trend.title()}")
+                trends.append(f"   • Range: {min_temp:.1f}°C to {max_temp:.1f}°C")
+            
+            # Humidity trend analysis
+            humidity_values = []
+            try:
+                for d in data_slice:
+                    if d and isinstance(d, dict) and 'main' in d and isinstance(d['main'], dict):
+                        humidity = d['main'].get('humidity', None)
+                        if humidity is not None:
+                            humidity_values.append(float(humidity))
+            except (TypeError, AttributeError):
+                pass
+            
+            if humidity_values:
+                avg_humidity = sum(humidity_values) / len(humidity_values)
+                trends.append(f"   • Average Humidity: {avg_humidity:.1f}%")
+            
+            # Weather conditions analysis
+            conditions = []
+            try:
+                for d in data_slice:
+                    if (d and isinstance(d, dict) and 'weather' in d and 
+                        isinstance(d['weather'], list) and len(d['weather']) > 0 and
+                        isinstance(d['weather'][0], dict)):
+                        condition = d['weather'][0].get('main', None)
+                        if condition and isinstance(condition, str):
+                            conditions.append(condition)
+            except (TypeError, AttributeError):
+                pass
+            
+            if conditions:
+                unique_conditions = list(set(conditions))
+                trends.append(f"   • Expected Conditions: {', '.join(unique_conditions)}")
+            
+            return trends if trends else ["📊 Forecast Trends: Unable to analyze data"]
+            
+        except Exception as e:
+            return [f"📊 Forecast Analysis: Error processing data - {str(e)}"]
+    
+    def calculate_comfort_index(self, temp, humidity, wind_speed):
+        """Calculate a simple comfort index."""
+        # Simple comfort calculation based on temperature, humidity, and wind
+        temp_score = 100 - abs(temp - 22) * 5  # Optimal temp around 22°C
+        humidity_score = 100 - abs(humidity - 45) * 2  # Optimal humidity around 45%
+        wind_score = 100 - wind_speed * 10 if wind_speed < 5 else 50  # Light wind preferred
+        
+        comfort_score = (temp_score + humidity_score + wind_score) / 3
+        comfort_score = max(0, min(100, comfort_score))  # Clamp between 0-100
+        
+        if comfort_score > 80:
+            return f"{comfort_score:.0f}/100 - Excellent"
+        elif comfort_score > 60:
+            return f"{comfort_score:.0f}/100 - Good"
+        elif comfort_score > 40:
+            return f"{comfort_score:.0f}/100 - Fair"
+        else:
+            return f"{comfort_score:.0f}/100 - Poor"
 
     def get_current_location(self):
         """Get current location using IP geolocation."""
