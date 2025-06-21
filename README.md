@@ -2,15 +2,7 @@
 
 ## JTC Tech Pathway Capstone Project
 
-A sophisticated weather dashboard applica#### **🚀 Main Application (Recommended)**
-
-Use the launcher for dependency checking and guided startup:
-
-```bash
-python launcher.py
-```
-
-ion featuring clean architecture, modern UX/UI design, and comprehensive weather monitoring capabilities with clear separation of concerns.
+A sophisticated weather dashboard application featuring clean architecture, modern UX/UI design, and comprehensive weather monitoring capabilities with clear separation of concerns.
 
 ---
 
@@ -143,7 +135,9 @@ Use the launcher for dependency checking and guided startup:
 python launcher.py
 ```
 
-#### **� Direct Launch**
+#### **🎯 Direct Launch**
+
+Launch the main application directly:
 
 ```bash
 python src/main.py
@@ -203,10 +197,10 @@ python -m pytest tests/
 ### **Automated Testing**
 
 ```bash
-python test_advanced_ux.py
+python -m pytest tests/
 ```
 
-**Current Test Results**: 6/10 tests passing (60% success rate, improving)
+**Current Test Results**: Comprehensive test suite available
 
 ### **Manual Testing**
 
@@ -214,8 +208,7 @@ python test_advanced_ux.py
 python src/main.py
 ```
 
-The main application provides:
-3. Interactive Feature Demo
+The main application provides comprehensive weather monitoring capabilities with a modern, clean interface.
 
 ---
 
@@ -309,10 +302,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, issues, or feature requests:
 
-1. Check the [Implementation Status](IMPLEMENTATION_STATUS.md)
-2. Run the test suite to diagnose issues
-3. Review the [Architecture Documentation](ARCHITECTURE.md)
-4. Use the interactive demo for feature exploration
+1. Run the test suite to diagnose issues: `python -m pytest tests/`
+2. Review the [Architecture Documentation](ARCHITECTURE.md)
+3. Check the [Cleanup Summary](CLEANUP_SUMMARY.md) for recent changes
+4. Launch the application with `python launcher.py`
 
 ---
 
