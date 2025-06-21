@@ -246,20 +246,34 @@ class WeatherDashboardUI:
         if LoadingSpinner:
             self.loading_spinner = LoadingSpinner(controls_frame, size=25)
             self.loading_spinner.pack(pady=(8, 0))
-        else:
-            # Fallback loading label
+        else:            # Fallback loading label
             self.loading_label = ttk.Label(controls_frame, text="⏳", font=('Segoe UI', 16))
             self.loading_label.pack(pady=(8, 0))
             self.loading_label.pack_forget()  # Hide initially
-    
+
     def _create_main_content(self) -> None:
-        """Create the main content area."""
+        """Create the main content area with enhanced tabular components."""
         # Main container
         main_container = ttk.Frame(self.root)
         main_container.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         
+        # Create notebook for tabbed interface
+        self.main_notebook = ttk.Notebook(main_container)
+        self.main_notebook.pack(fill="both", expand=True)
+        
+        # Dashboard Tab (original content)
+        self._create_dashboard_tab()
+        
+        # Advanced Tables Tabs
+        self._create_tables_tabs()
+        
+    def _create_dashboard_tab(self) -> None:
+        """Create the main dashboard tab."""
+        dashboard_frame = ttk.Frame(self.main_notebook)
+        self.main_notebook.add(dashboard_frame, text="🏠 Dashboard")
+        
         # Left panel
-        left_panel = ttk.Frame(main_container)
+        left_panel = ttk.Frame(dashboard_frame)
         left_panel.pack(side="left", fill="both", expand=True, padx=(0, 5))
         
         # Current weather frame
@@ -271,7 +285,7 @@ class WeatherDashboardUI:
         self.predictions_frame.pack(fill="both", expand=True)
         
         # Right panel
-        right_panel = ttk.Frame(main_container)
+        right_panel = ttk.Frame(dashboard_frame)
         right_panel.pack(side="right", fill="both", expand=True, padx=(5, 0))
         
         # Air quality frame
@@ -284,6 +298,44 @@ class WeatherDashboardUI:
         
         # Show initial placeholders
         self._show_initial_content()
+        
+    def _create_tables_tabs(self) -> None:
+        """Create advanced tabular components tabs."""
+        # Weather History Tab
+        if WeatherDataTable:
+            history_frame = ttk.Frame(self.main_notebook)
+            self.main_notebook.add(history_frame, text="📊 Weather History")
+            self.weather_data_table = WeatherDataTable(history_frame)
+        
+        # Location Comparison Tab
+        if ComparisonTable:
+            comparison_frame = ttk.Frame(self.main_notebook)
+            self.main_notebook.add(comparison_frame, text="🌍 Comparison")
+            self.comparison_table = ComparisonTable(comparison_frame)
+        
+        # Analytics Tab
+        if AnalyticsTable:
+            analytics_frame = ttk.Frame(self.main_notebook)
+            self.main_notebook.add(analytics_frame, text="📈 Analytics")
+            self.analytics_table = AnalyticsTable(analytics_frame)
+            
+        # Advanced Data Tab (for custom data tables)
+        if AdvancedDataTable:
+            advanced_frame = ttk.Frame(self.main_notebook)
+            self.main_notebook.add(advanced_frame, text="🛠️ Advanced Data")
+            
+            # Create custom data table with sample columns
+            columns = [
+                {'text': 'Timestamp', 'key': 'timestamp', 'width': 150, 'anchor': 'center'},
+                {'text': 'Event Type', 'key': 'event_type', 'width': 120, 'anchor': 'w'},
+                {'text': 'Location', 'key': 'location', 'width': 120, 'anchor': 'w'},
+                {'text': 'Value', 'key': 'value', 'width': 100, 'anchor': 'center'},
+                {'text': 'Status', 'key': 'status', 'width': 100, 'anchor': 'center'},
+                {'text': 'Notes', 'key': 'notes', 'width': 200, 'anchor': 'w'},
+            ]
+            self.advanced_data_table = AdvancedDataTable(
+                advanced_frame, columns, title="🛠️ Advanced Weather Data Management"
+            )
     
     def _create_status_bar(self) -> None:
         """Create the status bar."""
