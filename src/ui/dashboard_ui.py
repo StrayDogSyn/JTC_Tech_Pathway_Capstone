@@ -94,6 +94,9 @@ class WeatherDashboardUI:
           # Additional UI variables
         self.temp_unit_var: tk.StringVar = tk.StringVar(value="°C")
         
+        # Store current weather data for refresh
+        self._current_weather_data: Optional[Dict[str, Any]] = None
+        
         self._setup_ui()
         self._apply_modern_styling()
         self._fade_in_window()
@@ -1014,8 +1017,7 @@ Perfect for learning and development!        """
         # Populate favorites
         for favorite in self.favorites_list:
             favorites_listbox.insert(tk.END, favorite)
-        
-        # Buttons
+          # Buttons
         button_frame = ttk.Frame(favorites_window)
         button_frame.pack(fill="x", padx=10, pady=10)
         
@@ -1046,7 +1048,8 @@ Perfect for learning and development!        """
             self.favorites_list.append(location)
             listbox.insert(tk.END, location)
             self.show_notification(f"Added '{location}' to favorites!", "success")
-      def _toggle_temperature_unit(self) -> None:
+    
+    def _toggle_temperature_unit(self) -> None:
         """Toggle between Celsius and Fahrenheit."""
         current = self.temp_unit_var.get()
         if current == "°C":
@@ -1154,4 +1157,231 @@ Perfect for learning and development!        """
             elif hasattr(widget, 'winfo_children'):
                 self._update_forecast_labels(widget, forecast_temps, unit_symbol)
 
-    # ...existing code...
+    def _celsius_to_fahrenheit(self, celsius: float) -> float:
+        """Convert Celsius to Fahrenheit."""
+        return (celsius * 9/5) + 32
+    
+    def _fahrenheit_to_celsius(self, fahrenheit: float) -> float:
+        """Convert Fahrenheit to Celsius."""
+        return (fahrenheit - 32) * 5/9
+
+    def _create_stats_cards(self, parent: tk.Widget) -> None:
+        """Create statistics cards at the top of the dashboard."""
+        # Configure parent grid for even distribution
+        parent.grid_columnconfigure(0, weight=1)
+        parent.grid_columnconfigure(1, weight=1)
+        parent.grid_columnconfigure(2, weight=1)
+        parent.grid_columnconfigure(3, weight=1)
+        
+        stats = [
+            {"title": "Locations Tracked", "value": "12", "icon": "🌍", "trend": "+2"},
+            {"title": "API Calls Today", "value": "847", "icon": "🔄", "trend": "+156"},
+            {"title": "Avg Response Time", "value": "245ms", "icon": "⚡", "trend": "-12ms"},
+            {"title": "Data Accuracy", "value": "99.8%", "icon": "🎯", "trend": "+0.1%"}
+        ]
+        
+        for i, stat in enumerate(stats):
+            if ModernCard:
+                card = ModernCard(
+                    parent,
+                    title=f"{stat['icon']} {stat['value']}"
+                )
+                card.grid(row=0, column=i, sticky="ew", padx=(0, 8) if i < 3 else (0, 0), pady=5)
+                
+                # Add subtitle and trend in content frame
+                content_frame = ttk.Frame(card.content_frame)
+                content_frame.pack(fill="both", expand=True, pady=5)
+                
+                ttk.Label(content_frame, text=stat["title"], font=('Segoe UI', 9), foreground="gray").pack()
+                ttk.Label(content_frame, text=stat["trend"], font=('Segoe UI', 10, 'bold'), foreground="green").pack(pady=(2, 0))
+            else:
+                # Fallback card
+                card_frame = ttk.LabelFrame(parent, text=stat["title"], padding=8)
+                card_frame.grid(row=0, column=i, sticky="ew", padx=(0, 8) if i < 3 else (0, 0), pady=5)
+                
+                value_frame = ttk.Frame(card_frame)
+                value_frame.pack(fill="x")
+                
+                ttk.Label(value_frame, text=stat['icon'], font=('Segoe UI', 16)).pack(side="left")
+                ttk.Label(value_frame, text=stat['value'], font=('Segoe UI', 14, 'bold')).pack(side="left", padx=(5, 0))
+                ttk.Label(value_frame, text=stat['trend'], font=('Segoe UI', 9), foreground="green").pack(side="right")
+
+    def _create_quick_actions(self, parent: tk.Widget) -> None:
+        """Create quick action buttons."""
+        actions = [
+            {"text": "📊 Export Data", "command": self._export_data},
+            {"text": "📱 Share Weather", "command": self._share_weather},
+            {"text": "🔔 Set Alert", "command": self._set_weather_alert},
+            {"text": "📈 View Trends", "command": self._view_trends},
+            {"text": "🌐 Weather Map", "command": self._show_weather_map}
+        ]
+        
+        for action in actions:
+            btn = ttk.Button(
+                parent,
+                text=action["text"],
+                command=action["command"],
+                style="Outline.TButton"
+            )
+            btn.pack(side="left", padx=(0, 10))
+
+    def _export_data(self) -> None:
+        """Export weather data."""
+        self.show_notification("Data export feature coming soon!", "info")
+
+    def _share_weather(self) -> None:
+        """Share current weather."""
+        self.show_notification("Weather sharing feature coming soon!", "info")
+
+    def _set_weather_alert(self) -> None:
+        """Set weather alert."""
+        self.show_notification("Weather alerts feature coming soon!", "info")
+
+    def _view_trends(self) -> None:
+        """View weather trends."""
+        # Switch to analytics tab if available
+        if hasattr(self, 'main_notebook'):
+            for i in range(self.main_notebook.index("end")):
+                if "Analytics" in self.main_notebook.tab(i, "text"):
+                    self.main_notebook.select(i)
+                    self.show_notification("Switched to Analytics view", "success")
+                    return
+        self.show_notification("Analytics view not available", "warning")
+
+    def _show_weather_map(self) -> None:
+        """Show weather map."""
+        self.show_notification("Weather map feature coming soon!", "info")
+
+    def update_weather_display(self, weather_data: Dict[str, Any]) -> None:
+        """Update the weather display with converted temperatures."""
+        if not self.weather_frame:
+            return
+        
+        # Store the weather data for future refreshes
+        self._current_weather_data = weather_data
+        
+        self._clear_frame(self.weather_frame)
+        
+        # Get current temperature unit setting
+        current_unit = self.settings.get('temperature_unit', 'C')
+        unit_symbol = "°F" if current_unit == 'F' else "°C"
+        
+        # Extract and convert temperatures
+        temp_c = weather_data.get('temperature', 0)
+        feels_like_c = weather_data.get('feels_like', temp_c)
+        
+        if current_unit == 'F':
+            temperature = self._celsius_to_fahrenheit(temp_c)
+            feels_like = self._celsius_to_fahrenheit(feels_like_c)
+        else:
+            temperature = temp_c
+            feels_like = feels_like_c
+        
+        # Create weather display with converted temperatures
+        weather_container = ttk.Frame(self.weather_frame)
+        weather_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Temperature and main info
+        main_info_frame = ttk.Frame(weather_container)
+        main_info_frame.pack(fill="x", pady=(0, 15))
+        
+        # Left side - Temperature
+        temp_frame = ttk.Frame(main_info_frame)
+        temp_frame.pack(side="left")
+        
+        ttk.Label(temp_frame, text=f"{temperature:.1f}{unit_symbol}", 
+                 font=('Segoe UI', 42, 'bold'), foreground="#FF6B35").pack()
+        ttk.Label(temp_frame, text=f"Feels like {feels_like:.1f}{unit_symbol}", 
+                 font=('Segoe UI', 12), foreground="gray").pack()
+        ttk.Label(temp_frame, text=weather_data.get('description', 'Clear'), 
+                 font=('Segoe UI', 14)).pack(pady=(5, 0))
+        
+        # Right side - Weather icon area  
+        icon_frame = ttk.Frame(main_info_frame)
+        icon_frame.pack(side="right", fill="both", expand=True)
+        
+        # Get weather icon based on conditions
+        icon = self._get_weather_icon(weather_data.get('description', ''))
+        ttk.Label(icon_frame, text=icon, font=('Segoe UI', 64)).pack(anchor="center")
+        
+        # Weather details
+        details_frame = ttk.LabelFrame(weather_container, text="Weather Details", padding=10)
+        details_frame.pack(fill="both", expand=True)
+        
+        details = [
+            ("🌡️ Temperature", f"{temperature:.1f}{unit_symbol}"),
+            ("💧 Humidity", f"{weather_data.get('humidity', 0)}%"),
+            ("🌪️ Pressure", f"{weather_data.get('pressure', 0)} hPa"),
+            ("💨 Wind Speed", f"{weather_data.get('wind_speed', 0)} m/s"),
+            ("🧭 Wind Direction", f"{weather_data.get('wind_direction', 0)}°"),
+            ("👁️ Visibility", f"{weather_data.get('visibility', 0)} km"),
+            ("☁️ Cloud Cover", f"{weather_data.get('clouds', 0)}%"),
+        ]
+        
+        for i, (label, value) in enumerate(details):
+            row = i // 2
+            col = i % 2
+            
+            detail_frame = ttk.Frame(details_frame)
+            detail_frame.grid(row=row, column=col, sticky="ew", padx=10, pady=3)
+            details_frame.grid_columnconfigure(col, weight=1)
+            
+            ttk.Label(detail_frame, text=label, width=18).pack(side="left")
+            ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold')).pack(side="right")
+        
+        # Add to recent searches if not already there
+        location = weather_data.get('location', 'Unknown')
+        if location not in self.recent_searches:
+            self.recent_searches.insert(0, location)
+            self.recent_searches = self.recent_searches[:10]  # Keep last 10
+
+    def _get_weather_icon(self, description: str) -> str:
+        """Get weather icon based on description."""
+        description = description.lower()
+        if 'clear' in description or 'sunny' in description:
+            return "☀️"
+        elif 'cloud' in description:
+            return "⛅"
+        elif 'rain' in description:
+            return "🌧️"
+        elif 'storm' in description or 'thunder' in description:
+            return "⛈️"
+        elif 'snow' in description:
+            return "❄️"
+        elif 'fog' in description or 'mist' in description:
+            return "🌫️"
+        else:
+            return "🌤️"
+
+    def add_weather_to_history(self, weather_data: Dict[str, Any]) -> None:
+        """Add weather data to history table if available."""
+        if hasattr(self, 'weather_data_table') and self.weather_data_table:
+            try:
+                location = weather_data.get('location', 'Unknown Location')
+                self.weather_data_table.add_weather_data(weather_data, location)
+            except Exception as e:
+                print(f"Error adding to weather history: {e}")
+
+    def add_location_comparison(self, weather_data: Dict[str, Any]) -> None:
+        """Add location to comparison table if available."""
+        if hasattr(self, 'comparison_table') and self.comparison_table:
+            try:
+                location = weather_data.get('location', 'Unknown Location')
+                self.comparison_table.add_location_data(location, weather_data)
+            except Exception as e:
+                print(f"Error adding to comparison: {e}")
+
+    def update_analytics(self, weather_data: Dict[str, Any]) -> None:
+        """Update analytics table if available."""
+        if hasattr(self, 'analytics_table') and self.analytics_table:
+            try:
+                self.analytics_table.update_analytics(weather_data)
+            except Exception as e:
+                print(f"Error updating analytics: {e}")
+
+    def _debug_moderncard_creation(self, *args, **kwargs):
+        """Debug helper for ModernCard creation."""
+        print(f"Creating ModernCard with args: {args}, kwargs: {kwargs}")
+        if ModernCard:
+            return ModernCard(*args, **kwargs)
+        return None
