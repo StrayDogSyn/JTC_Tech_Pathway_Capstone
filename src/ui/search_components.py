@@ -6,7 +6,7 @@ This module provides search bar, suggestions, and search history management.
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from typing import Optional, Callable, List, Any
+from typing import Optional, Callable, List, Any, Union
 from threading import Timer
 
 from ..utils.logging import get_logger
@@ -177,7 +177,7 @@ class SearchBarComponent:
                 self.suggestions_listbox.insert(tk.END, suggestion)
             
             # Position and show the suggestions frame
-            if not self._suggestions_visible:
+            if not self._suggestions_visible and self.suggestions_frame:
                 self.suggestions_frame.pack(fill=tk.X, pady=(5, 0))
                 self._suggestions_visible = True
                 
@@ -187,7 +187,7 @@ class SearchBarComponent:
     def _hide_suggestions(self) -> None:
         """Hide the suggestions dropdown."""
         try:
-            if self._suggestions_visible:
+            if self._suggestions_visible and self.suggestions_frame:
                 self.suggestions_frame.pack_forget()
                 self._suggestions_visible = False
                 
@@ -215,15 +215,15 @@ class SearchBarComponent:
         except Exception as e:
             logger.error(f"Error handling focus out: {e}")
     
-    def _on_key_press(self, event) -> None:
+    def _on_key_press(self, event) -> Union[str, None]:
         """Handle key press events for navigation."""
         try:
             if not self._suggestions_visible:
-                return
+                return None
             
             if event.keysym == 'Down':
                 # Move to suggestions list
-                if self.suggestions_listbox.size() > 0:
+                if self.suggestions_listbox and self.suggestions_listbox.size() > 0:
                     self.suggestions_listbox.focus_set()
                     self.suggestions_listbox.selection_set(0)
                 return 'break'
@@ -233,6 +233,7 @@ class SearchBarComponent:
                 
         except Exception as e:
             logger.error(f"Error handling key press: {e}")
+        return None
     
     def _on_suggestion_select(self, event=None) -> None:
         """Handle suggestion selection."""

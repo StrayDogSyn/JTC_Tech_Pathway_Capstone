@@ -26,13 +26,11 @@ class StatusBarComponent:
         # Status variables
         self.status_var = tk.StringVar()
         self.status_var.set("🚀 Weather Dashboard - Ready")
-        self.loading_var = tk.BooleanVar()
-        
-        # UI components
-        self.status_frame: Optional[tk.Widget] = None
-        self.status_label: Optional[tk.Label] = None
+        self.loading_var = tk.BooleanVar()        # UI components
+        self.status_frame: Optional[ttk.Frame] = None
+        self.status_label: Optional[ttk.Label] = None
         self.progress_bar: Optional[ttk.Progressbar] = None
-        self.time_label: Optional[tk.Label] = None
+        self.time_label: Optional[ttk.Label] = None
         
         # Timer for clearing temporary messages
         self._clear_timer: Optional[Timer] = None
