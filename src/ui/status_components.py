@@ -22,11 +22,12 @@ class StatusBarComponent:
     def __init__(self, parent: tk.Widget):
         """Initialize the status bar component."""
         self.parent = parent
-        
-        # Status variables
+          # Status variables
         self.status_var = tk.StringVar()
         self.status_var.set("🚀 Weather Dashboard - Ready")
-        self.loading_var = tk.BooleanVar()        # UI components
+        self.loading_var = tk.BooleanVar()
+        
+        # UI components
         self.status_frame: Optional[ttk.Frame] = None
         self.status_label: Optional[ttk.Label] = None
         self.progress_bar: Optional[ttk.Progressbar] = None
