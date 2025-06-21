@@ -1,35 +1,58 @@
 """
-Main dashboard UI components.
+Enhanced dashboard UI components with modern UX features.
 
-This module contains the main weather dashboard UI components,
-separated from business logic.
+This module contains the main weather dashboard UI components with modern design,
+animations, and enhanced user experience features.
 """
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from typing import Optional, Callable, Dict, Any
+from typing import Optional, Callable, Dict, Any, List
 from datetime import datetime
+import threading
+import time
+
+try:
+    from .modern_components import (
+        ModernCard, CircularProgress, ModernSearchBar, WeatherGauge,
+        NotificationToast, ModernToggleSwitch, LoadingSpinner
+    )
+except ImportError:
+    # Fallback if modern components are not available
+    ModernCard = None
+    CircularProgress = None
+    ModernSearchBar = None
+    WeatherGauge = None
+    NotificationToast = None
+    ModernToggleSwitch = None
+    LoadingSpinner = None
 
 
 class WeatherDashboardUI:
-    """Main weather dashboard user interface."""
+    """Enhanced weather dashboard user interface with modern UX features."""
     
-    def __init__(self, title: str = "Weather Dashboard", theme: str = "darkly", size: tuple = (1200, 800)):
-        """Initialize the main UI."""
+    def __init__(self, title: str = "🌦️ Weather Dominator Pro", theme: str = "darkly", size: tuple = (1400, 900)):
+        """Initialize the enhanced UI."""
         self.root = ttk.Window(
             title=title,
             themename=theme,
             size=size,
-            minsize=(800, 600)
+            minsize=(1000, 700)
         )
         
-        # Status variable
+        # Configure window for modern appearance
+        self.root.attributes('-alpha', 0.0)  # Start transparent for fade-in
+        
+        # Enhanced status variables
         self.status_var = tk.StringVar()
-        self.status_var.set("Ready")
+        self.status_var.set("🚀 Weather Dominator Pro - Ready")
+        self.loading_var = tk.BooleanVar()
+        self.auto_refresh_var = tk.BooleanVar()
         
         # Callbacks
         self.search_callback: Optional[Callable[[str], None]] = None
         self.theme_change_callback: Optional[Callable[[str], None]] = None
+        self.auto_refresh_callback: Optional[Callable[[bool], None]] = None
         
         # UI components
         self.city_entry: Optional[ttk.Entry] = None
@@ -38,8 +61,48 @@ class WeatherDashboardUI:
         self.predictions_frame: Optional[ttk.LabelFrame] = None
         self.air_quality_frame: Optional[ttk.LabelFrame] = None
         self.forecast_frame: Optional[ttk.LabelFrame] = None
+          # Enhanced components
+        self.loading_spinner = None  # Will be LoadingSpinner if available
+        self.search_suggestions: List[str] = [
+            "London, UK", "New York, NY", "Tokyo, Japan", "Paris, France",
+            "Sydney, Australia", "Berlin, Germany", "Moscow, Russia",
+            "Dubai, UAE", "Singapore", "Mumbai, India"        ]
         
         self._setup_ui()
+        self._apply_modern_styling()
+        self._fade_in_window()
+    
+    def _fade_in_window(self):
+        """Fade in the window on startup for smooth appearance."""
+        def fade():
+            for i in range(21):
+                alpha = i / 20
+                try:
+                    self.root.attributes('-alpha', alpha)
+                    self.root.update()
+                    time.sleep(0.02)
+                except:
+                    break
+        
+        threading.Thread(target=fade, daemon=True).start()
+    
+    def _apply_modern_styling(self):
+        """Apply modern styling to the interface."""
+        # Configure modern styles
+        style = ttk.Style()
+        
+        # Enhanced card styles
+        style.configure("Card.TFrame", relief="solid", borderwidth=1)
+        style.configure("Header.TLabel", font=('Segoe UI', 18, 'bold'))
+        style.configure("Subtitle.TLabel", font=('Segoe UI', 11), foreground="gray")
+        style.configure("Modern.TButton", padding=(10, 5))
+        # Weather data styles
+        style.configure("Temperature.TLabel", font=('Segoe UI', 48, 'bold'), foreground="#FF6B35")
+        style.configure("FeelsLike.TLabel", font=('Segoe UI', 14), foreground="gray")
+        style.configure("Description.TLabel", font=('Segoe UI', 16))
+        # Status styles  
+        style.configure("Status.TLabel", font=('Segoe UI', 10))
+        style.configure("Small.TLabel", font=('Segoe UI', 9), foreground="gray")
     
     def set_search_callback(self, callback: Callable[[str], None]) -> None:
         """Set callback for search events."""
@@ -56,49 +119,131 @@ class WeatherDashboardUI:
         self._create_status_bar()
     
     def _create_header(self) -> None:
-        """Create the header with search and controls."""
-        header_frame = ttk.Frame(self.root)
-        header_frame.pack(fill="x", padx=10, pady=10)
+        """Create the enhanced header with modern search and controls."""
+        header_frame = ttk.Frame(self.root, padding=(20, 15))
+        header_frame.pack(fill="x")
+        header_frame.grid_columnconfigure(1, weight=1)
         
-        # Title
+        # Enhanced title section
+        title_frame = ttk.Frame(header_frame)
+        title_frame.grid(row=0, column=0, sticky="w")
+        
         title_label = ttk.Label(
-            header_frame,
-            text="🌦️ Complete Weather Dashboard",
-            font=('Segoe UI', 18, 'bold')
+            title_frame,
+            text="🌦️ Weather Dominator Pro",
+            style="Header.TLabel",
+            foreground="#2196F3"
         )
-        title_label.pack(side="left")
+        title_label.pack()
         
-        # Controls
-        controls_frame = ttk.Frame(header_frame)
-        controls_frame.pack(side="right")
+        subtitle_label = ttk.Label(
+            title_frame,
+            text="Advanced Weather Intelligence Platform",
+            style="Subtitle.TLabel"
+        )
+        subtitle_label.pack()
         
-        # City search
-        ttk.Label(controls_frame, text="City:").pack(side="left", padx=(0, 5))
+        # Enhanced search section
+        search_frame = ttk.Frame(header_frame)
+        search_frame.grid(row=0, column=1, sticky="ew", padx=(20, 0))
+        search_frame.grid_columnconfigure(0, weight=1)
         
-        self.city_entry = ttk.Entry(controls_frame, width=20)
-        self.city_entry.pack(side="left", padx=(0, 5))
+        # Modern search container
+        search_container = ttk.Frame(search_frame, style="Card.TFrame", padding=8)
+        search_container.grid(row=0, column=0, sticky="ew")
+        search_container.grid_columnconfigure(1, weight=1)
+        
+        # Search icon
+        search_icon = ttk.Label(search_container, text="🔍", font=('Segoe UI', 14))
+        search_icon.grid(row=0, column=0, padx=(5, 8))
+        
+        # Enhanced city entry with placeholder effect
+        self.city_entry = ttk.Entry(
+            search_container,
+            font=('Segoe UI', 11),
+            width=30
+        )
+        self.city_entry.grid(row=0, column=1, sticky="ew", pady=2)
         self.city_entry.bind('<Return>', self._on_search)
+        self.city_entry.bind('<KeyRelease>', self._on_search_key_release)
+        self.city_entry.bind('<FocusIn>', self._on_search_focus_in)
+        self.city_entry.bind('<FocusOut>', self._on_search_focus_out)
         
-        search_btn = ttk.Button(
-            controls_frame,
-            text="🔍 Search",
-            command=self._on_search
+        # Set placeholder
+        self._set_search_placeholder()
+        
+        # Search suggestions dropdown (initially hidden)
+        self.suggestions_frame = ttk.Frame(search_frame)
+        self.suggestions_listbox = tk.Listbox(
+            self.suggestions_frame,
+            height=6,
+            font=('Segoe UI', 10),
+            activestyle="none",
+            selectmode=tk.SINGLE
         )
-        search_btn.pack(side="left", padx=(0, 10))
+        self.suggestions_listbox.pack(fill="both", expand=True)
+        self.suggestions_listbox.bind('<Double-Button-1>', self._on_suggestion_select)
         
-        # Theme selector
-        ttk.Label(controls_frame, text="Theme:").pack(side="left", padx=(0, 5))
+        # Enhanced search button
+        search_btn = ttk.Button(
+            search_container,
+            text="Search",
+            command=self._on_search,
+            style="Modern.TButton"
+        )
+        search_btn.grid(row=0, column=2, padx=(8, 5))
+        
+        # Controls panel with modern styling
+        controls_frame = ttk.Frame(header_frame)
+        controls_frame.grid(row=0, column=2, sticky="e", padx=(20, 0))
+        
+        # Theme selector with label
+        theme_frame = ttk.Frame(controls_frame)
+        theme_frame.pack(pady=(0, 8))
+        
+        ttk.Label(theme_frame, text="🎨 Theme:", font=('Segoe UI', 10)).pack(side="left", padx=(0, 5))
         
         self.theme_var = tk.StringVar(value="darkly")
         theme_combo = ttk.Combobox(
-            controls_frame,
+            theme_frame,
             textvariable=self.theme_var,
-            values=['darkly', 'flatly', 'litera', 'minty', 'lumen', 'sandstone'],
-            width=10,
-            state="readonly"
+            values=['darkly', 'flatly', 'litera', 'minty', 'lumen', 'sandstone', 'superhero', 'vapor'],
+            width=12,
+            state="readonly",
+            font=('Segoe UI', 9)
         )
-        theme_combo.pack(side="left", padx=(0, 5))
+        theme_combo.pack(side="left")
         theme_combo.bind('<<ComboboxSelected>>', self._on_theme_change)
+        
+        # Auto-refresh toggle
+        if ModernToggleSwitch:
+            self.auto_refresh_toggle = ModernToggleSwitch(
+                controls_frame,
+                text="🔄 Auto-refresh (5min)",
+                initial_state=False
+            )
+            self.auto_refresh_toggle.pack()
+            self.auto_refresh_toggle.set_callback(self._on_auto_refresh_toggle)
+        else:
+            # Fallback checkbox
+            self.auto_refresh_var = tk.BooleanVar()
+            auto_refresh_cb = ttk.Checkbutton(
+                controls_frame,
+                text="🔄 Auto-refresh",
+                variable=self.auto_refresh_var,
+                command=self._on_auto_refresh_fallback
+            )
+            auto_refresh_cb.pack()
+        
+        # Loading indicator
+        if LoadingSpinner:
+            self.loading_spinner = LoadingSpinner(controls_frame, size=25)
+            self.loading_spinner.pack(pady=(8, 0))
+        else:
+            # Fallback loading label
+            self.loading_label = ttk.Label(controls_frame, text="⏳", font=('Segoe UI', 16))
+            self.loading_label.pack(pady=(8, 0))
+            self.loading_label.pack_forget()  # Hide initially
     
     def _create_main_content(self) -> None:
         """Create the main content area."""
@@ -213,8 +358,7 @@ Rate Limits:
 • 1,000,000 calls per month
 • Unlimited historical data access
 
-Perfect for learning and development!
-        """
+Perfect for learning and development!        """
         messagebox.showinfo("OpenWeatherMap API Information", info_text.strip())
     
     def set_city_text(self, city: str) -> None:
@@ -241,6 +385,132 @@ Perfect for learning and development!
         """Show info dialog."""
         from tkinter import messagebox
         messagebox.showinfo(title, message)
+    
+    def _on_search_key_release(self, event=None) -> None:
+        """Handle key release in search entry for suggestions."""
+        if not self.city_entry:
+            return
+            
+        current_text = self.city_entry.get().strip().lower()
+        
+        if len(current_text) >= 2:  # Show suggestions after 2 characters
+            matching_suggestions = [
+                city for city in self.search_suggestions
+                if current_text in city.lower()
+            ]
+            
+            if matching_suggestions:
+                self._show_suggestions(matching_suggestions[:6])  # Show max 6
+            else:
+                self._hide_suggestions()
+        else:
+            self._hide_suggestions()
+    
+    def _on_search_focus_in(self, event=None) -> None:
+        """Handle search entry focus in event."""
+        if self.city_entry and self.city_entry.get() == "Enter city name...":
+            self.city_entry.delete(0, tk.END)
+            self.city_entry.configure(foreground="")
+    
+    def _on_search_focus_out(self, event=None) -> None:
+        """Handle search entry focus out event."""
+        if self.city_entry and not self.city_entry.get().strip():
+            self._set_search_placeholder()
+        self._hide_suggestions()
+    
+    def _set_search_placeholder(self) -> None:
+        """Set placeholder text in search entry."""
+        if self.city_entry:
+            self.city_entry.delete(0, tk.END)
+            self.city_entry.insert(0, "Enter city name...")
+            self.city_entry.configure(foreground="gray")
+    
+    def _show_suggestions(self, suggestions: List[str]) -> None:
+        """Show search suggestions dropdown."""
+        if not hasattr(self, 'suggestions_frame'):
+            return
+            
+        # Clear existing suggestions
+        self.suggestions_listbox.delete(0, tk.END)
+        
+        # Add new suggestions
+        for suggestion in suggestions:
+            self.suggestions_listbox.insert(tk.END, suggestion)
+          # Position and show the suggestions frame
+        self.suggestions_frame.grid(row=1, column=0, sticky="ew", pady=(2, 0))
+        self.suggestions_frame.lift()
+    
+    def _hide_suggestions(self) -> None:
+        """Hide search suggestions dropdown."""
+        if hasattr(self, 'suggestions_frame'):
+            self.suggestions_frame.grid_forget()
+    
+    def _on_suggestion_select(self, event=None) -> None:
+        """Handle suggestion selection."""
+        if not self.suggestions_listbox.curselection():
+            return
+            
+        selected_index = self.suggestions_listbox.curselection()[0]
+        selected_city = self.suggestions_listbox.get(selected_index)
+        
+        if self.city_entry:
+            self.city_entry.delete(0, tk.END)
+            self.city_entry.insert(0, selected_city)
+            self.city_entry.configure(foreground="")
+        
+        self._hide_suggestions()
+        self._on_search()  # Automatically search for selected city
+    
+    def _on_auto_refresh_toggle(self, enabled: bool) -> None:
+        """Handle auto-refresh toggle change."""
+        self.auto_refresh_var.set(enabled)
+        if self.auto_refresh_callback:
+            self.auto_refresh_callback(enabled)
+            
+        # Update status
+        if enabled:
+            self.update_status("🔄 Auto-refresh enabled (5 minutes)")
+        else:
+            self.update_status("⏸️ Auto-refresh disabled")
+    
+    def _on_auto_refresh_fallback(self) -> None:
+        """Handle fallback auto-refresh checkbox."""
+        enabled = self.auto_refresh_var.get()
+        if self.auto_refresh_callback:
+            self.auto_refresh_callback(enabled)
+            
+        if enabled:
+            self.update_status("🔄 Auto-refresh enabled")
+        else:
+            self.update_status("⏸️ Auto-refresh disabled")
+    
+    def set_loading(self, loading: bool) -> None:
+        """Set loading state with spinner or fallback indicator."""
+        if hasattr(self, 'loading_spinner') and self.loading_spinner:
+            if loading:
+                self.loading_spinner.start_spinning()
+            else:
+                self.loading_spinner.stop_spinning()
+        elif hasattr(self, 'loading_label'):
+            if loading:
+                self.loading_label.pack(pady=(8, 0))
+            else:
+                self.loading_label.pack_forget()
+        
+        self.loading_var.set(loading)
+    
+    def show_notification(self, message: str, type_: str = "info", duration: int = 3000) -> None:
+        """Show notification toast if available."""
+        if NotificationToast:
+            # NotificationToast automatically shows itself
+            NotificationToast(self.root, message, type_, duration / 1000.0)
+        else:
+            # Fallback to status message
+            self.update_status(f"📢 {message}")
+    
+    def set_auto_refresh_callback(self, callback: Callable[[bool], None]) -> None:
+        """Set callback for auto-refresh events."""
+        self.auto_refresh_callback = callback
     
     def run(self) -> None:
         """Start the UI main loop."""
