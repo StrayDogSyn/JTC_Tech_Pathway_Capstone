@@ -2,7 +2,15 @@
 
 ## JTC Tech Pathway Capstone Project
 
-A sophisticated weather dashboard application featuring clean architecture, modern UX/UI design, and comprehensive weather monitoring capabilities with clear separation of concerns.
+A sophisticated weather dashboard applica#### **🚀 Main Application (Recommended)**
+
+Use the launcher for dependency checking and guided startup:
+
+```bash
+python launcher.py
+```
+
+ion featuring clean architecture, modern UX/UI design, and comprehensive weather monitoring capabilities with clear separation of concerns.
 
 ---
 
@@ -59,6 +67,8 @@ src/
 └── utils/
     └── helpers.py          # Utility functions
 ```
+
+```text
 ├── src/                          # Main source code
 │   ├── ui/                       # User interface components
 │   │   ├── modern_components.py  # Advanced UI widgets
@@ -102,7 +112,7 @@ src/
    cd JTC_Tech_Pathway_Capstone
    ```
 
-2. **Create virtual environment**:
+1. **Create virtual environment**:
 
    ```bash
    python -m venv .venv
@@ -110,13 +120,13 @@ src/
    source .venv/bin/activate  # Linux/Mac
    ```
 
-3. **Install dependencies**:
+1. **Install dependencies**:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables**:
+1. **Set up environment variables**:
 
    ```bash
    cp .env.example .env
@@ -125,24 +135,24 @@ src/
 
 ### **Running the Application**
 
-#### **🖥️ Windows Users (Recommended)**
+#### **🚀 Main Application (Recommended)**
+
+Use the launcher for dependency checking and guided startup:
 
 ```bash
-python windows_launcher.py
+python launcher.py
 ```
 
-#### **🎨 Interactive Demo**
+#### **� Direct Launch**
+
+```bash
+python src/main.py
+```
 
 #### **🧪 Test Suite**
 
 ```bash
 python -m pytest tests/
-```
-
-#### **📊 Main Launcher**
-
-```bash
-python launcher.py
 ```
 
 ---
