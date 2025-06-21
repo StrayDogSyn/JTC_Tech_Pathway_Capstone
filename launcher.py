@@ -71,7 +71,7 @@ def run_application(app_choice):
     apps = {
         'complete': 'complete_weather_dashboard.py',
         'cobra': 'Weather Dominator/cobra_weather_app.py',
-        'test': 'test_complete_app.py'
+        'test': 'tests/test_complete_app.py'
     }
     
     if app_choice not in apps:
