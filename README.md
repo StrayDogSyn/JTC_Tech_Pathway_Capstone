@@ -29,6 +29,15 @@ A sophisticated weather dashboard application featuring clean architecture, mode
 - **Air Quality Monitoring**: AQI indicators with detailed pollutant data
 - **Interactive Gauges**: Temperature, humidity, pressure, wind speed displays
 
+### 📈 Advanced Tabular Components (Capstone Features)
+
+- **Historical Data Tables**: Sortable, filterable weather history with advanced search
+- **Location Comparison**: Multi-location weather comparison with ranking systems
+- **Analytics Dashboard**: Statistical analysis, trends, and performance metrics
+- **Data Export**: CSV/JSON export capabilities for research and analysis
+- **Advanced Filtering**: Date ranges, conditions, and custom criteria filtering
+- **Data Management**: Import/Export tools, data validation, and quality controls
+
 ---
 
 ## 🏗️ Architecture Overview
@@ -49,7 +58,9 @@ src/
 ├── services/
 │   └── weather_api.py      # External API integration
 ├── ui/
-│   ├── dashboard_ui.py     # Main user interface
+│   ├── dashboard_ui.py     # Main user interface with tabular integration
+│   ├── advanced_dashboard.py # Advanced dashboard with tabular components
+│   ├── tabular_components.py # Advanced data tables (sorting, filtering, export)
 │   ├── weather_displays.py # Weather-specific displays
 │   └── modern_components.py # Reusable UI components
 ├── models/
@@ -64,7 +75,9 @@ src/
 ├── src/                          # Main source code
 │   ├── ui/                       # User interface components
 │   │   ├── modern_components.py  # Advanced UI widgets
-│   │   ├── dashboard_ui.py       # Main dashboard interface
+│   │   ├── dashboard_ui.py       # Main dashboard interface with tabular integration
+│   │   ├── advanced_dashboard.py # Advanced dashboard with comprehensive tabular features
+│   │   ├── tabular_components.py # Advanced data tables (sortable, filterable, exportable)
 │   │   └── weather_displays.py   # Weather visualization components
 │   ├── models/                   # Data models
 │   │   └── weather_models.py     # Weather data structures
@@ -134,6 +147,22 @@ Use the launcher for dependency checking and guided startup:
 ```bash
 python launcher.py
 ```
+
+#### **📊 Advanced Dashboard (Capstone Features)**
+
+Launch the advanced dashboard with tabular components:
+
+```bash
+python launch_advanced_dashboard.py
+```
+
+Features:
+
+- **🌦️ Live Dashboard**: Real-time weather with search functionality
+- **📈 Historical Data**: Sortable weather history tables with filtering
+- **🌍 Comparisons**: Multi-location and time period analysis
+- **📊 Analytics**: Statistical analysis and trend visualization
+- **🗂️ Data Management**: Import/Export and data quality tools
 
 #### **🎯 Direct Launch**
 
