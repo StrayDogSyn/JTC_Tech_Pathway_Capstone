@@ -17,6 +17,9 @@ try:
         ModernCard, CircularProgress, ModernSearchBar, WeatherGauge,
         NotificationToast, ModernToggleSwitch, LoadingSpinner
     )
+    from .tabular_components import (
+        WeatherDataTable, ComparisonTable, AnalyticsTable, AdvancedDataTable
+    )
 except ImportError:
     # Fallback if modern components are not available
     ModernCard = None
@@ -26,6 +29,10 @@ except ImportError:
     NotificationToast = None
     ModernToggleSwitch = None
     LoadingSpinner = None
+    WeatherDataTable = None
+    ComparisonTable = None
+    AnalyticsTable = None
+    AdvancedDataTable = None
 
 
 class WeatherDashboardUI:
