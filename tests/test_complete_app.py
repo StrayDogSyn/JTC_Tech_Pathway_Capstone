@@ -1,7 +1,7 @@
 """
 Test script for the Complete Weather Dashboard
 Verifies that all components can be imported and initialized properly.
-Tests the main dashboard, COBRA styling system, and machine learning functionality.
+Tests the main dashboard, modern UI components, and machine learning functionality.
 """
 
 import sys
@@ -95,33 +95,29 @@ def test_complete_dashboard_import():
     
     assert True
 
-def test_cobra_styling_import():
-    """Test importing the COBRA styling components."""
-    print("\n🐍 Testing COBRA styling import...")
+def test_modern_ui_components():
+    """Test importing the modern UI components."""
+    print("\n🎨 Testing Modern UI components import...")
     
-    # Import from Weather Dominator folder
-    cobra_path = os.path.join(os.path.dirname(__file__), '..', 'Weather Dominator')
-    sys.path.insert(0, cobra_path)
-    
-    # Use importlib to dynamically import and suppress static analysis warnings
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "cobra_style", 
-        os.path.join(cobra_path, "cobra_style.py")
-    )
-    
-    assert spec is not None, "Could not create module spec for cobra_style"
-    assert spec.loader is not None, "Could not get loader for cobra_style"
-    
-    cobra_style = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(cobra_style)
-    
-    # Verify the expected components exist
-    assert hasattr(cobra_style, 'COBRA_COLORS'), "COBRA_COLORS not found in module"
-    assert hasattr(cobra_style, 'apply_cobra_theme'), "apply_cobra_theme not found in module"
-    assert hasattr(cobra_style, 'CobraChartAnimator'), "CobraChartAnimator not found in module"
-    
-    print("✅ COBRA styling components imported successfully")
+    try:
+        from src.ui.modern_components import (
+            ModernCard, CircularProgress, WeatherGauge,
+            NotificationToast, ModernToggleSwitch, LoadingSpinner
+        )
+        
+        # Verify the expected components exist
+        assert ModernCard is not None, "ModernCard not available"
+        assert CircularProgress is not None, "CircularProgress not available"
+        assert WeatherGauge is not None, "WeatherGauge not available"
+        assert NotificationToast is not None, "NotificationToast not available"
+        assert ModernToggleSwitch is not None, "ModernToggleSwitch not available"
+        assert LoadingSpinner is not None, "LoadingSpinner not available"
+        
+        print("✅ Modern UI components imported successfully")
+        
+    except ImportError as e:
+        print(f"❌ Modern UI components import failed: {e}")
+        assert False, f"Modern UI components import failed: {e}"
 
 def test_ml_functionality():
     """Test machine learning functionality."""
@@ -165,7 +161,7 @@ def run_all_tests():
         ("Import Dependencies", test_imports),
         ("API Key Configuration", test_api_key),
         ("Complete Dashboard", test_complete_dashboard_import),
-        ("COBRA Styling", test_cobra_styling_import),
+        ("Modern UI Components", test_modern_ui_components),
         ("ML Functionality", test_ml_functionality),
     ]
     

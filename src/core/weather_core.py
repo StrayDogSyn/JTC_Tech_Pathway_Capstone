@@ -9,9 +9,16 @@ import threading
 from typing import Optional, Dict, Any, Callable
 from datetime import datetime
 
-from ..models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
-from ..services.weather_api import WeatherAPIService
-from ..config.app_config import config
+try:
+    # Try relative imports first (when run as module)
+    from ..models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
+    from ..services.weather_api import WeatherAPIService
+    from ..config.app_config import config
+except ImportError:
+    # Fall back to absolute imports (when run directly or from verification)
+    from models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
+    from services.weather_api import WeatherAPIService
+    from config.app_config import config
 
 
 class WeatherDashboardCore:
