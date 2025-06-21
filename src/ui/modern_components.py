@@ -58,12 +58,45 @@ class ModernCard(ttk.Frame, AnimatedWidget):
     """Modern card component with shadow and hover effects."""
     
     def __init__(self, parent, title: str = "", **kwargs):
-        ttk.Frame.__init__(self, parent, **kwargs)
-        AnimatedWidget.__init__(self)
+        # Comprehensive filtering of unsupported parameters
+        # These might be passed from old code or user error
+        unsupported_params = {
+            'subtitle', 'elevation', 'shadow', 'rounded', 'card_style',
+            'border_width', 'border_color', 'background_color',
+            'hover_color', 'click_color'
+        }
         
+        # Filter kwargs to only include valid ttk.Frame parameters
+        valid_frame_params = {
+            'borderwidth', 'relief', 'padding', 'width', 'height', 
+            'takefocus', 'cursor', 'style', 'class'
+        }
+        
+        # Keep only valid parameters or those that don't conflict
+        filtered_kwargs = {}
+        for key, value in kwargs.items():
+            if key not in unsupported_params:
+                if key in valid_frame_params or not key.startswith('_'):
+                    filtered_kwargs[key] = value
+        
+        # Initialize parent classes with filtered parameters
+        try:
+            ttk.Frame.__init__(self, parent, **filtered_kwargs)
+        except tk.TclError as e:
+            # If there's still an error, try with minimal parameters
+            print(f"Warning: ModernCard parameter error: {e}")
+            ttk.Frame.__init__(self, parent)
+        
+        AnimatedWidget.__init__(self)        
+        # Store title and initialize other attributes
         self.title = title
         self.hover_scale = 1.0
         self.target_scale = 1.0
+        
+        # Debug: Log any filtered parameters
+        if any(param in kwargs for param in unsupported_params):
+            filtered_params = [param for param in unsupported_params if param in kwargs]
+            print(f"ModernCard: Filtered unsupported parameters: {filtered_params}")
         
         self._setup_card()
         self._bind_hover_events()
