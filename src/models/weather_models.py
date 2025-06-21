@@ -8,6 +8,12 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
+from ..utils.logging import get_logger
+from ..utils.exceptions import ValidationError
+
+
+logger = get_logger()
+
 
 @dataclass
 class WeatherData:
@@ -28,22 +34,53 @@ class WeatherData:
 
     @classmethod
     def from_api_response(cls, data: Dict[str, Any]) -> 'WeatherData':
-        """Create WeatherData instance from API response."""
-        return cls(
-            temperature=data['main']['temp'],
-            feels_like=data['main']['feels_like'],
-            humidity=data['main']['humidity'],
-            pressure=data['main']['pressure'],
-            wind_speed=data.get('wind', {}).get('speed', 0),
-            wind_direction=data.get('wind', {}).get('deg', 0),
-            visibility=data.get('visibility', 0),
-            description=data['weather'][0]['description'].title(),
-            icon=data['weather'][0]['icon'],
-            city=data['name'],
-            country=data['sys']['country'],
-            timestamp=data['dt'],
-            cloudiness=data.get('clouds', {}).get('all', 0)
-        )
+        """Create WeatherData instance from API response with validation."""
+        try:
+            logger.debug("Creating WeatherData from API response")
+            if not data or 'main' not in data or 'weather' not in data:
+                raise ValueError("Invalid weather data structure")
+            
+            return cls(
+                temperature=data['main']['temp'],
+                feels_like=data['main']['feels_like'],
+                humidity=data['main']['humidity'],
+                pressure=data['main']['pressure'],
+                wind_speed=data.get('wind', {}).get('speed', 0),
+                wind_direction=data.get('wind', {}).get('deg', 0),
+                visibility=data.get('visibility', 0),
+                description=data['weather'][0]['description'].title(),
+                icon=data['weather'][0]['icon'],
+                city=data['name'],
+                country=data['sys']['country'],
+                timestamp=data['dt'],
+                cloudiness=data.get('clouds', {}).get('all', 0)
+            )
+        except (KeyError, IndexError, TypeError) as e:
+            logger.error(f"Failed to parse weather data: {e}")
+            raise ValueError(f"Invalid weather data format: {e}")
+    
+    def validate(self) -> bool:
+        """Validate weather data values."""
+        try:
+            # Temperature range check (-100 to 60 Celsius)
+            if not -100 <= self.temperature <= 60:
+                logger.warning(f"Temperature out of range: {self.temperature}")
+                return False
+            
+            # Humidity range check (0-100%)
+            if not 0 <= self.humidity <= 100:
+                logger.warning(f"Humidity out of range: {self.humidity}")
+                return False
+            
+            # Wind speed check (0-200 m/s)
+            if not 0 <= self.wind_speed <= 200:
+                logger.warning(f"Wind speed out of range: {self.wind_speed}")
+                return False
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error validating weather data: {e}")
+            return False
 
 
 @dataclass

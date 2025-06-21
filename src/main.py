@@ -13,9 +13,14 @@ from typing import Optional
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.core.weather_core import WeatherDashboardCore
-from src.config.app_config import config, APP_CONFIG
+from src.config.config import config_manager, APP_CONFIG, setup_environment
 from src.ui.dashboard_ui import WeatherDashboardUI
 from src.ui.weather_displays import WeatherDisplays
+from src.utils.logging import get_logger, get_ui_logger
+
+# Initialize loggers
+logger = get_logger()
+ui_logger = get_ui_logger()
 
 
 class WeatherDashboardApp:
@@ -23,21 +28,27 @@ class WeatherDashboardApp:
     
     def __init__(self):
         """Initialize the weather dashboard application."""
+        logger.info("Initializing Weather Dashboard Application")
+        
+        # Set up environment
+        setup_environment()
+        
         # Initialize business logic
         self.core = WeatherDashboardCore()
         
         # Initialize UI
         self.ui = WeatherDashboardUI(
             title=APP_CONFIG["title"],
-            theme=config.current_theme,
+            theme=config_manager.current_theme,
             size=APP_CONFIG["default_size"]
-        )
-        
+        )        
         # Set up callbacks between UI and business logic
         self._setup_callbacks()
         
         # Load initial data
         self._load_initial_data()
+        
+        logger.info("Weather Dashboard Application initialized successfully")
     
     def _setup_callbacks(self) -> None:
         """Set up callbacks between UI and business logic."""
@@ -51,22 +62,27 @@ class WeatherDashboardApp:
     
     def _load_initial_data(self) -> None:
         """Load initial weather data for the default city."""
+        logger.info("Loading initial application data")
+        
         # Set initial UI state
-        self.ui.set_city_text(config.current_city)
-        self.ui.set_theme(config.current_theme)
+        self.ui.set_city_text(config_manager.current_city)
+        self.ui.set_theme(config_manager.current_theme)
         
         # Load data for the saved city if available
-        if config.current_city and config.current_city.strip():
-            self.core.load_weather_data(config.current_city)
+        if config_manager.current_city and config_manager.current_city.strip():
+            self.core.load_weather_data(config_manager.current_city)
     
     def _on_search(self, city: str) -> None:
         """Handle search request from UI."""
         if city:
+            ui_logger.log_user_action("search", {"city": city})
             self.core.load_weather_data(city)    
+    
     def _on_theme_change(self, theme: str) -> None:
         """Handle theme change request from UI."""
         if theme:
-            config.save_settings(theme=theme)
+            ui_logger.log_user_action("theme_change", {"theme": theme})
+            config_manager.save_settings(theme=theme)
             self.ui.show_info("Theme Changed", 
                              f"Theme changed to {theme}. Restart the app to see full effect.")
     

@@ -13,7 +13,7 @@ from functools import lru_cache
 from ..interfaces import WeatherAPIProtocol
 from ..utils.logging import get_logger
 from ..utils.exceptions import WeatherAPIError, ConfigurationError
-from ..config.config import ApplicationConfiguration
+from ..config.config import WeatherConfig
 
 
 logger = get_logger()
@@ -22,10 +22,10 @@ logger = get_logger()
 class WeatherAPIService:
     """Enhanced Weather API client with all Student Pack features."""
     
-    def __init__(self, config: Optional[ApplicationConfiguration] = None):
+    def __init__(self, config: Optional[WeatherConfig] = None):
         """Initialize the weather API service."""
-        self.config = config or ApplicationConfiguration()
-        self.api_key = self.config.api.api_key
+        self.config = config or WeatherConfig()
+        self.api_key = self.config.api_key
         
         if not self.api_key:
             logger.warning("No API key configured. Some features may not work.")
@@ -35,7 +35,7 @@ class WeatherAPIService:
         self.forecast_url = "https://api.openweathermap.org/data/2.5/forecast"
         self.geocoding_url = "https://api.openweathermap.org/geo/1.0"
         self.air_pollution_url = "https://api.openweathermap.org/data/2.5/air_pollution"
-        self.timeout = self.config.api.timeout
+        self.timeout = self.config.api_timeout
         
         logger.info("WeatherAPIService initialized successfully")
 

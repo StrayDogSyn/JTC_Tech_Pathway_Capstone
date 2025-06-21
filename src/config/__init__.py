@@ -4,6 +4,6 @@ Configuration management module.
 This module provides configuration loading and validation for the weather dashboard.
 """
 
-from .app_config import config
+from .config import ApplicationConfiguration, ConfigurationManager, APP_CONFIG, setup_environment
 
-__all__ = ['config']
+__all__ = ['ApplicationConfiguration', 'ConfigurationManager', 'APP_CONFIG', 'setup_environment']

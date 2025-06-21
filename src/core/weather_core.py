@@ -9,16 +9,23 @@ import threading
 from typing import Optional, Dict, Any, Callable
 from datetime import datetime
 
+from src.utils.logging import get_logger, get_api_logger, performance_timer, log_weather_data_update
+from src.utils.logging import log_function_call
+
 try:
     # Try relative imports first (when run as module)
     from ..models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
     from ..services.weather_api import WeatherAPIService
-    from ..config.app_config import config
+    from ..config.config import config_manager
 except ImportError:
     # Fall back to absolute imports (when run directly or from verification)
-    from models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
-    from services.weather_api import WeatherAPIService
-    from config.app_config import config
+    from src.models.weather_models import WeatherData, ForecastData, LocationData, AirQualityData
+    from src.services.weather_api import WeatherAPIService
+    from src.config.config import config_manager
+
+# Initialize loggers
+logger = get_logger()
+api_logger = get_api_logger()
 
 
 class WeatherDashboardCore:
@@ -26,7 +33,9 @@ class WeatherDashboardCore:
     
     def __init__(self):
         """Initialize the weather dashboard core."""
-        self.api_service = WeatherAPIService(config.api_key)
+        logger.info("Initializing Weather Dashboard Core")
+        
+        self.api_service = WeatherAPIService(config_manager.config)
         self.current_weather: Optional[WeatherData] = None
         self.forecast_data: Optional[ForecastData] = None
         self.air_quality_data: Optional[AirQualityData] = None
@@ -35,6 +44,8 @@ class WeatherDashboardCore:
         # Callbacks for UI updates
         self._status_callback: Optional[Callable[[str], None]] = None
         self._data_update_callback: Optional[Callable[[], None]] = None
+        
+        logger.info("Weather Dashboard Core initialized successfully")
         
     def set_status_callback(self, callback: Callable[[str], None]) -> None:
         """Set callback for status updates."""
@@ -59,9 +70,8 @@ class WeatherDashboardCore:
         if not city.strip():
             self._update_status("❌ Please enter a city name")
             return
-        
-        # Save city to settings
-        config.save_settings(city=city)
+          # Save city to settings
+        config_manager.save_settings(city=city)
         
         def task():
             try:
@@ -131,8 +141,7 @@ class WeatherDashboardCore:
             "feels_like": self.current_weather.feels_like,
             "description": self.current_weather.description,
             "humidity": self.current_weather.humidity,
-            "pressure": self.current_weather.pressure,
-            "wind_speed": self.current_weather.wind_speed,
+            "pressure": self.current_weather.pressure,            "wind_speed": self.current_weather.wind_speed,
             "cloudiness": self.current_weather.cloudiness,
             "location": self.get_location_display_name(),
             "timestamp": self.current_weather.timestamp
@@ -142,6 +151,6 @@ class WeatherDashboardCore:
         """Get API subscription information."""
         return {
             "subscription": self.api_service.get_subscription_info(),
-            "api_key_configured": bool(config.api_key),
-            "api_key_preview": f"{config.api_key[:10]}..." if config.api_key else "Not configured"
+            "api_key_configured": bool(config_manager.api_key),
+            "api_key_preview": f"{config_manager.api_key[:10]}..." if config_manager.api_key else "Not configured"
         }

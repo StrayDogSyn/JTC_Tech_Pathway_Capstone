@@ -1,4 +1,62 @@
 {
-  "city": "Austin",
-  "theme": "darkly"
+  "api": {
+    "api_key": "",
+    "base_url": "https://api.openweathermap.org/data/2.5",
+    "forecast_url": "https://api.openweathermap.org/data/2.5/forecast",
+    "geocoding_url": "https://api.openweathermap.org/geo/1.0",
+    "air_pollution_url": "https://api.openweathermap.org/data/2.5/air_pollution",
+    "timeout": 10,
+    "max_retries": 3,
+    "rate_limit_per_minute": 60,
+    "rate_limit_per_month": 1000000
+  },
+  "ui": {
+    "theme": "darkly",
+    "window_title": "🌦️ Advanced Weather Intelligence Platform",
+    "min_size": [
+      1000,
+      700
+    ],
+    "default_size": [
+      1200,
+      800
+    ],
+    "max_size": [
+      1920,
+      1080
+    ],
+    "update_interval": 30000,
+    "enable_animations": true,
+    "enable_sound": false,
+    "auto_save_position": true
+  },
+  "data": {
+    "cache_enabled": true,
+    "cache_duration": 300,
+    "auto_refresh": false,
+    "auto_refresh_interval": 300,
+    "max_history_entries": 1000,
+    "export_format": "json",
+    "data_validation": true,
+    "backup_enabled": true
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_to_file": true,
+    "log_to_console": true,
+    "max_log_size": 10,
+    "log_retention_days": 30,
+    "performance_logging": true,
+    "api_logging": true,
+    "ui_logging": false
+  },
+  "default_city": "Seattle",
+  "favorite_cities": [],
+  "temperature_unit": "C",
+  "wind_speed_unit": "km/h",
+  "pressure_unit": "hPa",
+  "enable_ml_predictions": false,
+  "enable_weather_alerts": true,
+  "enable_location_services": false,
+  "privacy_mode": false
 }
