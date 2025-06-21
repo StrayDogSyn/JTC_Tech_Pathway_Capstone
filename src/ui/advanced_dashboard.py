@@ -96,14 +96,15 @@ class AdvancedWeatherDashboard:
         
         # Tab 5: Data Management
         self._create_data_management_tab()
-        
-        # Bind tab change events
-        self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
-    
+          # Bind tab change events
+        if self.notebook:
+            self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
+
     def _create_main_dashboard_tab(self):
         """Create the main dashboard tab."""
         dashboard_frame = ttk.Frame(self.notebook)
-        self.notebook.add(dashboard_frame, text="🌦️ Live Dashboard")
+        if self.notebook:
+            self.notebook.add(dashboard_frame, text="🌦️ Live Dashboard")
         
         # Create embedded dashboard
         if WeatherDashboardUI:
@@ -204,22 +205,22 @@ class AdvancedWeatherDashboard:
             text="Weather forecast will appear here",
             font=("Segoe UI", 12)
         ).pack(pady=20)
-        
-        # Predictions placeholder
+          # Predictions placeholder
         ttk.Label(
             self.predictions_card,
             text="AI predictions will appear here",
             font=("Segoe UI", 12)
         ).pack(pady=20)
-    
+
     def _create_historical_data_tab(self):
         """Create the historical data tab with advanced table."""
         historical_frame = ttk.Frame(self.notebook)
-        self.notebook.add(historical_frame, text="📈 Historical Data")
+        if self.notebook:
+            self.notebook.add(historical_frame, text="📈 Historical Data")
         
         if WeatherDataTable:
             self.historical_table = WeatherDataTable(historical_frame)
-            self.historical_table.pack(fill="both", expand=True, padx=10, pady=10)
+            # WeatherDataTable creates its own main_frame and packs it
             
             # Add control panel
             control_frame = ttk.Frame(historical_frame)
@@ -248,26 +249,22 @@ class AdvancedWeatherDashboard:
                 text="Historical Data Table - Advanced table features will appear here",
                 font=("Segoe UI", 16)
             ).pack(expand=True)
-    
-    def _create_comparison_tab(self):
+      def _create_comparison_tab(self):
         """Create the location/time comparison tab."""
         comparison_frame = ttk.Frame(self.notebook)
-        self.notebook.add(comparison_frame, text="🔄 Comparisons")
+        if self.notebook:
+            self.notebook.add(comparison_frame, text="🔄 Comparisons")
         
         # Create sub-tabs for different comparison types
         comparison_notebook = ttk.Notebook(comparison_frame)
         comparison_notebook.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Location comparison tab
+          # Location comparison tab
         location_frame = ttk.Frame(comparison_notebook)
         comparison_notebook.add(location_frame, text="🌍 Locations")
         
         if ComparisonTable:
-            self.location_comparison_table = ComparisonTable(
-                location_frame, 
-                comparison_type="locations"
-            )
-            self.location_comparison_table.pack(fill="both", expand=True, padx=10, pady=10)
+            self.location_comparison_table = ComparisonTable(location_frame)
+            # ComparisonTable creates its own main_frame and packs it
             
             # Location controls
             loc_control_frame = ttk.Frame(location_frame)
@@ -284,23 +281,18 @@ class AdvancedWeatherDashboard:
                 text="📊 Compare Now",
                 command=self._compare_locations
             ).pack(side="left")
-        
-        # Time comparison tab
+          # Time comparison tab
         time_frame = ttk.Frame(comparison_notebook)
         comparison_notebook.add(time_frame, text="⏰ Time Periods")
         
         if ComparisonTable:
-            self.time_comparison_table = ComparisonTable(
-                time_frame,
-                comparison_type="time"
-            )
-            self.time_comparison_table.pack(fill="both", expand=True, padx=10, pady=10)
+            self.time_comparison_table = ComparisonTable(time_frame)
+            # ComparisonTable creates its own main_frame and packs it
             
             # Time controls
             time_control_frame = ttk.Frame(time_frame)
             time_control_frame.pack(fill="x", padx=10, pady=(0, 10))
-            
-            ttk.Button(
+              ttk.Button(
                 time_control_frame,
                 text="📅 Select Periods",
                 command=self._select_time_periods
@@ -311,15 +303,16 @@ class AdvancedWeatherDashboard:
                 text="📈 Analyze Trends",
                 command=self._analyze_trends
             ).pack(side="left")
-    
+
     def _create_analytics_tab(self):
         """Create the analytics and statistics tab."""
         analytics_frame = ttk.Frame(self.notebook)
-        self.notebook.add(analytics_frame, text="📊 Analytics")
+        if self.notebook:
+            self.notebook.add(analytics_frame, text="📊 Analytics")
         
         if AnalyticsTable:
             self.analytics_table = AnalyticsTable(analytics_frame)
-            self.analytics_table.pack(fill="both", expand=True, padx=10, pady=10)
+            # AnalyticsTable creates its own main_frame and packs it
             
             # Analytics controls
             analytics_control_frame = ttk.Frame(analytics_frame)
@@ -342,17 +335,17 @@ class AdvancedWeatherDashboard:
                 text="📋 Summary Report",
                 command=self._generate_summary_report
             ).pack(side="left")
-        else:
-            ttk.Label(
+        else:            ttk.Label(
                 analytics_frame,
                 text="Analytics & Statistics - Advanced analytics will appear here",
                 font=("Segoe UI", 16)
             ).pack(expand=True)
-    
+
     def _create_data_management_tab(self):
         """Create the data management tab."""
         data_frame = ttk.Frame(self.notebook)
-        self.notebook.add(data_frame, text="🗂️ Data Management")
+        if self.notebook:
+            self.notebook.add(data_frame, text="🗂️ Data Management")
         
         # Create sections
         sections_frame = ttk.Frame(data_frame)
@@ -524,9 +517,11 @@ class AdvancedWeatherDashboard:
         style.configure("Header.TLabel", font=("Segoe UI", 18, "bold"))
         style.configure("Subheader.TLabel", font=("Segoe UI", 14, "bold"))
     
-    # Event handlers
-    def _on_tab_changed(self, event):
+    # Event handlers    def _on_tab_changed(self, event):
         """Handle tab change events."""
+        if not self.notebook:
+            return
+            
         selected_tab = self.notebook.select()
         tab_index = self.notebook.index(selected_tab)
         
