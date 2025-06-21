@@ -93,10 +93,10 @@ class AdvancedWeatherDashboard:
         
         # Tab 4: Analytics & Statistics
         self._create_analytics_tab()
-        
-        # Tab 5: Data Management
+          # Tab 5: Data Management
         self._create_data_management_tab()
-          # Bind tab change events
+        
+        # Bind tab change events
         if self.notebook:
             self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
 
@@ -221,8 +221,7 @@ class AdvancedWeatherDashboard:
         if WeatherDataTable:
             self.historical_table = WeatherDataTable(historical_frame)
             # WeatherDataTable creates its own main_frame and packs it
-            
-            # Add control panel
+              # Add control panel
             control_frame = ttk.Frame(historical_frame)
             control_frame.pack(fill="x", padx=10, pady=(0, 10))
             
@@ -249,7 +248,8 @@ class AdvancedWeatherDashboard:
                 text="Historical Data Table - Advanced table features will appear here",
                 font=("Segoe UI", 16)
             ).pack(expand=True)
-      def _create_comparison_tab(self):
+
+    def _create_comparison_tab(self):
         """Create the location/time comparison tab."""
         comparison_frame = ttk.Frame(self.notebook)
         if self.notebook:
@@ -288,11 +288,11 @@ class AdvancedWeatherDashboard:
         if ComparisonTable:
             self.time_comparison_table = ComparisonTable(time_frame)
             # ComparisonTable creates its own main_frame and packs it
-            
-            # Time controls
+              # Time controls
             time_control_frame = ttk.Frame(time_frame)
             time_control_frame.pack(fill="x", padx=10, pady=(0, 10))
-              ttk.Button(
+            
+            ttk.Button(
                 time_control_frame,
                 text="📅 Select Periods",
                 command=self._select_time_periods
@@ -512,12 +512,12 @@ class AdvancedWeatherDashboard:
         
         # Card styling
         style.configure("Card.TLabelFrame", relief="solid", borderwidth=1)
-        
-        # Header styling
+          # Header styling
         style.configure("Header.TLabel", font=("Segoe UI", 18, "bold"))
         style.configure("Subheader.TLabel", font=("Segoe UI", 14, "bold"))
     
-    # Event handlers    def _on_tab_changed(self, event):
+    # Event handlers
+    def _on_tab_changed(self, event):
         """Handle tab change events."""
         if not self.notebook:
             return
