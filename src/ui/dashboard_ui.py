@@ -38,13 +38,13 @@ except ImportError:
 class WeatherDashboardUI:
     """Enhanced weather dashboard user interface with modern UX features."""
     
-    def __init__(self, title: str = "🌦️ Weather Dominator Pro", theme: str = "darkly", size: tuple = (1400, 900)):
+    def __init__(self, title: str = "🌦️ Weather Dominator Pro", theme: str = "darkly", size: tuple = (1700, 1100)):
         """Initialize the enhanced UI."""
         self.root = ttk.Window(
             title=title,
             themename=theme,
             size=size,
-            minsize=(1000, 700)
+            minsize=(1400, 900)
         )
         
         # Configure window for modern appearance
@@ -320,13 +320,38 @@ class WeatherDashboardUI:
 
     def _create_main_content(self) -> None:
         """Create the main content area with enhanced tabular components."""
-        # Main container
+        # Main container with scrollable capability
         main_container = ttk.Frame(self.root)
         main_container.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         
-        # Create notebook for tabbed interface
-        self.main_notebook = ttk.Notebook(main_container)
+        # Create scrollable canvas for better content management
+        canvas = tk.Canvas(main_container, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        # Configure scrolling
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        # Create window in canvas
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack scrollbar and canvas
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+        
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Create notebook in scrollable frame
+        self.main_notebook = ttk.Notebook(scrollable_frame)
         self.main_notebook.pack(fill="both", expand=True)        
+        
         # Dashboard Tab (original content)
         self._create_dashboard_tab()
         
@@ -344,17 +369,19 @@ class WeatherDashboardUI:
         dashboard_frame.grid_rowconfigure(0, weight=0)  # Top stats row
         dashboard_frame.grid_rowconfigure(1, weight=1)  # Main content row
         dashboard_frame.grid_rowconfigure(2, weight=0)  # Quick actions row
-        
-        # Top statistics cards row
+          # Top statistics cards row
         stats_frame = ttk.Frame(dashboard_frame)
-        stats_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        stats_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=15, pady=(10, 15))
         self._create_stats_cards(stats_frame)
         
         # Left panel - Current Weather & AI Predictions
         left_panel = ttk.Frame(dashboard_frame)
-        left_panel.grid(row=1, column=0, sticky="nsew", padx=(10, 5), pady=5)
-        left_panel.grid_rowconfigure(0, weight=0)
-        left_panel.grid_rowconfigure(1, weight=1)        # Enhanced current weather with modern card
+        left_panel.grid(row=1, column=0, sticky="nsew", padx=(15, 8), pady=(0, 10))
+        left_panel.grid_rowconfigure(0, weight=1)
+        left_panel.grid_rowconfigure(1, weight=1)
+        left_panel.grid_columnconfigure(0, weight=1)
+        
+        # Enhanced current weather with modern card
         if ModernCard:
             self.weather_card = ModernCard(
                 left_panel,
@@ -364,7 +391,9 @@ class WeatherDashboardUI:
             self.weather_frame = self.weather_card.content_frame
         else:
             self.weather_frame = ttk.LabelFrame(left_panel, text="🌤️ Current Weather", padding=10)
-            self.weather_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))        # Enhanced AI predictions with modern card
+            self.weather_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        
+        # Enhanced AI predictions with modern card
         if ModernCard:
             self.predictions_card = ModernCard(
                 left_panel,
@@ -375,12 +404,14 @@ class WeatherDashboardUI:
         else:
             self.predictions_frame = ttk.LabelFrame(left_panel, text="🤖 AI Predictions", padding=10)
             self.predictions_frame.grid(row=1, column=0, sticky="nsew")
-        
-        # Right panel - Air Quality & Forecast
+          # Right panel - Air Quality & Forecast
         right_panel = ttk.Frame(dashboard_frame)
-        right_panel.grid(row=1, column=1, sticky="nsew", padx=(5, 10), pady=5)
-        right_panel.grid_rowconfigure(0, weight=0)
-        right_panel.grid_rowconfigure(1, weight=1)        # Enhanced air quality with modern card and gauge
+        right_panel.grid(row=1, column=1, sticky="nsew", padx=(8, 15), pady=(0, 10))
+        right_panel.grid_rowconfigure(0, weight=1)
+        right_panel.grid_rowconfigure(1, weight=1)
+        right_panel.grid_columnconfigure(0, weight=1)
+        
+        # Enhanced air quality with modern card and gauge
         if ModernCard:
             self.air_quality_card = ModernCard(
                 right_panel,
@@ -390,7 +421,9 @@ class WeatherDashboardUI:
             self.air_quality_frame = self.air_quality_card.content_frame
         else:
             self.air_quality_frame = ttk.LabelFrame(right_panel, text="🌬️ Air Quality", padding=10)
-            self.air_quality_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))        # Enhanced forecast with modern card
+            self.air_quality_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        
+        # Enhanced forecast with modern card
         if ModernCard:
             self.forecast_card = ModernCard(
                 right_panel,
@@ -401,10 +434,9 @@ class WeatherDashboardUI:
         else:
             self.forecast_frame = ttk.LabelFrame(right_panel, text="📊 Forecast", padding=10)
             self.forecast_frame.grid(row=1, column=0, sticky="nsew")
-        
-        # Quick actions row
+          # Quick actions row
         actions_frame = ttk.Frame(dashboard_frame)
-        actions_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        actions_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=15, pady=(5, 10))
         self._create_quick_actions(actions_frame)
         
         # Show initial content
@@ -471,23 +503,180 @@ class WeatherDashboardUI:
     def _show_initial_content(self) -> None:
         """Show initial placeholder content."""
         self._clear_frame(self.weather_frame)
-        ttk.Label(self.weather_frame, 
-                 text="Enter a city name and click Search to get weather data", 
-                 font=('Segoe UI', 12)).pack(pady=20)
+        
+        # Create current weather display with sample data
+        weather_container = ttk.Frame(self.weather_frame)
+        weather_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Temperature and main info
+        main_info_frame = ttk.Frame(weather_container)
+        main_info_frame.pack(fill="x", pady=(0, 15))
+        
+        # Left side - Temperature
+        temp_frame = ttk.Frame(main_info_frame)
+        temp_frame.pack(side="left")
+        
+        ttk.Label(temp_frame, text="26.2°C", font=('Segoe UI', 42, 'bold'), foreground="#FF6B35").pack()
+        ttk.Label(temp_frame, text="Feels like 26.2°C", font=('Segoe UI', 12), foreground="gray").pack()
+        ttk.Label(temp_frame, text="Scattered Clouds", font=('Segoe UI', 14)).pack(pady=(5, 0))
+        
+        # Right side - Weather icon area
+        icon_frame = ttk.Frame(main_info_frame)
+        icon_frame.pack(side="right", fill="both", expand=True)
+        
+        ttk.Label(icon_frame, text="⛅", font=('Segoe UI', 64)).pack(anchor="center")
+        
+        # Weather details
+        details_frame = ttk.LabelFrame(weather_container, text="Weather Details", padding=10)
+        details_frame.pack(fill="both", expand=True)
+        
+        details = [
+            ("🌡️ Temperature", "26.2°C"),
+            ("💧 Humidity", "57%"),
+            ("🌪️ Pressure", "1020 hPa"),
+            ("💨 Wind Speed", "4.12 m/s"),
+            ("🧭 Wind Direction", "240°"),
+            ("👁️ Visibility", "10000 km")
+        ]
+        
+        for i, (label, value) in enumerate(details):
+            row = i // 2
+            col = i % 2
+            
+            detail_frame = ttk.Frame(details_frame)
+            detail_frame.grid(row=row, column=col, sticky="ew", padx=10, pady=3)
+            details_frame.grid_columnconfigure(col, weight=1)
+            
+            ttk.Label(detail_frame, text=label, width=18).pack(side="left")
+            ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold')).pack(side="right")
         
         self._clear_frame(self.predictions_frame)
-        ttk.Label(self.predictions_frame, 
-                 text="AI predictions will appear here after loading weather data", 
-                 font=('Segoe UI', 12)).pack(pady=20)
+        
+        # Create AI Weather Intelligence content
+        predictions_container = ttk.Frame(self.predictions_frame)
+        predictions_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # AI title
+        ttk.Label(predictions_container, text="Weather Insights & Predictions", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 10))
+        
+        # AI insights list
+        insights_frame = ttk.Frame(predictions_container)
+        insights_frame.pack(fill="both", expand=True)
+        
+        insights = [
+            {"icon": "🔹", "text": "Temperature trend: Stable conditions", "confidence": "95%"},
+            {"icon": "🔹", "text": "Low chance of precipitation today", "confidence": "87%"},
+            {"icon": "🔹", "text": "UV index will peak at midday", "confidence": "92%"},
+            {"icon": "🔹", "text": "Ideal conditions for outdoor activities", "confidence": "89%"},
+            {"icon": "🔹", "text": "Air quality remains excellent", "confidence": "96%"}
+        ]
+        
+        for insight in insights:
+            insight_frame = ttk.Frame(insights_frame)
+            insight_frame.pack(fill="x", pady=3)
+            
+            # Icon and text
+            content_frame = ttk.Frame(insight_frame)
+            content_frame.pack(side="left", fill="x", expand=True)
+            
+            ttk.Label(content_frame, text=insight["icon"], font=('Segoe UI', 12)).pack(side="left")
+            ttk.Label(content_frame, text=insight["text"], font=('Segoe UI', 10)).pack(side="left", padx=(8, 0))
+            
+            # Confidence
+            ttk.Label(insight_frame, text=insight["confidence"], font=('Segoe UI', 9, 'bold'), foreground="#4CAF50").pack(side="right")
+        
+        # Recommendations section
+        recommendations_frame = ttk.LabelFrame(predictions_container, text="AI Recommendations", padding=10)
+        recommendations_frame.pack(fill="x", pady=(10, 0))
+        
+        recommendations = [
+            "☀️ Perfect day for a picnic or outdoor sports",
+            "🧴 Apply sunscreen if spending time outdoors",
+            "💧 Stay hydrated - temperatures are comfortable"
+        ]
+        
+        for rec in recommendations:
+            ttk.Label(recommendations_frame, text=rec, font=('Segoe UI', 9)).pack(anchor="w", pady=1)
         
         self._clear_frame(self.air_quality_frame)
-        ttk.Label(self.air_quality_frame, 
-                 text="Air quality data will appear here", 
-                 font=('Segoe UI', 12)).pack(pady=20)        
+        
+        # Create AQI display layout
+        aqi_container = ttk.Frame(self.air_quality_frame)
+        aqi_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Main AQI value and status
+        aqi_main_frame = ttk.Frame(aqi_container)
+        aqi_main_frame.pack(fill="x", pady=(0, 10))
+        
+        aqi_value_label = ttk.Label(
+            aqi_main_frame,
+            text="AQI: 1",
+            font=('Segoe UI', 32, 'bold'),
+            foreground="#00E676"  # Green for good air quality
+        )
+        aqi_value_label.pack(side="left")
+        
+        aqi_status_frame = ttk.Frame(aqi_main_frame)
+        aqi_status_frame.pack(side="right", fill="x", expand=True)
+        
+        ttk.Label(aqi_status_frame, text="Good", font=('Segoe UI', 16, 'bold'), foreground="#00E676").pack(anchor="e")
+        ttk.Label(aqi_status_frame, text="Air quality is satisfactory", font=('Segoe UI', 10), foreground="gray").pack(anchor="e")
+        
+        # Pollutant levels
+        pollutants_frame = ttk.LabelFrame(aqi_container, text="Pollutant Levels", padding=10)
+        pollutants_frame.pack(fill="both", expand=True)
+        
+        pollutants = [
+            ("PM2.5:", "6.0 μg/m³", "#00E676"),
+            ("PM10:", "7.8 μg/m³", "#00E676"),
+            ("NO₂:", "7.1 μg/m³", "#00E676"),
+            ("O₃:", "34.2 μg/m³", "#FFC107")
+        ]
+        
+        for i, (label, value, color) in enumerate(pollutants):
+            row = i // 2
+            col = i % 2
+            
+            pollutant_frame = ttk.Frame(pollutants_frame)
+            pollutant_frame.grid(row=row, column=col, sticky="ew", padx=5, pady=2)
+            pollutants_frame.grid_columnconfigure(col, weight=1)
+            
+            ttk.Label(pollutant_frame, text=label, font=('Segoe UI', 9)).pack(side="left")
+            ttk.Label(pollutant_frame, text=value, font=('Segoe UI', 9, 'bold'), foreground=color).pack(side="right")
+        
         self._clear_frame(self.forecast_frame)
-        ttk.Label(self.forecast_frame, 
-                 text="Weather forecast charts will appear here", 
-                 font=('Segoe UI', 12)).pack(pady=20)
+          # Create compact 5-day forecast display
+        forecast_container = ttk.Frame(self.forecast_frame)
+        forecast_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Forecast title
+        ttk.Label(forecast_container, text="5-Day Forecast", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 8))
+          
+        # Sample forecast data - more compact
+        forecast_days = [
+            {"day": "Today", "icon": "☀️", "high": "28°", "low": "20°", "desc": "Scattered Clouds"},
+            {"day": "Tomorrow", "icon": "⛅", "high": "25°", "low": "18°", "desc": "Broken Clouds"},
+            {"day": "Wed", "icon": "🌧️", "high": "22°", "low": "16°", "desc": "Light Rain"},
+            {"day": "Thu", "icon": "🌤️", "high": "26°", "low": "19°", "desc": "Partly Cloudy"},
+            {"day": "Fri", "icon": "☀️", "high": "29°", "low": "21°", "desc": "Sunny"}
+        ]
+        
+        for day_data in forecast_days:
+            day_frame = ttk.Frame(forecast_container)
+            day_frame.pack(fill="x", pady=2)
+            
+            # More compact layout
+            ttk.Label(day_frame, text=day_data["day"], width=8, font=('Segoe UI', 9, 'bold')).pack(side="left")
+            ttk.Label(day_frame, text=day_data["icon"], font=('Segoe UI', 14)).pack(side="left", padx=(5, 8))
+            
+            # Temperature range
+            temp_label = ttk.Label(day_frame, text=f"{day_data['high']}/{day_data['low']}", 
+                                 font=('Segoe UI', 9, 'bold'), width=8)
+            temp_label.pack(side="right")
+            
+            # Description - shorter
+            desc_text = day_data["desc"][:12] + "..." if len(day_data["desc"]) > 12 else day_data["desc"]
+            ttk.Label(day_frame, text=desc_text, font=('Segoe UI', 8), foreground="gray").pack(side="right", padx=(0, 10))
     
     def _clear_frame(self, frame: Optional[tk.Widget]) -> None:
         """Clear all widgets from a frame."""
@@ -857,8 +1046,7 @@ Perfect for learning and development!        """
             self.favorites_list.append(location)
             listbox.insert(tk.END, location)
             self.show_notification(f"Added '{location}' to favorites!", "success")
-    
-    def _toggle_temperature_unit(self) -> None:
+      def _toggle_temperature_unit(self) -> None:
         """Toggle between Celsius and Fahrenheit."""
         current = self.temp_unit_var.get()
         if current == "°C":
@@ -869,232 +1057,101 @@ Perfect for learning and development!        """
             self.settings['temperature_unit'] = 'C'
         
         self.show_notification(f"Temperature unit changed to {self.temp_unit_var.get()}", "info")
-    
-    def _create_stats_cards(self, parent: tk.Widget) -> None:
-        """Create statistics cards at the top of the dashboard."""
-        stats = [
-            {"title": "Locations Tracked", "value": "12", "icon": "🌍", "trend": "+2"},
-            {"title": "API Calls Today", "value": "847", "icon": "🔄", "trend": "+156"},
-            {"title": "Avg Response Time", "value": "245ms", "icon": "⚡", "trend": "-12ms"},
-            {"title": "Data Accuracy", "value": "99.8%", "icon": "🎯", "trend": "+0.1%"}
-        ]
         
-        for i, stat in enumerate(stats):
-            if ModernCard:
-                card = ModernCard(
-                    parent,
-                    title=f"{stat['icon']} {stat['value']}"
-                )
-                card.pack(side="left", fill="x", expand=True, padx=(0, 5) if i < 3 else (0, 0))
-                
-                # Add subtitle and trend in content frame
-                content_frame = ttk.Frame(card.content_frame)
-                content_frame.pack(fill="both", expand=True, pady=(0, 8))
-                
-                ttk.Label(content_frame, text=stat["title"], font=('Segoe UI', 10), foreground="gray").pack()
-                ttk.Label(content_frame, text=stat["trend"], font=('Segoe UI', 10), foreground="green").pack()
+        # Refresh the display with new temperature units
+        self._refresh_temperature_display()
+    
+    def _refresh_temperature_display(self) -> None:
+        """Refresh the temperature display with the current unit setting."""
+        # Store current weather data for refreshing
+        if hasattr(self, '_current_weather_data') and self._current_weather_data:
+            self.update_weather_display(self._current_weather_data)
+        else:
+            # Update the sample data in initial content if no real data
+            self._update_sample_temperatures()
+    
+    def _update_sample_temperatures(self) -> None:
+        """Update sample temperature displays with current unit."""
+        # Update the main weather display sample data
+        if self.weather_frame and self.weather_frame.winfo_children():
+            current_unit = self.settings.get('temperature_unit', 'C')
+            
+            # Sample temperature in Celsius
+            sample_temp_c = 26.2
+            sample_feels_like_c = 26.2
+            
+            if current_unit == 'F':
+                sample_temp = self._celsius_to_fahrenheit(sample_temp_c)
+                sample_feels_like = self._celsius_to_fahrenheit(sample_feels_like_c)
+                unit_symbol = "°F"
             else:
-                # Fallback card
-                card_frame = ttk.LabelFrame(parent, text=stat["title"], padding=5)
-                card_frame.pack(side="left", fill="x", expand=True, padx=(0, 5) if i < 3 else (0, 0))
-                
-                ttk.Label(card_frame, text=f"{stat['icon']} {stat['value']}", font=('Segoe UI', 14, 'bold')).pack()
-                ttk.Label(card_frame, text=stat["trend"], font=('Segoe UI', 10), foreground="green").pack()
+                sample_temp = sample_temp_c
+                sample_feels_like = sample_feels_like_c
+                unit_symbol = "°C"
+            
+            # Find and update temperature labels in the weather frame
+            self._update_temperature_labels(self.weather_frame, sample_temp, sample_feels_like, unit_symbol)
+        
+        # Update forecast temperatures
+        if self.forecast_frame and self.forecast_frame.winfo_children():
+            self._update_forecast_temperatures()
     
-    def _create_quick_actions(self, parent: tk.Widget) -> None:
-        """Create quick action buttons."""
-        actions = [
-            {"text": "📊 Export Data", "command": self._export_data},
-            {"text": "📱 Share Weather", "command": self._share_weather},
-            {"text": "🔔 Set Alert", "command": self._set_weather_alert},
-            {"text": "📈 View Trends", "command": self._view_trends},
-            {"text": "🌐 Weather Map", "command": self._show_weather_map}
+    def _update_temperature_labels(self, parent_widget, temp: float, feels_like: float, unit_symbol: str) -> None:
+        """Recursively update temperature labels in a widget."""
+        for widget in parent_widget.winfo_children():
+            if isinstance(widget, ttk.Label):
+                text = widget.cget('text')
+                # Update main temperature display
+                if '°C' in text or '°F' in text:
+                    if 'Feels like' in text:
+                        widget.configure(text=f"Feels like {feels_like:.1f}{unit_symbol}")
+                    elif text.replace('°C', '').replace('°F', '').replace('.', '').isdigit():
+                        widget.configure(text=f"{temp:.1f}{unit_symbol}")
+            elif hasattr(widget, 'winfo_children'):
+                self._update_temperature_labels(widget, temp, feels_like, unit_symbol)
+    
+    def _update_forecast_temperatures(self) -> None:
+        """Update forecast temperature displays with current unit."""
+        current_unit = self.settings.get('temperature_unit', 'C')
+        
+        # Sample forecast temperatures in Celsius
+        forecast_temps_c = [
+            {"high": 28, "low": 20},
+            {"high": 25, "low": 18},
+            {"high": 22, "low": 16},
+            {"high": 26, "low": 19},
+            {"high": 29, "low": 21}
         ]
         
-        for action in actions:
-            btn = ttk.Button(
-                parent,
-                text=action["text"],
-                command=action["command"],
-                style="Outline.TButton"
-            )
-            btn.pack(side="left", padx=(0, 10))
+        if current_unit == 'F':
+            unit_symbol = "°F"
+            forecast_temps = [
+                {
+                    "high": self._celsius_to_fahrenheit(temp["high"]),
+                    "low": self._celsius_to_fahrenheit(temp["low"])
+                }
+                for temp in forecast_temps_c
+            ]
+        else:
+            unit_symbol = "°C"
+            forecast_temps = forecast_temps_c
+        
+        # Update forecast labels
+        self._update_forecast_labels(self.forecast_frame, forecast_temps, unit_symbol)
     
-    def _export_data(self) -> None:
-        """Export weather data."""
-        self.show_notification("Data export feature coming soon!", "info")
-    
-    def _share_weather(self) -> None:
-        """Share current weather."""
-        self.show_notification("Weather sharing feature coming soon!", "info")
-    
-    def _set_weather_alert(self) -> None:
-        """Set weather alert."""
-        self.show_notification("Weather alerts feature coming soon!", "info")
-    
-    def _view_trends(self) -> None:
-        """View weather trends."""
-        # Switch to analytics tab if available
-        if hasattr(self, 'main_notebook'):
-            for i in range(self.main_notebook.index("end")):
-                if "Analytics" in self.main_notebook.tab(i, "text"):
-                    self.main_notebook.select(i)
-                    self.show_notification("Switched to Analytics view", "success")
-                    return
-        self.show_notification("Analytics view not available", "warning")
-    
-    def _show_weather_map(self) -> None:
-        """Show weather map."""
-        self.show_notification("Weather map feature coming soon!", "info")
-    
-    def update_weather_display(self, weather_data: Dict[str, Any]) -> None:
-        """Update the weather display with modern components."""
-        if not self.weather_frame:
-            return
-            
-        self._clear_frame(self.weather_frame)
-        
-        # Create main weather display with modern layout
-        main_container = ttk.Frame(self.weather_frame)
-        main_container.pack(fill="both", expand=True)
-        
-        # Left side - Temperature and basic info
-        temp_frame = ttk.Frame(main_container)
-        temp_frame.pack(side="left", fill="y", padx=(0, 20))
-        
-        # Large temperature display
-        temp_value = weather_data.get('temperature', 0)
-        unit_symbol = "°C" if self.settings['temperature_unit'] == 'C' else "°F"
-        
-        temp_label = ttk.Label(
-            temp_frame,
-            text=f"{temp_value}{unit_symbol}",
-            style="Temperature.TLabel"
-        )
-        temp_label.pack()
-        
-        # Feels like temperature
-        feels_like = weather_data.get('feels_like', temp_value)
-        feels_like_label = ttk.Label(
-            temp_frame,
-            text=f"Feels like {feels_like}{unit_symbol}",
-            style="FeelsLike.TLabel"
-        )
-        feels_like_label.pack()
-        
-        # Weather description
-        description = weather_data.get('description', 'Unknown').title()
-        desc_label = ttk.Label(
-            temp_frame,
-            text=description,
-            style="Description.TLabel"
-        )
-        desc_label.pack(pady=(10, 0))
-        
-        # Right side - Weather details with gauges
-        details_frame = ttk.Frame(main_container)
-        details_frame.pack(side="right", fill="both", expand=True)
-        
-        # Create weather gauges if available
-        if WeatherGauge:
-            gauges_frame = ttk.Frame(details_frame)
-            gauges_frame.pack(fill="x", pady=(0, 10))
-            
-            # Humidity gauge
-            humidity = weather_data.get('humidity', 0)
-            humidity_gauge = WeatherGauge(
-                gauges_frame,
-                title="Humidity",
-                value=humidity,
-                unit="%",
-                min_val=0,
-                max_val=100,
-                size=80
-            )
-            humidity_gauge.pack(side="left", padx=(0, 10))
-            
-            # Pressure gauge (normalized to 0-100 scale)
-            pressure = weather_data.get('pressure', 1013)
-            pressure_normalized = ((pressure - 980) / (1050 - 980)) * 100
-            pressure_gauge = WeatherGauge(
-                gauges_frame,
-                title="Pressure",
-                value=pressure_normalized,
-                unit="hPa",
-                min_val=0,
-                max_val=100,
-                size=80
-            )
-            pressure_gauge.pack(side="left", padx=(0, 10))
-            
-            # Wind speed gauge
-            wind_speed = weather_data.get('wind_speed', 0)
-            wind_gauge = WeatherGauge(
-                gauges_frame,
-                title="Wind",
-                value=min(wind_speed, 50),  # Cap at 50 for display
-                unit=self.settings['wind_speed_unit'],
-                min_val=0,
-                max_val=50,
-                size=80
-            )
-            wind_gauge.pack(side="left")
-        
-        # Weather details list
-        details_list = ttk.Frame(details_frame)
-        details_list.pack(fill="both", expand=True)
-        
-        details = [
-            ("🌡️ Temperature", f"{temp_value}{unit_symbol}"),
-            ("💧 Humidity", f"{weather_data.get('humidity', 0)}%"),
-            ("🌪️ Pressure", f"{weather_data.get('pressure', 0)} {self.settings['pressure_unit']}"),
-            ("💨 Wind Speed", f"{weather_data.get('wind_speed', 0)} {self.settings['wind_speed_unit']}"),
-            ("🧭 Wind Direction", f"{weather_data.get('wind_direction', 0)}°"),
-            ("👁️ Visibility", f"{weather_data.get('visibility', 0)} km"),
-            ("☁️ Cloud Cover", f"{weather_data.get('clouds', 0)}%"),
-        ]
-        
-        for i, (label, value) in enumerate(details):
-            detail_frame = ttk.Frame(details_list)
-            detail_frame.pack(fill="x", pady=2)
-            
-            ttk.Label(detail_frame, text=label, width=15).pack(side="left")
-            ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold')).pack(side="left", padx=(10, 0))
-          # Add to recent searches if not already there
-        location = weather_data.get('location', 'Unknown')
-        if location not in self.recent_searches:
-            self.recent_searches.insert(0, location)
-            self.recent_searches = self.recent_searches[:10]  # Keep last 10
-    
-    def add_weather_to_history(self, weather_data: Dict[str, Any]) -> None:
-        """Add weather data to history table if available."""
-        if hasattr(self, 'weather_data_table') and self.weather_data_table:
-            try:
-                location = weather_data.get('location', 'Unknown Location')
-                self.weather_data_table.add_weather_data(weather_data, location)
-            except Exception as e:
-                print(f"Error adding to weather history: {e}")
-    
-    def add_location_comparison(self, weather_data: Dict[str, Any]) -> None:
-        """Add location to comparison table if available."""
-        if hasattr(self, 'comparison_table') and self.comparison_table:
-            try:
-                location = weather_data.get('location', 'Unknown Location')
-                self.comparison_table.add_location_data(location, weather_data)
-            except Exception as e:
-                print(f"Error adding to comparison: {e}")
-    
-    def update_analytics(self, weather_data: Dict[str, Any]) -> None:
-        """Update analytics table if available."""
-        if hasattr(self, 'analytics_table') and self.analytics_table:
-            try:
-                self.analytics_table.update_analytics(weather_data)
-            except Exception as e:
-                print(f"Error updating analytics: {e}")
-    
-    def _debug_moderncard_creation(self, *args, **kwargs):
-        """Debug helper for ModernCard creation."""
-        print(f"Creating ModernCard with args: {args}, kwargs: {kwargs}")
-        if ModernCard:
-            return ModernCard(*args, **kwargs)
-        return None
+    def _update_forecast_labels(self, parent_widget, forecast_temps: list, unit_symbol: str) -> None:
+        """Update forecast temperature labels."""
+        temp_index = 0
+        for widget in parent_widget.winfo_children():
+            if isinstance(widget, ttk.Label):
+                text = widget.cget('text')
+                # Look for temperature patterns like "28°/20°"
+                if '°' in text and '/' in text and temp_index < len(forecast_temps):
+                    high = forecast_temps[temp_index]["high"]
+                    low = forecast_temps[temp_index]["low"]
+                    widget.configure(text=f"{high:.0f}{unit_symbol}/{low:.0f}{unit_symbol}")
+                    temp_index += 1
+            elif hasattr(widget, 'winfo_children'):
+                self._update_forecast_labels(widget, forecast_temps, unit_symbol)
+
+    # ...existing code...
