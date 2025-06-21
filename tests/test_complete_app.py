@@ -134,10 +134,31 @@ def test_cobra_styling_import():
     
     try:
         # Import from Weather Dominator folder
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Weather Dominator'))
-        from cobra_style import COBRA_COLORS, apply_cobra_theme, CobraChartAnimator
-        print("✅ COBRA styling components imported successfully")
-        return True
+        cobra_path = os.path.join(os.path.dirname(__file__), '..', 'Weather Dominator')
+        sys.path.insert(0, cobra_path)
+        
+        # Use importlib to dynamically import and suppress static analysis warnings
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "cobra_style", 
+            os.path.join(cobra_path, "cobra_style.py")
+        )
+        if spec and spec.loader:
+            cobra_style = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(cobra_style)
+            
+            # Verify the expected components exist
+            if hasattr(cobra_style, 'COBRA_COLORS') and \
+               hasattr(cobra_style, 'apply_cobra_theme') and \
+               hasattr(cobra_style, 'CobraChartAnimator'):
+                print("✅ COBRA styling components imported successfully")
+                return True
+            else:
+                print("❌ COBRA styling components not found in module")
+                return False
+        else:
+            print("❌ Could not load COBRA styling module")
+            return False
     except ImportError as e:
         print(f"❌ COBRA styling import failed: {e}")
         return False
