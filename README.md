@@ -356,6 +356,55 @@ python setup_team.py
 
 ---
 
+## 🧹 **Maintenance & Cleanup**
+
+### **Project Cleanup**
+
+The project includes automated cleanup scripts to remove development artifacts:
+
+#### **Python Script (Cross-platform)**
+
+```bash
+# Show what would be cleaned (dry run)
+python cleanup.py --dry-run --verbose
+
+# Perform actual cleanup
+python cleanup.py --verbose
+```
+
+#### **PowerShell Script (Windows)**
+
+```powershell
+# Show what would be cleaned (dry run)
+.\cleanup.ps1 -DryRun -Verbose
+
+# Perform actual cleanup
+.\cleanup.ps1 -Verbose
+```
+
+### **What Gets Cleaned**
+
+- **`__pycache__`** directories (excluding `.venv`)
+- **`.pyc`** compiled Python files
+- **Temporary files** (`.tmp`, `.bak`, `.swp`, `.DS_Store`)
+- **Runtime logs** (content cleared, files preserved)
+
+### **Manual Cleanup**
+
+You can also manually clean up using:
+
+```bash
+# Remove Python cache files
+find . -name "__pycache__" -not -path "./.venv/*" -exec rm -rf {} +
+find . -name "*.pyc" -not -path "./.venv/*" -delete
+
+# Clear log files
+> logs/weather_dashboard.log
+> logs/errors.log
+```
+
+---
+
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

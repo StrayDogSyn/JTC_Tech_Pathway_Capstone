@@ -178,6 +178,51 @@ For new features:
 - Add inline comments for complex logic
 - Keep documentation up to date
 
+## 🧹 Development Cleanup
+
+Keep your development environment clean by regularly removing artifacts:
+
+### Automated Cleanup
+
+Use the provided cleanup scripts before committing:
+
+**Python (Cross-platform):**
+
+```bash
+# Check what would be cleaned
+python cleanup.py --dry-run --verbose
+
+# Perform cleanup
+python cleanup.py
+```
+
+**PowerShell (Windows):**
+
+```powershell
+# Check what would be cleaned
+.\cleanup.ps1 -DryRun -Verbose
+
+# Perform cleanup
+.\cleanup.ps1
+```
+
+### What Gets Cleaned
+
+- `__pycache__` directories
+- `.pyc` compiled files
+- Temporary files (`.tmp`, `.bak`, `.swp`)
+- Runtime logs (content cleared)
+
+### Pre-commit Checklist
+
+Before submitting a pull request:
+
+1. ✅ Run cleanup script
+2. ✅ Run all tests: `python -m pytest tests/`
+3. ✅ Check code style: `black src/ tests/`
+4. ✅ Update documentation if needed
+5. ✅ Test the application: `python launcher.py`
+
 ## 🔐 Security
 
 - Never commit API keys or secrets
