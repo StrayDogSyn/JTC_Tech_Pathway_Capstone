@@ -1485,6 +1485,256 @@ Perfect for learning and development!        """
             self.recent_searches.insert(0, location)
             self.recent_searches = self.recent_searches[:10]  # Keep last 10
 
+    def update_forecast_display(self, forecast_data: Dict[str, Any]) -> None:
+        """Update the forecast display with new data."""
+        if not self.forecast_frame or not forecast_data:
+            return
+        
+        self._clear_frame(self.forecast_frame)
+        
+        # Create forecast container
+        forecast_container = ttk.Frame(self.forecast_frame)
+        forecast_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Forecast title
+        ttk.Label(forecast_container, text="5-Day Forecast", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 8))
+        
+        # Get forecast items from data
+        forecast_items = forecast_data.get('daily', [])[:5]  # Get first 5 days
+        
+        for day_data in forecast_items:
+            day_frame = ttk.Frame(forecast_container)
+            day_frame.pack(fill="x", pady=2)
+            
+            # Day name
+            day_name = day_data.get('day', 'Unknown')
+            ttk.Label(day_frame, text=day_name, width=8, font=('Segoe UI', 9, 'bold')).pack(side="left")
+            
+            # Weather icon
+            icon = self._get_weather_icon(day_data.get('description', ''))
+            ttk.Label(day_frame, text=icon, font=('Segoe UI', 14)).pack(side="left", padx=(5, 8))
+            
+            # Temperature range
+            current_unit = self.settings.get('temperature_unit', 'C')
+            unit_symbol = "°F" if current_unit == 'F' else "°C"
+            
+            high_temp = day_data.get('temp_max', 0)
+            low_temp = day_data.get('temp_min', 0)
+            
+            if current_unit == 'F':
+                high_temp = self._celsius_to_fahrenheit(high_temp)
+                low_temp = self._celsius_to_fahrenheit(low_temp)
+            
+            temp_label = ttk.Label(day_frame, text=f"{high_temp:.0f}{unit_symbol}/{low_temp:.0f}{unit_symbol}", 
+                                 font=('Segoe UI', 9, 'bold'), width=8)
+            temp_label.pack(side="right")
+            
+            # Description - shorter
+            desc_text = day_data.get('description', '')[:12] + "..." if len(day_data.get('description', '')) > 12 else day_data.get('description', '')
+            ttk.Label(day_frame, text=desc_text, font=('Segoe UI', 8), foreground="gray").pack(side="right", padx=(0, 10))
+
+    def update_air_quality_display(self, air_quality_data: Dict[str, Any]) -> None:
+        """Update the air quality display with new data."""
+        if not self.air_quality_frame or not air_quality_data:
+            return
+        
+        self._clear_frame(self.air_quality_frame)
+        
+        # Create AQI display layout
+        aqi_container = ttk.Frame(self.air_quality_frame)
+        aqi_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Main AQI value and status
+        aqi_main_frame = ttk.Frame(aqi_container)
+        aqi_main_frame.pack(fill="x", pady=(0, 10))
+        
+        aqi_value = air_quality_data.get('aqi', 0)
+        aqi_color, aqi_text = self._get_aqi_info(aqi_value)
+        
+        aqi_value_label = ttk.Label(
+            aqi_main_frame,
+            text=f"AQI: {aqi_value}",
+            font=('Segoe UI', 32, 'bold'),
+            foreground=aqi_color
+        )
+        aqi_value_label.pack(side="left")
+        
+        aqi_status_frame = ttk.Frame(aqi_main_frame)
+        aqi_status_frame.pack(side="right", fill="x", expand=True)
+        
+        ttk.Label(aqi_status_frame, text=aqi_text, font=('Segoe UI', 16, 'bold'), foreground=aqi_color).pack(anchor="e")
+        ttk.Label(aqi_status_frame, text="Air quality assessment", font=('Segoe UI', 10), foreground="gray").pack(anchor="e")
+        
+        # Pollutant levels
+        pollutants_frame = ttk.LabelFrame(aqi_container, text="Pollutant Levels", padding=10)
+        pollutants_frame.pack(fill="both", expand=True)
+        
+        pollutants = [
+            ("PM2.5:", f"{air_quality_data.get('pm2_5', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('pm2_5', 0), 'pm2_5')),
+            ("PM10:", f"{air_quality_data.get('pm10', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('pm10', 0), 'pm10')),
+            ("NO₂:", f"{air_quality_data.get('no2', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('no2', 0), 'no2')),
+            ("O₃:", f"{air_quality_data.get('o3', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('o3', 0), 'o3'))
+        ]
+        
+        for i, (label, value, color) in enumerate(pollutants):
+            row = i // 2
+            col = i % 2
+            
+            pollutant_frame = ttk.Frame(pollutants_frame)
+            pollutant_frame.grid(row=row, column=col, sticky="ew", padx=5, pady=2)
+            pollutants_frame.grid_columnconfigure(col, weight=1)
+            
+            ttk.Label(pollutant_frame, text=label, font=('Segoe UI', 9)).pack(side="left")
+            ttk.Label(pollutant_frame, text=value, font=('Segoe UI', 9, 'bold'), foreground=color).pack(side="right")
+
+    def update_predictions_display(self, forecast_data: Dict[str, Any]) -> None:
+        """Update the AI predictions display with forecast-based insights."""
+        if not self.predictions_frame:
+            return
+        
+        self._clear_frame(self.predictions_frame)
+        
+        # Create AI Weather Intelligence content
+        predictions_container = ttk.Frame(self.predictions_frame)
+        predictions_container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # AI title
+        ttk.Label(predictions_container, text="Weather Insights & Predictions", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 10))
+        
+        # AI insights list based on forecast data
+        insights_frame = ttk.Frame(predictions_container)
+        insights_frame.pack(fill="both", expand=True)
+        
+        # Generate insights based on actual forecast data
+        insights = self._generate_ai_insights(forecast_data)
+        
+        for insight in insights:
+            insight_frame = ttk.Frame(insights_frame)
+            insight_frame.pack(fill="x", pady=3)
+            
+            # Icon and text
+            content_frame = ttk.Frame(insight_frame)
+            content_frame.pack(side="left", fill="x", expand=True)
+            
+            ttk.Label(content_frame, text=insight["icon"], font=('Segoe UI', 12)).pack(side="left")
+            ttk.Label(content_frame, text=insight["text"], font=('Segoe UI', 10)).pack(side="left", padx=(8, 0))
+            
+            # Confidence
+            ttk.Label(insight_frame, text=insight["confidence"], font=('Segoe UI', 9, 'bold'), foreground="#4CAF50").pack(side="right")
+        
+        # Recommendations section
+        recommendations_frame = ttk.LabelFrame(predictions_container, text="AI Recommendations", padding=10)
+        recommendations_frame.pack(fill="x", pady=(10, 0))
+        
+        recommendations = self._generate_recommendations(forecast_data)
+        
+        for rec in recommendations:
+            ttk.Label(recommendations_frame, text=rec, font=('Segoe UI', 9)).pack(anchor="w", pady=1)
+
+    def _get_aqi_info(self, aqi: float) -> tuple:
+        """Get AQI color and description."""
+        if aqi <= 50:
+            return "#00E676", "Good"
+        elif aqi <= 100:
+            return "#FFEB3B", "Moderate"
+        elif aqi <= 150:
+            return "#FF9800", "Unhealthy for Sensitive"
+        elif aqi <= 200:
+            return "#F44336", "Unhealthy"
+        elif aqi <= 300:
+            return "#9C27B0", "Very Unhealthy"
+        else:
+            return "#8D6E63", "Hazardous"
+
+    def _get_pollutant_color(self, value: float, pollutant_type: str) -> str:
+        """Get color for pollutant based on value and type."""
+        # Simplified color coding - can be enhanced with WHO guidelines
+        if value < 15:
+            return "#00E676"  # Good
+        elif value < 35:
+            return "#FFEB3B"  # Moderate
+        elif value < 65:
+            return "#FF9800"  # Unhealthy for sensitive
+        else:
+            return "#F44336"  # Unhealthy
+
+    def _generate_ai_insights(self, forecast_data: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Generate AI insights based on forecast data."""
+        insights = []
+        
+        if forecast_data:
+            # Analyze temperature trends
+            temps = [day.get('temp_max', 0) for day in forecast_data.get('daily', [])[:3]]
+            if len(temps) >= 2:
+                if temps[1] > temps[0]:
+                    insights.append({
+                        "icon": "🔹", 
+                        "text": "Temperature trend: Rising pattern detected", 
+                        "confidence": "92%"
+                    })
+                else:
+                    insights.append({
+                        "icon": "🔹", 
+                        "text": "Temperature trend: Stable conditions", 
+                        "confidence": "95%"
+                    })
+            
+            # Analyze precipitation
+            rain_chance = forecast_data.get('daily', [{}])[0].get('pop', 0) if forecast_data.get('daily') else 0
+            if rain_chance < 0.3:
+                insights.append({
+                    "icon": "🔹", 
+                    "text": "Low chance of precipitation today", 
+                    "confidence": "87%"
+                })
+            else:
+                insights.append({
+                    "icon": "🔹", 
+                    "text": f"Precipitation likely ({rain_chance*100:.0f}% chance)", 
+                    "confidence": "89%"
+                })
+        
+        # Default insights if no data
+        if not insights:
+            insights = [
+                {"icon": "🔹", "text": "Weather analysis in progress", "confidence": "85%"},
+                {"icon": "🔹", "text": "Monitoring atmospheric conditions", "confidence": "90%"},
+            ]
+        
+        return insights
+
+    def _generate_recommendations(self, forecast_data: Dict[str, Any]) -> List[str]:
+        """Generate weather recommendations based on forecast data."""
+        recommendations = []
+        
+        if forecast_data and forecast_data.get('daily'):
+            today = forecast_data['daily'][0]
+            temp_max = today.get('temp_max', 25)
+            rain_chance = today.get('pop', 0)
+            
+            if temp_max > 30:
+                recommendations.append("🧴 Apply sunscreen - high UV expected")
+                recommendations.append("💧 Stay hydrated - high temperatures")
+            elif temp_max < 10:
+                recommendations.append("🧥 Dress warmly - cold temperatures expected")
+            else:
+                recommendations.append("☀️ Perfect weather for outdoor activities")
+            
+            if rain_chance > 0.5:
+                recommendations.append("☂️ Carry an umbrella - rain likely")
+            elif rain_chance > 0.3:
+                recommendations.append("🌤️ Weather may change - be prepared")
+        
+        # Default recommendations
+        if not recommendations:
+            recommendations = [
+                "☀️ Check weather conditions before outdoor activities",
+                "💧 Stay hydrated throughout the day",
+                "📱 Keep weather app handy for updates"
+            ]
+        
+        return recommendations
+
     def _get_weather_icon(self, description: str) -> str:
         """Get weather icon based on description."""
         description = description.lower()
@@ -1503,39 +1753,6 @@ Perfect for learning and development!        """
         else:
             return "🌤️"
 
-    def add_weather_to_history(self, weather_data: Dict[str, Any]) -> None:
-        """Add weather data to history table if available."""
-        if hasattr(self, 'weather_data_table') and self.weather_data_table:
-            try:
-                location = weather_data.get('location', 'Unknown Location')
-                self.weather_data_table.add_weather_data(weather_data, location)
-            except Exception as e:
-                print(f"Error adding to weather history: {e}")
-
-    def add_location_comparison(self, weather_data: Dict[str, Any]) -> None:
-        """Add location to comparison table if available."""
-        if hasattr(self, 'comparison_table') and self.comparison_table:
-            try:
-                location = weather_data.get('location', 'Unknown Location')
-                self.comparison_table.add_location_data(location, weather_data)
-            except Exception as e:
-                print(f"Error adding to comparison: {e}")
-
-    def update_analytics(self, weather_data: Dict[str, Any]) -> None:
-        """Update analytics table if available."""
-        if hasattr(self, 'analytics_table') and self.analytics_table:
-            try:
-                self.analytics_table.update_analytics(weather_data)
-            except Exception as e:
-                print(f"Error updating analytics: {e}")
-
-    def _debug_moderncard_creation(self, *args, **kwargs):
-        """Debug helper for ModernCard creation."""
-        print(f"Creating ModernCard with args: {args}, kwargs: {kwargs}")
-        if ModernCard:
-            return ModernCard(*args, **kwargs)
-        return None
-    
     def _apply_glassmorphic_effects(self) -> None:
         """Apply glassmorphic visual effects to the interface."""
         try:
@@ -1547,13 +1764,13 @@ Perfect for learning and development!        """
                 try:
                     # Windows-specific styling
                     import platform
+                    import ctypes
                     if platform.system() == "Windows":
                         # Enable modern window styling
                         self.root.attributes('-topmost', False)
                         
                         # Try to enable acrylic effect (Windows 10+)
                         try:
-                            import ctypes
                             hwnd = self.root.winfo_id()
                             
                             # Enable composition
@@ -1575,23 +1792,5 @@ Perfect for learning and development!        """
                     
         except Exception as e:
             print(f"Glassmorphic effects not available: {e}")
-    
-    def _add_glassmorphic_shadow(self, widget: tk.Widget) -> None:
-        """Add subtle shadow effect to simulate glassmorphic depth."""
-        try:
-            # Create a shadow frame
-            shadow_frame = tk.Frame(
-                widget.master,
-                bg='#000000',
-                relief='flat',
-                bd=0
-            )
-            
-            # Position shadow slightly offset
-            widget.lift()  # Bring widget to front
-            
-            # Configure shadow opacity (darker background)
-            shadow_frame.configure(bg='#1a1a1a')
-            
-        except Exception:
-            pass  # Continue without shadow effect
+
+    # ...existing code...

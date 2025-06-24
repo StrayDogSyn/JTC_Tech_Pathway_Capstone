@@ -8,6 +8,7 @@ maintaining clean separation of concerns.
 import sys
 import os
 from typing import Optional
+from dataclasses import asdict
 
 # Add the src directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -15,7 +16,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from src.core.weather_core import WeatherDashboardCore
 from src.config.config import config_manager, APP_CONFIG, setup_environment
 from src.ui.dashboard_ui import WeatherDashboardUI
-from src.ui.weather_displays import WeatherDisplays
 from src.utils.logging import get_logger, get_ui_logger
 
 # Initialize loggers
@@ -87,32 +87,20 @@ class WeatherDashboardApp:
     def _update_displays(self) -> None:
         """Update all display areas with current data from business logic."""
         # Update current weather
-        if self.ui.weather_frame:
-            WeatherDisplays.update_current_weather(
-                self.ui.weather_frame, 
-                self.core.current_weather
-            )
+        if self.core.current_weather:
+            self.ui.update_weather_display(asdict(self.core.current_weather))
         
         # Update air quality
-        if self.ui.air_quality_frame:
-            WeatherDisplays.update_air_quality(
-                self.ui.air_quality_frame, 
-                self.core.air_quality_data
-            )
+        if self.core.air_quality_data:
+            self.ui.update_air_quality_display(asdict(self.core.air_quality_data))
         
         # Update forecast
-        if self.ui.forecast_frame:
-            WeatherDisplays.update_forecast(
-                self.ui.forecast_frame, 
-                self.core.forecast_data
-            )
+        if self.core.forecast_data:
+            self.ui.update_forecast_display(asdict(self.core.forecast_data))
         
-        # Update predictions (basic for now, can be enhanced with ML)
-        if self.ui.predictions_frame:
-            WeatherDisplays.update_predictions(
-                self.ui.predictions_frame, 
-                self.core.forecast_data
-            )
+        # Update predictions
+        if self.core.forecast_data:
+            self.ui.update_predictions_display(asdict(self.core.forecast_data))
     
     def run(self) -> None:
         """Start the application."""
