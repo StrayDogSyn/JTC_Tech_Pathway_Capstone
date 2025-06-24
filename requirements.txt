@@ -19,6 +19,9 @@ loguru>=0.7.0
 # Type Extensions
 typing-extensions>=4.0.0
 
+# Data Analysis
+pandas>=2.0.0
+
 # Development Dependencies (install with: pip install -e ".[dev]")
 # black>=23.0.0
 # flake8>=6.0.0  

@@ -9,6 +9,7 @@ import requests
 import os
 from typing import Dict, List, Optional, Any
 from functools import lru_cache
+from datetime import datetime, timedelta
 
 from ..interfaces import WeatherAPIProtocol
 from ..utils.logging import get_logger
@@ -35,6 +36,7 @@ class WeatherAPIService:
         self.forecast_url = "https://api.openweathermap.org/data/2.5/forecast"
         self.geocoding_url = "https://api.openweathermap.org/geo/1.0"
         self.air_pollution_url = "https://api.openweathermap.org/data/2.5/air_pollution"
+        self.historical_url = self.config.api.historical_url
         self.timeout = self.config.api.timeout
         
         logger.info("WeatherAPIService initialized successfully")
@@ -120,6 +122,89 @@ class WeatherAPIService:
                 'Current weather data',
                 '5-day/3-hour forecasts',
                 'Air pollution monitoring',
-                'Advanced geocoding'
+                'Advanced geocoding',
+                'Historical weather data (Open-Meteo)'
             ]
         }
+
+    def _make_historical_request(self, url: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Make HTTP request to Open-Meteo API (no API key required)."""
+        logger.debug(f"Making historical API request to {url}")
+        
+        response = None
+        try:
+            response = requests.get(url, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            data = response.json()
+            logger.debug(f"Historical API request successful: {response.status_code}")
+            return data
+            
+        except requests.exceptions.Timeout:
+            logger.error(f"Historical API request timeout after {self.timeout}s")
+            raise WeatherAPIError("Historical data request timed out")
+            
+        except requests.exceptions.HTTPError as e:
+            if response and response.status_code == 400:
+                logger.error("Invalid parameters for historical data request")
+                raise WeatherAPIError("Invalid historical data parameters")
+            elif response and response.status_code == 404:
+                logger.error("Historical data not found for specified location/date")
+                raise WeatherAPIError("Historical data not available")
+            else:
+                logger.error(f"Historical API HTTP error: {e}")
+                raise WeatherAPIError(f"Historical API error: {e}")
+                
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Historical API request failed: {e}")
+            raise WeatherAPIError(f"Historical data network error: {e}")
+            
+        except ValueError as e:
+            logger.error(f"Invalid JSON response from historical API: {e}")
+            raise WeatherAPIError("Invalid historical data response format")
+
+    def get_historical_weather(self, lat: float, lon: float, start_date: str, end_date: str) -> Optional[Dict[str, Any]]:
+        """
+        Get historical weather data from Open-Meteo API.
+        
+        Args:
+            lat: Latitude
+            lon: Longitude  
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format
+            
+        Returns:
+            Historical weather data dictionary
+        """
+        logger.info(f"Fetching historical weather data for coordinates: {lat}, {lon} from {start_date} to {end_date}")
+        
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "start_date": start_date,
+            "end_date": end_date,
+            "daily": "temperature_2m_mean,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset",
+            "hourly": "temperature_2m,precipitation"
+        }
+        
+        return self._make_historical_request(self.historical_url, params)
+
+    def get_historical_weather_sample(self, lat: float = 52.52, lon: float = 13.41) -> Optional[Dict[str, Any]]:
+        """
+        Get sample historical weather data (Berlin, 2000-2009) for demonstration.
+        
+        Args:
+            lat: Latitude (default: Berlin)
+            lon: Longitude (default: Berlin)
+            
+        Returns:
+            Sample historical weather data
+        """
+        logger.info(f"Fetching sample historical weather data for coordinates: {lat}, {lon}")
+        
+        return self.get_historical_weather(
+            lat=lat,
+            lon=lon,
+            start_date="2000-01-01",
+            end_date="2009-12-31"
+        )

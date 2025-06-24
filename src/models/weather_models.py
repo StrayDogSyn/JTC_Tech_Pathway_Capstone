@@ -218,3 +218,119 @@ class WeatherAlert:
             description=data['description'],
             tags=data.get('tags', [])
         )
+
+
+@dataclass
+class HistoricalWeatherData:
+    """Data class for historical weather information from Open-Meteo API."""
+    date: str
+    temperature_mean: Optional[float]
+    temperature_max: Optional[float]
+    temperature_min: Optional[float]
+    wind_speed_max: Optional[float]
+    wind_gusts_max: Optional[float]
+    sunrise: Optional[str]
+    sunset: Optional[str]
+    latitude: float
+    longitude: float
+    timezone: str
+
+    @classmethod
+    def from_api_response(cls, data: Dict[str, Any], index: int) -> 'HistoricalWeatherData':
+        """Create HistoricalWeatherData instance from Open-Meteo API response."""
+        try:
+            daily = data.get('daily', {})
+            return cls(
+                date=daily.get('time', [])[index] if daily.get('time') else '',
+                temperature_mean=daily.get('temperature_2m_mean', [])[index] if daily.get('temperature_2m_mean') else None,
+                temperature_max=daily.get('temperature_2m_max', [])[index] if daily.get('temperature_2m_max') else None,
+                temperature_min=daily.get('temperature_2m_min', [])[index] if daily.get('temperature_2m_min') else None,
+                wind_speed_max=daily.get('wind_speed_10m_max', [])[index] if daily.get('wind_speed_10m_max') else None,
+                wind_gusts_max=daily.get('wind_gusts_10m_max', [])[index] if daily.get('wind_gusts_10m_max') else None,
+                sunrise=daily.get('sunrise', [])[index] if daily.get('sunrise') else None,
+                sunset=daily.get('sunset', [])[index] if daily.get('sunset') else None,
+                latitude=data.get('latitude', 0.0),
+                longitude=data.get('longitude', 0.0),
+                timezone=data.get('timezone', 'UTC')
+            )
+        except (IndexError, KeyError, TypeError) as e:
+            logger.error(f"Error parsing historical weather data at index {index}: {e}")
+            raise ValidationError(f"Invalid historical weather data: {e}")
+
+
+@dataclass
+class HourlyHistoricalData:
+    """Data class for hourly historical weather information."""
+    datetime: str
+    temperature: Optional[float]
+    precipitation: Optional[float]
+
+    @classmethod
+    def from_api_response(cls, data: Dict[str, Any], index: int) -> 'HourlyHistoricalData':
+        """Create HourlyHistoricalData instance from Open-Meteo API response."""
+        try:
+            hourly = data.get('hourly', {})
+            return cls(
+                datetime=hourly.get('time', [])[index] if hourly.get('time') else '',
+                temperature=hourly.get('temperature_2m', [])[index] if hourly.get('temperature_2m') else None,
+                precipitation=hourly.get('precipitation', [])[index] if hourly.get('precipitation') else None
+            )
+        except (IndexError, KeyError, TypeError) as e:
+            logger.error(f"Error parsing hourly historical data at index {index}: {e}")
+            raise ValidationError(f"Invalid hourly historical data: {e}")
+
+
+@dataclass
+class HistoricalWeatherDataset:
+    """Container for complete historical weather dataset."""
+    daily_data: List[HistoricalWeatherData]
+    hourly_data: List[HourlyHistoricalData]
+    location_info: Dict[str, Any]
+    date_range: Dict[str, str]
+    units: Dict[str, str]
+
+    @classmethod
+    def from_api_response(cls, data: Dict[str, Any]) -> 'HistoricalWeatherDataset':
+        """Create complete historical dataset from Open-Meteo API response."""
+        try:
+            logger.debug("Creating HistoricalWeatherDataset from API response")
+            
+            # Parse daily data
+            daily_data = []
+            daily = data.get('daily', {})
+            if daily.get('time'):
+                for i in range(len(daily['time'])):
+                    daily_data.append(HistoricalWeatherData.from_api_response(data, i))
+            
+            # Parse hourly data
+            hourly_data = []
+            hourly = data.get('hourly', {})
+            if hourly.get('time'):
+                for i in range(len(hourly['time'])):
+                    hourly_data.append(HourlyHistoricalData.from_api_response(data, i))
+            
+            # Extract metadata
+            location_info = {
+                'latitude': data.get('latitude'),
+                'longitude': data.get('longitude'),
+                'timezone': data.get('timezone'),
+                'elevation': data.get('elevation')
+            }
+            
+            date_range = {
+                'start': daily.get('time', [''])[0] if daily.get('time') else '',
+                'end': daily.get('time', [''])[-1] if daily.get('time') else ''
+            }
+            
+            units = data.get('daily_units', {})
+            
+            return cls(
+                daily_data=daily_data,
+                hourly_data=hourly_data,
+                location_info=location_info,
+                date_range=date_range,
+                units=units
+            )
+        except Exception as e:
+            logger.error(f"Error creating historical weather dataset: {e}")
+            raise ValidationError(f"Invalid historical weather dataset: {e}")

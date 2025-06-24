@@ -24,6 +24,7 @@ class APIConfiguration:
     forecast_url: str = "https://api.openweathermap.org/data/2.5/forecast"
     geocoding_url: str = "https://api.openweathermap.org/geo/1.0"
     air_pollution_url: str = "https://api.openweathermap.org/data/2.5/air_pollution"
+    historical_url: str = "https://archive-api.open-meteo.com/v1/archive"
     timeout: int = 10
     max_retries: int = 3
     rate_limit_per_minute: int = 60
