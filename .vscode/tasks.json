@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Launch Weather Dashboard",
+			"type": "shell",
+			"command": ".venv\\Scripts\\python.exe",
+			"args": [
+				"launcher.py"
+			],
+			"group": "build",
+			"isBackground": false
+		}
+	]
+}
