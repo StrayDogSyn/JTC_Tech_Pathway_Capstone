@@ -1,6 +1,5 @@
-{
-  "api": {
-    "api_key": "",
+{  "api": {
+    "api_key": "3a113d811b8150d09780f9bf941c9b93",
     "base_url": "https://api.openweathermap.org/data/2.5",
     "forecast_url": "https://api.openweathermap.org/data/2.5/forecast",
     "geocoding_url": "https://api.openweathermap.org/geo/1.0",

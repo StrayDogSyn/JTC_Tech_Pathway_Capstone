@@ -144,8 +144,7 @@ class GlassmorphicWeatherDashboard:
         self._create_glassmorphic_header()
         
         # Create main content area
-        self._create_glassmorphic_content()
-        
+        self._create_glassmorphic_content()        
         # Create glassmorphic status bar
         self._create_glassmorphic_status_bar()
     
@@ -182,18 +181,50 @@ class GlassmorphicWeatherDashboard:
         )
         subtitle_label.pack(anchor="w")
         
-        # Search section
+        # Search section - Create a proper search frame
         search_frame = ttk.Frame(header_layout, style="Glass.TFrame")
         search_frame.grid(row=0, column=1, sticky="ew", padx=(20, 0))
         
-        # Glassmorphic search bar
-        self.search_bar = GlassmorphicSearchBar(
-            search_frame,
-            placeholder="Enter city name...",
-            search_callback=self._on_search,
+        # Search container with glassmorphic styling
+        search_container = GlassmorphicFrame(search_frame, style_theme=self.glass_theme)
+        search_container.pack(fill="x")
+        
+        # Search components frame
+        search_components = ttk.Frame(search_container.content_frame)
+        search_components.pack(fill="x", padx=8, pady=5)
+        search_components.grid_columnconfigure(1, weight=1)
+        
+        # Search icon
+        search_icon = ttk.Label(
+            search_components,
+            text="🔍",
+            font=("Segoe UI", 12),
+            foreground=self.colors["text_secondary"]
+        )
+        search_icon.grid(row=0, column=0, padx=(5, 10))
+          # Search entry
+        self.city_entry = ttk.Entry(
+            search_components,
+            font=("Segoe UI", 11),
+            width=25
+        )
+        self.city_entry.grid(row=0, column=1, sticky="ew", pady=2)
+        self.city_entry.bind('<Return>', self._on_search_enter)
+        
+        # Add placeholder text
+        self.city_entry.insert(0, "Enter city name...")
+        self.city_entry.bind('<FocusIn>', self._on_entry_focus_in)
+        self.city_entry.bind('<FocusOut>', self._on_entry_focus_out)
+        self._entry_placeholder = True
+        
+        # Search button
+        search_btn = GlassmorphicButton(
+            search_components,
+            text="Search",
+            command=self._on_search_button,
             style_theme=self.glass_theme
         )
-        self.search_bar.pack(fill="x", pady=5)
+        search_btn.grid(row=0, column=2, padx=(10, 5))
         
         # Theme controls
         controls_frame = ttk.Frame(header_layout, style="Glass.TFrame")
@@ -317,10 +348,25 @@ class GlassmorphicWeatherDashboard:
         )
         self.progress_bar.grid(row=0, column=1, sticky="e", padx=(10, 0))
         self.progress_bar.configure(width=200, height=25)
+    
+    def _on_search_enter(self, event=None):
+        """Handle search when Enter key is pressed."""
+        if hasattr(self, 'city_entry') and self.city_entry:
+            query = self.city_entry.get().strip()
+            if query and query != "Enter city name...":
+                self._on_search(query)
+    
+    def _on_search_button(self):
+        """Handle search when Search button is clicked."""
+        if hasattr(self, 'city_entry') and self.city_entry:
+            query = self.city_entry.get().strip()
+            if query and query != "Enter city name...":
+                self._on_search(query)
+    
     def _on_search(self, query: Optional[str] = None):
         """Handle search action."""
-        if query is None and self.search_bar:
-            query = self.search_bar.get_text()
+        if query is None and hasattr(self, 'city_entry') and self.city_entry:
+            query = self.city_entry.get().strip()
         
         if query and self.search_callback:
             self.search_callback(query)
@@ -350,8 +396,14 @@ class GlassmorphicWeatherDashboard:
     
     def set_city_text(self, city: str) -> None:
         """Set the city in the search bar."""
-        if self.search_bar:
-            self.search_bar.set_text(city)
+        if hasattr(self, 'city_entry') and self.city_entry:
+            self.city_entry.delete(0, tk.END)
+            if city and city.strip():
+                self.city_entry.insert(0, city)
+                self._entry_placeholder = False
+            else:
+                self.city_entry.insert(0, "Enter city name...")
+                self._entry_placeholder = True
     
     def set_theme(self, theme: str) -> None:
         """Set the UI theme."""
@@ -388,6 +440,18 @@ class GlassmorphicWeatherDashboard:
             print("\\nGlassmorphic dashboard interrupted by user")
         except Exception as e:
             print(f"Dashboard error: {e}")
+    
+    def _on_entry_focus_in(self, event=None):
+        """Handle entry focus in - remove placeholder."""
+        if hasattr(self, '_entry_placeholder') and self._entry_placeholder:
+            self.city_entry.delete(0, tk.END)
+            self._entry_placeholder = False
+    
+    def _on_entry_focus_out(self, event=None):
+        """Handle entry focus out - add placeholder if empty."""
+        if not self.city_entry.get().strip():
+            self.city_entry.insert(0, "Enter city name...")
+            self._entry_placeholder = True
 
 
 # Compatibility alias for existing code
