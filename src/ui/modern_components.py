@@ -544,8 +544,7 @@ class NotificationToast(ttk.Toplevel, AnimatedWidget):
         # Get screen dimensions
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        
-        # Position in top-right corner
+          # Position in top-right corner
         x = screen_width - width - 20
         y = 20
         
@@ -568,17 +567,34 @@ class NotificationToast(ttk.Toplevel, AnimatedWidget):
         steps = 20
         step_time = 0.3 / steps
         
-        for i in range(steps + 1):
-            alpha = 1.0 - (i / steps)
-            self.attributes('-alpha', alpha)
-            time.sleep(step_time)
-        
-        self.destroy()
+        try:
+            for i in range(steps + 1):
+                alpha = 1.0 - (i / steps)
+                try:
+                    self.attributes('-alpha', alpha)
+                    time.sleep(step_time)
+                except tk.TclError:
+                    # Window already destroyed
+                    return
+            
+            # Only destroy if window still exists
+            try:
+                self.destroy()
+            except tk.TclError:
+                # Window already destroyed
+                pass
+        except Exception:
+            # Handle any other potential errors
+            pass
     
     def _update_animation(self, progress: float):
         """Update fade-in animation."""
         self.alpha = progress
-        self.attributes('-alpha', self.alpha)
+        try:
+            self.attributes('-alpha', self.alpha)
+        except tk.TclError:
+            # Window already destroyed
+            pass
 
 
 class ModernToggleSwitch(ttk.Frame):
