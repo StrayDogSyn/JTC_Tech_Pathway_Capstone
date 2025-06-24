@@ -5,6 +5,7 @@
     "forecast_url": "https://api.openweathermap.org/data/2.5/forecast",
     "geocoding_url": "https://api.openweathermap.org/geo/1.0",
     "air_pollution_url": "https://api.openweathermap.org/data/2.5/air_pollution",
+    "historical_url": "https://archive-api.open-meteo.com/v1/archive",
     "timeout": 10,
     "max_retries": 3,
     "rate_limit_per_minute": 60,
