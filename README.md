@@ -76,7 +76,6 @@ src/
 │   ├── ui/                       # User interface components
 │   │   ├── modern_components.py  # Advanced UI widgets
 │   │   ├── dashboard_ui.py       # Main dashboard interface with tabular integration
-│   │   ├── advanced_dashboard.py # Advanced dashboard with comprehensive tabular features
 │   │   ├── tabular_components.py # Advanced data tables (sortable, filterable, exportable)
 │   │   └── weather_displays.py   # Weather visualization components
 │   ├── models/                   # Data models
@@ -86,7 +85,7 @@ src/
 │   ├── core/                     # Business logic
 │   │   └── weather_core.py       # Core weather processing
 │   ├── config/                   # Configuration
-│   │   └── app_config.py         # Application settings
+│   │   └── config.py             # Application settings
 │   └── utils/                    # Utilities
 │       └── ml_predictions.py     # Machine learning features
 ├── tests/                        # Test suite
@@ -312,6 +311,51 @@ See `requirements.txt` for complete list:
 
 ---
 
+## 🤝 **Team Collaboration**
+
+This project is designed for team collaboration with clean architecture and established development practices.
+
+### **Quick Team Setup**
+
+New team members can get started quickly:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd JTC_Tech_Pathway_Capstone
+
+# Run the team setup script
+python setup_team.py
+```
+
+### **Development Guidelines**
+
+- 📖 **Read First**: [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
+- 🏗️ **Architecture**: [ARCHITECTURE.md](ARCHITECTURE.md) for system design
+- 📝 **Changes**: [CHANGELOG.md](CHANGELOG.md) for version history
+- 🔒 **Security**: [SECURITY.md](SECURITY.md) for security practices
+
+### **Project Structure**
+
+```text
+├── src/                    # Source code (modular architecture)
+├── tests/                  # Test suite
+├── .env.example           # Environment template
+├── requirements.txt       # Dependencies
+├── setup_team.py         # Team onboarding script
+└── docs/                  # Documentation
+```
+
+### **Development Workflow**
+
+1. **Setup**: Run `python setup_team.py`
+2. **Branch**: Create feature branches from `main`
+3. **Code**: Follow PEP 8 and add type hints
+4. **Test**: Write tests and ensure they pass
+5. **PR**: Submit pull requests with clear descriptions
+
+---
+
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -333,13 +377,13 @@ For questions, issues, or feature requests:
 
 1. Run the test suite to diagnose issues: `python -m pytest tests/`
 2. Review the [Architecture Documentation](ARCHITECTURE.md)
-3. Check the [Cleanup Summary](CLEANUP_SUMMARY.md) for recent changes
+3. Check the [Contributing Guidelines](CONTRIBUTING.md)
 4. Launch the application with `python launcher.py`
 
 ---
 
 🌟 Advanced Weather Intelligence Platform - Built with ❤️ using Python
 
-**Status**: ✅ Advanced UX/UI Implementation Complete
-**Version**: 2.0 - Modern UI Release
-**Last Updated**: June 20, 2025
+**Status**: ✅ Ready for Team Collaboration
+**Version**: 1.0 - Clean Architecture Release
+**Last Updated**: June 23, 2025
