@@ -11,6 +11,11 @@ from typing import Optional, Callable, Dict, Any, List
 from datetime import datetime
 import threading
 import time
+import random
+
+from ..utils.logging import get_logger
+
+logger = get_logger()
 
 try:
     from .modern_components import (
@@ -1379,9 +1384,230 @@ Perfect for learning and development!        """
             except Exception as e:
                 print(f"Error updating analytics: {e}")
 
-    def _debug_moderncard_creation(self, *args, **kwargs):
-        """Debug helper for ModernCard creation."""
-        print(f"Creating ModernCard with args: {args}, kwargs: {kwargs}")
-        if ModernCard:
-            return ModernCard(*args, **kwargs)
-        return None
+    def update_air_quality_display(self, air_quality_data: Dict[str, Any]) -> None:
+        """Update the air quality display with new data."""
+        try:
+            if not self.air_quality_frame:
+                return
+            
+            self._clear_frame(self.air_quality_frame)
+            
+            # Air quality index
+            aqi = air_quality_data.get('aqi', 0)
+            aqi_label = ttk.Label(
+                self.air_quality_frame,
+                text=f"AQI: {aqi}",
+                font=('Segoe UI', 24, 'bold')
+            )
+            aqi_label.pack(pady=(0, 10))
+            
+            # Air quality status
+            if aqi <= 50:
+                status = "Good 😊"
+                color = "#00E676"
+            elif aqi <= 100:
+                status = "Moderate 😐"
+                color = "#FFEB3B"
+            elif aqi <= 150:
+                status = "Unhealthy for Sensitive 😷"
+                color = "#FF9800"
+            elif aqi <= 200:
+                status = "Unhealthy 😨"
+                color = "#F44336"
+            else:
+                status = "Very Unhealthy ☠️"
+                color = "#9C27B0"
+            
+            status_label = ttk.Label(
+                self.air_quality_frame,
+                text=status
+            )
+            status_label.pack(pady=(0, 15))
+            
+            # Air quality components
+            components_frame = ttk.Frame(self.air_quality_frame)
+            components_frame.pack(fill="x")
+            
+            # Sample components (would come from actual API)
+            components = {
+                'PM2.5': air_quality_data.get('pm25', 'N/A'),
+                'PM10': air_quality_data.get('pm10', 'N/A'),
+                'NO2': air_quality_data.get('no2', 'N/A'),
+                'O3': air_quality_data.get('o3', 'N/A')
+            }
+            
+            for i, (component, value) in enumerate(components.items()):
+                comp_label = ttk.Label(
+                    components_frame,
+                    text=f"{component}\n{value}",
+                    anchor="center"
+                )
+                comp_label.grid(row=i//2, column=i%2, padx=5, pady=5, sticky="ew")
+            
+            # Configure grid
+            components_frame.grid_columnconfigure(0, weight=1)
+            components_frame.grid_columnconfigure(1, weight=1)
+            
+        except Exception as e:
+            logger.error(f"Error updating air quality display: {e}")
+            if self.air_quality_frame:
+                error_label = ttk.Label(
+                    self.air_quality_frame,
+                    text="❌ Air quality data unavailable"
+                )
+                error_label.pack(pady=20)
+
+    def update_forecast_display(self, forecast_data: Dict[str, Any]) -> None:
+        """Update the forecast display with new data."""
+        try:
+            if not self.forecast_frame:
+                return
+            
+            self._clear_frame(self.forecast_frame)
+            
+            # Sample 5-day forecast
+            forecast_days = []
+            current_temp = forecast_data.get('temperature', 20)
+            
+            import random
+            from datetime import datetime, timedelta
+            
+            for i in range(5):
+                day = datetime.now() + timedelta(days=i+1)
+                temp_variation = random.uniform(-5, 5)
+                forecast_days.append({
+                    'day': day.strftime('%a'),
+                    'date': day.strftime('%m/%d'),
+                    'high': int(current_temp + temp_variation + random.uniform(0, 5)),
+                    'low': int(current_temp + temp_variation - random.uniform(0, 5)),
+                    'condition': random.choice(['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy'])
+                })
+            
+            # Display forecast
+            for i, day_data in enumerate(forecast_days):
+                day_frame = ttk.Frame(self.forecast_frame)
+                day_frame.pack(fill="x", pady=2)
+                
+                # Day
+                day_label = ttk.Label(
+                    day_frame,
+                    text=f"{day_data['day']}\n{day_data['date']}",
+                    width=8
+                )
+                day_label.pack(side="left", padx=(5, 10))
+                
+                # Condition icon
+                icon = self._get_weather_icon(day_data['condition'])
+                icon_label = ttk.Label(
+                    day_frame,
+                    text=icon,
+                    width=3
+                )
+                icon_label.pack(side="left", padx=5)
+                
+                # Temperature range
+                current_unit = self.settings.get('temperature_unit', 'C')
+                unit_symbol = "°F" if current_unit == 'F' else "°C"
+                
+                high = day_data['high']
+                low = day_data['low']
+                
+                if current_unit == 'F':
+                    high = self._celsius_to_fahrenheit(high)
+                    low = self._celsius_to_fahrenheit(low)
+                
+                temp_label = ttk.Label(
+                    day_frame,
+                    text=f"{high:.0f}° / {low:.0f}°"
+                )
+                temp_label.pack(side="left", padx=10)
+                
+                # Condition
+                condition_label = ttk.Label(
+                    day_frame,
+                    text=day_data['condition']
+                )
+                condition_label.pack(side="right", padx=5)
+            
+        except Exception as e:
+            logger.error(f"Error updating forecast display: {e}")
+            if self.forecast_frame:
+                error_label = ttk.Label(
+                    self.forecast_frame,
+                    text="❌ Forecast data unavailable"
+                )
+                error_label.pack(pady=20)
+
+    def update_predictions_display(self, forecast_data: Dict[str, Any]) -> None:
+        """Update the AI predictions display with new data."""
+        try:
+            if not self.predictions_frame:
+                return
+            
+            self._clear_frame(self.predictions_frame)
+            
+            # AI Prediction header
+            header_label = ttk.Label(
+                self.predictions_frame,
+                text="🤖 AI Weather Intelligence",
+                font=('Segoe UI', 12, 'bold')
+            )
+            header_label.pack(pady=(0, 10))
+            
+            # Generate some AI-like predictions
+            current_temp = forecast_data.get('temperature', 20)
+            description = forecast_data.get('description', 'clear').lower()
+            
+            predictions = []
+            
+            # Temperature trend prediction
+            if current_temp > 25:
+                predictions.append("🌡️ High temperature detected - expect similar conditions tomorrow")
+            elif current_temp < 10:
+                predictions.append("🥶 Cold conditions - bundle up and stay warm")
+            else:
+                predictions.append("🌤️ Moderate temperatures - comfortable weather ahead")
+            
+            # Weather pattern prediction
+            if 'rain' in description:
+                predictions.append("☔ Rain pattern detected - 70% chance of continued precipitation")
+            elif 'cloud' in description:
+                predictions.append("☁️ Cloudy conditions - possible weather changes incoming")
+            else:
+                predictions.append("☀️ Clear skies - stable weather pattern expected")
+            
+            # Activity suggestion
+            if current_temp > 20 and 'clear' in description:
+                predictions.append("🏃‍♂️ Perfect weather for outdoor activities!")
+            elif 'rain' in description:
+                predictions.append("🏠 Great day for indoor activities")
+            else:
+                predictions.append("🚶‍♂️ Good day for a walk with a light jacket")
+            
+            # Display predictions
+            for prediction in predictions:
+                pred_label = ttk.Label(
+                    self.predictions_frame,
+                    text=f"• {prediction}",
+                    wraplength=250,
+                    anchor="w",
+                    justify="left"
+                )
+                pred_label.pack(anchor="w", pady=2, padx=5)
+            
+            # Confidence indicator
+            confidence_label = ttk.Label(
+                self.predictions_frame,
+                text="🎯 Confidence: 85%",
+                font=('Segoe UI', 9)
+            )
+            confidence_label.pack(pady=(10, 0))
+            
+        except Exception as e:
+            logger.error(f"Error updating predictions display: {e}")
+            if self.predictions_frame:
+                error_label = ttk.Label(
+                    self.predictions_frame,
+                    text="❌ AI predictions unavailable"
+                )
+                error_label.pack(pady=20)

@@ -356,27 +356,6 @@ class WeatherDataStorage:
         except Exception as e:
             logger.error(f"Failed to load predictions: {e}")
             return []
-    
-    def save_alert_settings(self, settings: Dict[str, Any]) -> bool:
-        """Save weather alert settings."""
-        try:
-            existing_settings = self.load_user_settings()
-            existing_settings['alerts'] = settings
-            return self.save_user_settings(existing_settings)
-        except Exception as e:
-            logger.error(f"Error saving alert settings: {e}")
-            return False
-    
-    def get_alert_settings(self) -> Dict[str, Any]:
-        """Get weather alert settings."""
-        settings = self.load_user_settings()
-        return settings.get('alerts', {
-            'high_temp_threshold': 30.0,
-            'low_temp_threshold': 0.0,
-            'rain_alerts': True,
-            'storm_alerts': True,
-            'wind_alerts': False
-        })
 
 
 # Global storage instance

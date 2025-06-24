@@ -50,7 +50,7 @@
     "api_logging": true,
     "ui_logging": false
   },
-  "default_city": "Current Location (GPS)",
+  "default_city": "Providence",
   "favorite_cities": [],
   "temperature_unit": "C",
   "wind_speed_unit": "km/h",
