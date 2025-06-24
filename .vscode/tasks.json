@@ -6,7 +6,7 @@
 			"type": "shell",
 			"command": ".venv\\Scripts\\python.exe",
 			"args": [
-				"launcher.py"
+				"launcher_mvc.py"
 			],
 			"group": "build",
 			"isBackground": false

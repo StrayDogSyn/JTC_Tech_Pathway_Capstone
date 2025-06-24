@@ -52,44 +52,65 @@ The application follows a clean, layered architecture with clear separation of c
 
 ```text
 src/
-├── main.py                 # Main application coordinator
-├── core/
-│   └── weather_core.py     # Business logic layer
+├── main.py                 # Main application coordinator (MVC)
+├── controllers/            # MVC Controllers
+│   ├── application_controller.py  # Application coordination
+│   └── weather_controller.py     # Weather data management
+├── views/                  # MVC Views
+│   ├── main_view.py        # Main view abstraction
+│   └── weather_view.py     # Weather display abstraction
+├── business/               # Business Services
+│   ├── weather_service.py  # Weather business logic
+│   ├── notification_service.py # Notification management
+│   └── settings_service.py # Settings management
+├── interfaces/             # Protocols and contracts
+│   ├── controller_protocols.py # Controller interfaces
+│   ├── view_protocols.py   # View interfaces
+│   └── service_protocols.py # Service interfaces
 ├── services/
 │   └── weather_api.py      # External API integration
 ├── ui/
 │   ├── dashboard_ui.py     # Main user interface with tabular integration
-│   ├── advanced_dashboard.py # Advanced dashboard with tabular components
 │   ├── tabular_components.py # Advanced data tables (sorting, filtering, export)
-│   ├── weather_displays.py # Weather-specific displays
 │   └── modern_components.py # Reusable UI components
 ├── models/
 │   └── weather_models.py   # Data models and validation
 ├── config/
-│   └── app_config.py       # Configuration management
+│   └── config.py           # Configuration management
 └── utils/
-    └── helpers.py          # Utility functions
+    └── (various utilities) # Utility functions
 ```
 
 ```text
-├── src/                          # Main source code
+├── src/                          # Main source code (MVC Architecture)
+│   ├── controllers/              # MVC Controllers
+│   │   ├── application_controller.py  # Application coordination
+│   │   └── weather_controller.py     # Weather data management
+│   ├── views/                    # MVC Views
+│   │   ├── main_view.py          # Main view abstraction
+│   │   └── weather_view.py       # Weather display abstraction
+│   ├── business/                 # Business Services
+│   │   ├── weather_service.py    # Weather business logic
+│   │   ├── notification_service.py # Notification management
+│   │   └── settings_service.py   # Settings management
+│   ├── interfaces/               # Protocols and contracts
+│   │   ├── controller_protocols.py # Controller interfaces
+│   │   ├── view_protocols.py     # View interfaces
+│   │   └── service_protocols.py  # Service interfaces
 │   ├── ui/                       # User interface components
 │   │   ├── modern_components.py  # Advanced UI widgets
 │   │   ├── dashboard_ui.py       # Main dashboard interface with tabular integration
-│   │   ├── tabular_components.py # Advanced data tables (sortable, filterable, exportable)
-│   │   └── weather_displays.py   # Weather visualization components
+│   │   └── tabular_components.py # Advanced data tables (sortable, filterable, exportable)
 │   ├── models/                   # Data models
 │   │   └── weather_models.py     # Weather data structures
 │   ├── services/                 # External services
 │   │   └── weather_api.py        # OpenWeatherMap API integration
-│   ├── core/                     # Business logic
-│   │   └── weather_core.py       # Core weather processing
 │   ├── config/                   # Configuration
 │   │   └── config.py             # Application settings
 │   └── utils/                    # Utilities
-│       └── ml_predictions.py     # Machine learning features
+│       └── (various utilities)   # Various utility modules
 ├── tests/                        # Test suite
-├── launcher.py                   # Application launcher
+├── launcher_mvc.py               # Application launcher
 └── requirements.txt             # Python dependencies
 ```
 
@@ -144,7 +165,7 @@ src/
 Use the launcher for dependency checking and guided startup:
 
 ```bash
-python launcher.py
+python launcher_mvc.py
 ```
 
 #### **📊 Advanced Dashboard (Capstone Features)**
@@ -427,7 +448,7 @@ For questions, issues, or feature requests:
 1. Run the test suite to diagnose issues: `python -m pytest tests/`
 2. Review the [Architecture Documentation](ARCHITECTURE.md)
 3. Check the [Contributing Guidelines](CONTRIBUTING.md)
-4. Launch the application with `python launcher.py`
+4. Launch the application with `python launcher_mvc.py`
 
 ---
 

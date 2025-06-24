@@ -24,7 +24,7 @@ try:
     from src.main import main as run_mvc_app
     
     # Import legacy application for compatibility
-    from src.main_mvc import main as run_legacy_app
+    from src.main import main as run_mvc_app
     
     # Import configuration
     from src.config.config import APP_CONFIG
@@ -157,7 +157,8 @@ Examples:
         if args.legacy:
             logger.info("Starting Weather Dashboard with legacy architecture")
             print("🌦️  Starting Weather Dashboard (Legacy Mode)...")
-            run_legacy_app()
+            print("Note: Legacy mode uses the same MVC architecture as regular mode.")
+            run_mvc_app()
         else:
             logger.info("Starting Weather Dashboard with MVC architecture")
             print("🌦️  Starting Weather Dashboard (MVC Mode)...")

@@ -51,7 +51,7 @@ Thank you for your interest in contributing to this project! This document provi
 5. **Run the application:**
 
    ```bash
-   python launcher.py
+   python launcher_mvc.py
    ```
 
 ## 🏗️ Project Structure
@@ -174,7 +174,7 @@ For new features:
 ## 📚 Documentation
 
 - Update README.md for user-facing changes
-- Update ARCHITECTURE.md for structural changes
+- Update ARCHITECTURE.md for MVC structural changes
 - Add inline comments for complex logic
 - Keep documentation up to date
 
@@ -221,7 +221,7 @@ Before submitting a pull request:
 2. ✅ Run all tests: `python -m pytest tests/`
 3. ✅ Check code style: `black src/ tests/`
 4. ✅ Update documentation if needed
-5. ✅ Test the application: `python launcher.py`
+5. ✅ Test the application: `python launcher_mvc.py`
 
 ## 🔐 Security
 

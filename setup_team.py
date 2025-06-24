@@ -169,12 +169,12 @@ def main():
     print(f"\n📝 Next steps:")
     print(f"   1. Activate your virtual environment: {get_activation_command()}")
     print(f"   2. Update your API key in .env file")
-    print(f"   3. Run the application: python launcher.py")
+    print(f"   3. Run the application: python launcher_mvc.py")
     print(f"   4. Run tests: python -m pytest tests/")
     print(f"\n📚 Documentation:")
     print(f"   - README.md: Project overview and features")
     print(f"   - CONTRIBUTING.md: Development guidelines")
-    print(f"   - ARCHITECTURE.md: Technical architecture")
+    print(f"   - ARCHITECTURE.md: MVC architecture and design patterns")
     
     # Optional test run
     if input(f"\n🧪 Would you like to run the test suite now? (y/N): ").lower() == 'y':
