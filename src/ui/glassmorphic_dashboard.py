@@ -141,10 +141,10 @@ class GlassmorphicWeatherDashboard:
         self.main_container.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Create glassmorphic header
-        self._create_glassmorphic_header()
-        
+        self._create_glassmorphic_header()        
         # Create main content area
-        self._create_glassmorphic_content()        
+        self._create_glassmorphic_content()
+        
         # Create glassmorphic status bar
         self._create_glassmorphic_status_bar()
     

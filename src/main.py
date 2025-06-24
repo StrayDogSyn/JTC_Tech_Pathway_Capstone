@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.core.weather_core import WeatherDashboardCore
 from src.config.config import config_manager, APP_CONFIG, setup_environment
-from src.ui.glassmorphic_dashboard import GlassmorphicWeatherDashboard
-from src.ui.glassmorphic_weather_displays import WeatherDisplays
+from src.ui.dashboard_ui import WeatherDashboardUI
+from src.ui.weather_displays import WeatherDisplays
 from src.utils.logging import get_logger, get_ui_logger
 
 # Initialize loggers
@@ -34,9 +34,8 @@ class WeatherDashboardApp:
         setup_environment()
         
         # Initialize business logic
-        self.core = WeatherDashboardCore()
-          # Initialize UI with glassmorphic design
-        self.ui = GlassmorphicWeatherDashboard(
+        self.core = WeatherDashboardCore()        # Initialize UI with original dashboard design
+        self.ui = WeatherDashboardUI(
             title=APP_CONFIG["title"],
             theme=config_manager.current_theme,
             size=APP_CONFIG["default_size"]

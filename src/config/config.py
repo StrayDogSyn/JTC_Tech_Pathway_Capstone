@@ -153,7 +153,15 @@ class ConfigurationManager:
         if "api" in data:
             for key, value in data["api"].items():
                 if hasattr(self.config.api, key):
-                    setattr(self.config.api, key, value)
+                    # Special handling for API key - prioritize environment variable
+                    if key == "api_key":
+                        env_key = os.getenv("OPENWEATHER_API_KEY")
+                        if env_key:
+                            setattr(self.config.api, key, env_key)
+                        elif value:  # Only use file value if env var is not set and file value is not empty
+                            setattr(self.config.api, key, value)
+                    else:
+                        setattr(self.config.api, key, value)
         
         if "ui" in data:
             for key, value in data["ui"].items():

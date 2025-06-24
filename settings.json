@@ -1,5 +1,6 @@
-{  "api": {
-    "api_key": "3a113d811b8150d09780f9bf941c9b93",
+{
+  "api": {
+    "api_key": "",
     "base_url": "https://api.openweathermap.org/data/2.5",
     "forecast_url": "https://api.openweathermap.org/data/2.5/forecast",
     "geocoding_url": "https://api.openweathermap.org/geo/1.0",
@@ -10,7 +11,7 @@
     "rate_limit_per_month": 1000000
   },
   "ui": {
-    "theme": "darkly",
+    "theme": "superhero",
     "window_title": "🌦️ Advanced Weather Intelligence Platform",
     "min_size": [
       1000,
@@ -49,7 +50,7 @@
     "api_logging": true,
     "ui_logging": false
   },
-  "default_city": "Current Location (GPS)",
+  "default_city": "Austin",
   "favorite_cities": [],
   "temperature_unit": "C",
   "wind_speed_unit": "km/h",
