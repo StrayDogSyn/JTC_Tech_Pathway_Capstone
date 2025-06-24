@@ -93,12 +93,12 @@ class WeatherDashboardUI:
         }
           # Additional UI variables
         self.temp_unit_var: tk.StringVar = tk.StringVar(value="°C")
-          # Store current weather data for refresh
+        
+        # Store current weather data for refresh
         self._current_weather_data: Optional[Dict[str, Any]] = None
         
         self._setup_ui()
         self._apply_modern_styling()
-        self._apply_glassmorphic_effects()
         self._fade_in_window()
     
     def _fade_in_window(self):
@@ -114,162 +114,24 @@ class WeatherDashboardUI:
                     break
         
         threading.Thread(target=fade, daemon=True).start()
-    def _get_glassmorphic_colors(self, theme_name: str) -> Dict[str, str]:
-        """Get glassmorphic color scheme based on current theme."""
-        if theme_name in ['darkly', 'superhero', 'vapor']:
-            # Dark glassmorphic theme - using hex colors compatible with tkinter
-            return {
-                'window_bg': '#0a0a0a',
-                'card_bg': '#1a1a1a',
-                'header_bg': '#121212',
-                'search_bg': '#2a2a2a',
-                'button_bg': '#404040',
-                'button_hover': '#606060',
-                'button_pressed': '#303030',
-                'stats_bg': '#202020',
-                'entry_bg': '#303030',
-                'notebook_bg': '#101010',
-                'tab_bg': '#202020',
-                'tab_selected': '#404040',
-                'tab_hover': '#303030',
-                'status_bg': '#141414',
-                'text_primary': '#ffffff',
-                'text_secondary': '#b0b0b0',
-                'accent_primary': '#00d4aa',
-                'accent_secondary': '#ff6b6b'
-            }
-        else:
-            # Light glassmorphic theme - using hex colors compatible with tkinter
-            return {
-                'window_bg': '#f8f9fa',
-                'card_bg': '#ffffff',
-                'header_bg': '#f8f9fa',
-                'search_bg': '#ffffff',
-                'button_bg': '#e9ecef',
-                'button_hover': '#ced4da',
-                'button_pressed': '#adb5bd',
-                'stats_bg': '#f8f9fa',
-                'entry_bg': '#ffffff',
-                'notebook_bg': '#f8f9fa',
-                'tab_bg': '#e9ecef',
-                'tab_selected': '#ffffff',
-                'tab_hover': '#ced4da',
-                'status_bg': '#f8f9fa',
-                'text_primary': '#212529',
-                'text_secondary': '#6c757d',
-                'accent_primary': '#007bff',
-                'accent_secondary': '#fd7e14'
-            }
+    
     def _apply_modern_styling(self):
-        """Apply modern glassmorphic styling to the interface."""
-        # Configure modern styles with glassmorphism
+        """Apply modern styling to the interface."""
+        # Configure modern styles
         style = ttk.Style()
         
-        # Get the current theme colors for glassmorphic effects
-        theme_name = style.theme_use() or 'darkly'
-        
-        # Glassmorphic color palette
-        glass_colors = self._get_glassmorphic_colors(theme_name)
-        
-        # Enhanced glassmorphic card styles
-        style.configure("GlassCard.TFrame", 
-                       relief="flat", 
-                       borderwidth=1,
-                       background=glass_colors['card_bg'])
-        
-        # Glassmorphic search container
-        style.configure("GlassSearch.TFrame",
-                       relief="flat",
-                       borderwidth=1,
-                       background=glass_colors['search_bg'])
-        
-        # Glassmorphic header styles
-        style.configure("GlassHeader.TLabel", 
-                       font=('Segoe UI', 18, 'bold'),
-                       background=glass_colors['header_bg'],
-                       foreground=glass_colors['text_primary'])
-        
-        style.configure("GlassSubtitle.TLabel", 
-                       font=('Segoe UI', 11), 
-                       background=glass_colors['header_bg'],
-                       foreground=glass_colors['text_secondary'])
-        
-        # Glassmorphic button styles
-        style.configure("Glass.TButton", 
-                       padding=(12, 8),
-                       relief="flat",
-                       borderwidth=1,
-                       background=glass_colors['button_bg'],
-                       foreground=glass_colors['text_primary'])
-        
-        style.map("Glass.TButton",
-                 background=[('active', glass_colors['button_hover']),
-                           ('pressed', glass_colors['button_pressed'])])
-        
-        # Weather data styles with glassmorphic backgrounds
-        style.configure("GlassTemperature.TLabel", 
-                       font=('Segoe UI', 48, 'bold'), 
-                       foreground=glass_colors['accent_primary'],
-                       background=glass_colors['card_bg'])
-        
-        style.configure("GlassFeelsLike.TLabel", 
-                       font=('Segoe UI', 14), 
-                       foreground=glass_colors['text_secondary'],
-                       background=glass_colors['card_bg'])
-        
-        style.configure("GlassDescription.TLabel", 
-                       font=('Segoe UI', 16),
-                       background=glass_colors['card_bg'],
-                       foreground=glass_colors['text_primary'])
-        
-        # Glassmorphic stats card styles
-        style.configure("GlassStats.TLabel",
-                       font=('Segoe UI', 10),
-                       background=glass_colors['stats_bg'],
-                       foreground=glass_colors['text_primary'])
-        
-        # Glassmorphic entry styles
-        style.configure("Glass.TEntry",
-                       fieldbackground=glass_colors['entry_bg'],
-                       borderwidth=1,
-                       relief="flat",
-                       insertcolor=glass_colors['text_primary'])
-        
-        # Glassmorphic combobox styles
-        style.configure("Glass.TCombobox",
-                       fieldbackground=glass_colors['entry_bg'],
-                       borderwidth=1,
-                       relief="flat")
-        
-        # Apply glassmorphic window background
-        self.root.configure(bg=glass_colors['window_bg'])
-        
-        # Configure glassmorphic notebook styles
-        style.configure("Glass.TNotebook",
-                       background=glass_colors['notebook_bg'],
-                       borderwidth=0)
-        
-        style.configure("Glass.TNotebook.Tab",
-                       padding=[20, 10],
-                       background=glass_colors['tab_bg'],
-                       foreground=glass_colors['text_primary'],
-                       borderwidth=1,
-                       relief="flat")
-        
-        style.map("Glass.TNotebook.Tab",
-                 background=[('selected', glass_colors['tab_selected']),
-                           ('active', glass_colors['tab_hover'])])
-        
-        # Status styles with glassmorphic effect
-        style.configure("GlassStatus.TLabel", 
-                       font=('Segoe UI', 10),
-                       background=glass_colors['status_bg'],
-                       foreground=glass_colors['text_secondary'])
-        
-        style.configure("GlassSmall.TLabel", 
-                       font=('Segoe UI', 9), 
-                       background=glass_colors['card_bg'],
-                       foreground=glass_colors['text_secondary'])
+        # Enhanced card styles
+        style.configure("Card.TFrame", relief="solid", borderwidth=1)
+        style.configure("Header.TLabel", font=('Segoe UI', 18, 'bold'))
+        style.configure("Subtitle.TLabel", font=('Segoe UI', 11), foreground="gray")
+        style.configure("Modern.TButton", padding=(10, 5))
+        # Weather data styles
+        style.configure("Temperature.TLabel", font=('Segoe UI', 48, 'bold'), foreground="#FF6B35")
+        style.configure("FeelsLike.TLabel", font=('Segoe UI', 14), foreground="gray")
+        style.configure("Description.TLabel", font=('Segoe UI', 16))
+        # Status styles  
+        style.configure("Status.TLabel", font=('Segoe UI', 10))
+        style.configure("Small.TLabel", font=('Segoe UI', 9), foreground="gray")
     
     def set_search_callback(self, callback: Callable[[str], None]) -> None:
         """Set callback for search events."""
@@ -284,21 +146,21 @@ class WeatherDashboardUI:
         self._create_header()
         self._create_main_content()
         self._create_status_bar()
+    
     def _create_header(self) -> None:
-        """Create the enhanced header with glassmorphic styling."""
-        # Create glassmorphic header frame
-        header_frame = ttk.Frame(self.root, padding=(20, 15), style="GlassCard.TFrame")
+        """Create the enhanced header with modern search and controls."""
+        header_frame = ttk.Frame(self.root, padding=(20, 15))
         header_frame.pack(fill="x")
         header_frame.grid_columnconfigure(1, weight=1)
         
-        # Enhanced title section with glassmorphic styling
-        title_frame = ttk.Frame(header_frame, style="GlassCard.TFrame")
+        # Enhanced title section
+        title_frame = ttk.Frame(header_frame)
         title_frame.grid(row=0, column=0, sticky="w")
         
         title_label = ttk.Label(
             title_frame,
             text="🌦️ Weather Dominator Pro",
-            style="GlassHeader.TLabel",
+            style="Header.TLabel",
             foreground="#2196F3"
         )
         title_label.pack()
@@ -306,30 +168,29 @@ class WeatherDashboardUI:
         subtitle_label = ttk.Label(
             title_frame,
             text="Advanced Weather Intelligence Platform",
-            style="GlassSubtitle.TLabel"
+            style="Subtitle.TLabel"
         )
         subtitle_label.pack()
         
-        # Enhanced search section with glassmorphic container
-        search_frame = ttk.Frame(header_frame, style="GlassCard.TFrame")
+        # Enhanced search section
+        search_frame = ttk.Frame(header_frame)
         search_frame.grid(row=0, column=1, sticky="ew", padx=(20, 0))
         search_frame.grid_columnconfigure(0, weight=1)
         
-        # Glassmorphic search container with blur effect
-        search_container = ttk.Frame(search_frame, style="GlassSearch.TFrame", padding=12)
+        # Modern search container
+        search_container = ttk.Frame(search_frame, style="Card.TFrame", padding=8)
         search_container.grid(row=0, column=0, sticky="ew")
         search_container.grid_columnconfigure(1, weight=1)
         
-        # Search icon with glassmorphic background
-        search_icon = ttk.Label(search_container, text="🔍", font=('Segoe UI', 14), style="GlassSmall.TLabel")
+        # Search icon
+        search_icon = ttk.Label(search_container, text="🔍", font=('Segoe UI', 14))
         search_icon.grid(row=0, column=0, padx=(5, 8))
         
-        # Enhanced city entry with glassmorphic styling
+        # Enhanced city entry with placeholder effect
         self.city_entry = ttk.Entry(
             search_container,
             font=('Segoe UI', 11),
-            width=30,
-            style="Glass.TEntry"
+            width=30
         )
         self.city_entry.grid(row=0, column=1, sticky="ew", pady=2)
         self.city_entry.bind('<Return>', self._on_search)
@@ -339,89 +200,85 @@ class WeatherDashboardUI:
         
         # Set placeholder
         self._set_search_placeholder()
-          # Search suggestions dropdown (initially hidden) with glassmorphic styling
-        self.suggestions_frame = ttk.Frame(search_frame, style="GlassSearch.TFrame")
+        
+        # Search suggestions dropdown (initially hidden)
+        self.suggestions_frame = ttk.Frame(search_frame)
         self.suggestions_listbox = tk.Listbox(
             self.suggestions_frame,
             height=6,
             font=('Segoe UI', 10),
             activestyle="none",
-            selectmode=tk.SINGLE,
-            bg='#2a2a2a',  # Glassmorphic background
-            fg='#ffffff',
-            selectbackground='#404040',
-            relief="flat",
-            borderwidth=1
+            selectmode=tk.SINGLE
         )
         self.suggestions_listbox.pack(fill="both", expand=True)
-        self.suggestions_listbox.bind('<Double-Button-1>', self._on_suggestion_select)        # Enhanced search button with glassmorphic styling
+        self.suggestions_listbox.bind('<Double-Button-1>', self._on_suggestion_select)
+          # Enhanced search button with loading state
         self.search_btn = ttk.Button(
             search_container,
             text="Search",
             command=self._on_search,
-            style="Glass.TButton"
+            style="Modern.TButton"
         )
         self.search_btn.grid(row=0, column=2, padx=(8, 5))
         
-        # Advanced search controls with glassmorphic frame
-        advanced_search_frame = ttk.Frame(search_container, style="GlassCard.TFrame")
+        # Advanced search controls
+        advanced_search_frame = ttk.Frame(search_container)
         advanced_search_frame.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(5, 0))
         
-        # Quick location buttons with glassmorphic styling
+        # Quick location buttons
         quick_locations = ["Current Location", "New York", "London", "Tokyo"]
         for i, location in enumerate(quick_locations):
             btn = ttk.Button(
                 advanced_search_frame,
                 text=location,
                 command=lambda loc=location: self._quick_search(loc),
-                style="Glass.TButton"
+                style="Outline.TButton"
             )
             btn.pack(side="left", padx=(0, 5))
-        
-        # Enhanced controls with glassmorphic components
-        controls_frame = ttk.Frame(header_frame, style="GlassCard.TFrame")
+          # Enhanced controls with modern components
+        controls_frame = ttk.Frame(header_frame)
         controls_frame.grid(row=0, column=2, sticky="e", padx=(20, 0))
         
-        # Settings button with glassmorphic styling
+        # Settings button
         settings_btn = ttk.Button(
             controls_frame,
             text="⚙️",
             command=self._show_settings,
-            style="Glass.TButton",
+            style="Modern.TButton",
             width=3
         )
         settings_btn.pack(side="top", pady=(0, 5))
         
-        # Favorites button with glassmorphic styling
+        # Favorites button
         favorites_btn = ttk.Button(
             controls_frame,
             text="⭐",
             command=self._show_favorites,
-            style="Glass.TButton",
+            style="Modern.TButton",
             width=3
         )
         favorites_btn.pack(side="top", pady=(0, 5))
         
-        # Units toggle frame with glassmorphic styling
-        units_frame = ttk.Frame(controls_frame, style="GlassCard.TFrame")
+        # Units toggle frame
+        units_frame = ttk.Frame(controls_frame)
         units_frame.pack(pady=(0, 8))
         
-        ttk.Label(units_frame, text="🌡️", font=('Segoe UI', 12), style="GlassSmall.TLabel").pack(side="left")
+        ttk.Label(units_frame, text="🌡️", font=('Segoe UI', 12)).pack(side="left")
         self.temp_unit_var = tk.StringVar(value="°C")
         temp_toggle = ttk.Button(
             units_frame,
             textvariable=self.temp_unit_var,
             command=self._toggle_temperature_unit,
-            style="Glass.TButton",
+            style="Outline.TButton",
             width=4
         )
         temp_toggle.pack(side="left", padx=(2, 0))
         
-        # Theme selector with glassmorphic styling
-        theme_frame = ttk.Frame(controls_frame, style="GlassCard.TFrame")
+        # Theme selector with label
+        theme_frame = ttk.Frame(controls_frame)
         theme_frame.pack(pady=(0, 8))
         
-        ttk.Label(theme_frame, text="🎨 Theme:", font=('Segoe UI', 10), style="GlassSmall.TLabel").pack(side="left", padx=(0, 5))
+        ttk.Label(theme_frame, text="🎨 Theme:", font=('Segoe UI', 10)).pack(side="left", padx=(0, 5))
         
         self.theme_var = tk.StringVar(value="darkly")
         theme_combo = ttk.Combobox(
@@ -430,8 +287,7 @@ class WeatherDashboardUI:
             values=['darkly', 'flatly', 'litera', 'minty', 'lumen', 'sandstone', 'superhero', 'vapor'],
             width=12,
             state="readonly",
-            font=('Segoe UI', 9),
-            style="Glass.TCombobox"
+            font=('Segoe UI', 9)
         )
         theme_combo.pack(side="left")
         theme_combo.bind('<<ComboboxSelected>>', self._on_theme_change)
@@ -494,8 +350,9 @@ class WeatherDashboardUI:
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
-          # Create glassmorphic notebook in scrollable frame
-        self.main_notebook = ttk.Notebook(scrollable_frame, style="Glass.TNotebook")
+        
+        # Create notebook in scrollable frame
+        self.main_notebook = ttk.Notebook(scrollable_frame)
         self.main_notebook.pack(fill="both", expand=True)        
         
         # Dashboard Tab (original content)
@@ -505,8 +362,8 @@ class WeatherDashboardUI:
         self._create_tables_tabs()
         
     def _create_dashboard_tab(self) -> None:
-        """Create the main dashboard tab with glassmorphic components."""
-        dashboard_frame = ttk.Frame(self.main_notebook, style="GlassCard.TFrame")
+        """Create the main dashboard tab with enhanced modern components."""
+        dashboard_frame = ttk.Frame(self.main_notebook)
         self.main_notebook.add(dashboard_frame, text="🏠 Dashboard")
         
         # Create modern grid layout
@@ -518,14 +375,16 @@ class WeatherDashboardUI:
           # Top statistics cards row
         stats_frame = ttk.Frame(dashboard_frame)
         stats_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=15, pady=(10, 15))
-        self._create_stats_cards(stats_frame)        # Left panel - Current Weather & AI Predictions with glassmorphic styling
-        left_panel = ttk.Frame(dashboard_frame, style="GlassCard.TFrame")
+        self._create_stats_cards(stats_frame)
+        
+        # Left panel - Current Weather & AI Predictions
+        left_panel = ttk.Frame(dashboard_frame)
         left_panel.grid(row=1, column=0, sticky="nsew", padx=(15, 8), pady=(0, 10))
         left_panel.grid_rowconfigure(0, weight=1)
         left_panel.grid_rowconfigure(1, weight=1)
         left_panel.grid_columnconfigure(0, weight=1)
         
-        # Enhanced current weather with glassmorphic card
+        # Enhanced current weather with modern card
         if ModernCard:
             self.weather_card = ModernCard(
                 left_panel,
@@ -534,11 +393,10 @@ class WeatherDashboardUI:
             self.weather_card.grid(row=0, column=0, sticky="ew", pady=(0, 5))
             self.weather_frame = self.weather_card.content_frame
         else:
-            self.weather_frame = ttk.LabelFrame(left_panel, text="🌤️ Current Weather", 
-                                              padding=10, style="GlassCard.TFrame")
+            self.weather_frame = ttk.LabelFrame(left_panel, text="🌤️ Current Weather", padding=10)
             self.weather_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
         
-        # Enhanced AI predictions with glassmorphic card
+        # Enhanced AI predictions with modern card
         if ModernCard:
             self.predictions_card = ModernCard(
                 left_panel,
@@ -547,18 +405,16 @@ class WeatherDashboardUI:
             self.predictions_card.grid(row=1, column=0, sticky="nsew")
             self.predictions_frame = self.predictions_card.content_frame
         else:
-            self.predictions_frame = ttk.LabelFrame(left_panel, text="🤖 AI Predictions", 
-                                                   padding=10, style="GlassCard.TFrame")
+            self.predictions_frame = ttk.LabelFrame(left_panel, text="🤖 AI Predictions", padding=10)
             self.predictions_frame.grid(row=1, column=0, sticky="nsew")
-        
-        # Right panel - Air Quality & Forecast with glassmorphic styling
-        right_panel = ttk.Frame(dashboard_frame, style="GlassCard.TFrame")
+          # Right panel - Air Quality & Forecast
+        right_panel = ttk.Frame(dashboard_frame)
         right_panel.grid(row=1, column=1, sticky="nsew", padx=(8, 15), pady=(0, 10))
         right_panel.grid_rowconfigure(0, weight=1)
         right_panel.grid_rowconfigure(1, weight=1)
         right_panel.grid_columnconfigure(0, weight=1)
         
-        # Enhanced air quality with glassmorphic card and gauge
+        # Enhanced air quality with modern card and gauge
         if ModernCard:
             self.air_quality_card = ModernCard(
                 right_panel,
@@ -567,11 +423,10 @@ class WeatherDashboardUI:
             self.air_quality_card.grid(row=0, column=0, sticky="ew", pady=(0, 5))
             self.air_quality_frame = self.air_quality_card.content_frame
         else:
-            self.air_quality_frame = ttk.LabelFrame(right_panel, text="🌬️ Air Quality", 
-                                                   padding=10, style="GlassCard.TFrame")
+            self.air_quality_frame = ttk.LabelFrame(right_panel, text="🌬️ Air Quality", padding=10)
             self.air_quality_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
         
-        # Enhanced forecast with glassmorphic card
+        # Enhanced forecast with modern card
         if ModernCard:
             self.forecast_card = ModernCard(
                 right_panel,
@@ -627,60 +482,55 @@ class WeatherDashboardUI:
             self.advanced_data_table = AdvancedDataTable(
                 advanced_frame, columns, title="🛠️ Advanced Weather Data Management"
             )
+    
     def _create_status_bar(self) -> None:
-        """Create the glassmorphic status bar."""
-        status_frame = ttk.Frame(self.root, style="GlassCard.TFrame")
+        """Create the status bar."""
+        status_frame = ttk.Frame(self.root)
         status_frame.pack(fill="x", padx=10, pady=(0, 10))
         
         status_label = ttk.Label(
             status_frame,
             textvariable=self.status_var,
-            font=('Segoe UI', 9),
-            style="GlassStatus.TLabel"
+            font=('Segoe UI', 9)
         )
         status_label.pack(side="left")
         
-        # API info button with glassmorphic styling
+        # API info button
         api_btn = ttk.Button(
             status_frame,
             text="ℹ️ API Info",
-            command=self._show_api_info,
-            style="Glass.TButton"
+            command=self._show_api_info
         )
         api_btn.pack(side="right")
     
     def _show_initial_content(self) -> None:
         """Show initial placeholder content."""
         self._clear_frame(self.weather_frame)
-          # Create glassmorphic current weather display with enhanced styling
-        weather_container = ttk.Frame(self.weather_frame, style="GlassCard.TFrame")
+        
+        # Create current weather display with sample data
+        weather_container = ttk.Frame(self.weather_frame)
         weather_container.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Temperature and main info with glassmorphic styling
-        main_info_frame = ttk.Frame(weather_container, style="GlassCard.TFrame")
+        # Temperature and main info
+        main_info_frame = ttk.Frame(weather_container)
         main_info_frame.pack(fill="x", pady=(0, 15))
         
-        # Left side - Temperature with glassmorphic labels
-        temp_frame = ttk.Frame(main_info_frame, style="GlassCard.TFrame")
+        # Left side - Temperature
+        temp_frame = ttk.Frame(main_info_frame)
         temp_frame.pack(side="left")
         
-        ttk.Label(temp_frame, text="26.2°C", font=('Segoe UI', 42, 'bold'), 
-                 foreground="#00d4aa", style="GlassTemperature.TLabel").pack()
-        ttk.Label(temp_frame, text="Feels like 26.2°C", font=('Segoe UI', 12), 
-                 style="GlassFeelsLike.TLabel").pack()
-        ttk.Label(temp_frame, text="Scattered Clouds", font=('Segoe UI', 14), 
-                 style="GlassDescription.TLabel").pack(pady=(5, 0))
+        ttk.Label(temp_frame, text="26.2°C", font=('Segoe UI', 42, 'bold'), foreground="#FF6B35").pack()
+        ttk.Label(temp_frame, text="Feels like 26.2°C", font=('Segoe UI', 12), foreground="gray").pack()
+        ttk.Label(temp_frame, text="Scattered Clouds", font=('Segoe UI', 14)).pack(pady=(5, 0))
         
-        # Right side - Weather icon area with glassmorphic background
-        icon_frame = ttk.Frame(main_info_frame, style="GlassCard.TFrame")
+        # Right side - Weather icon area
+        icon_frame = ttk.Frame(main_info_frame)
         icon_frame.pack(side="right", fill="both", expand=True)
         
-        ttk.Label(icon_frame, text="⛅", font=('Segoe UI', 64), 
-                 style="GlassDescription.TLabel").pack(anchor="center")
+        ttk.Label(icon_frame, text="⛅", font=('Segoe UI', 64)).pack(anchor="center")
         
-        # Weather details with glassmorphic frame
-        details_frame = ttk.LabelFrame(weather_container, text="Weather Details", 
-                                     padding=10, style="GlassCard.TFrame")
+        # Weather details
+        details_frame = ttk.LabelFrame(weather_container, text="Weather Details", padding=10)
         details_frame.pack(fill="both", expand=True)
         
         details = [
@@ -696,13 +546,12 @@ class WeatherDashboardUI:
             row = i // 2
             col = i % 2
             
-            detail_frame = ttk.Frame(details_frame, style="GlassCard.TFrame")
+            detail_frame = ttk.Frame(details_frame)
             detail_frame.grid(row=row, column=col, sticky="ew", padx=10, pady=3)
             details_frame.grid_columnconfigure(col, weight=1)
             
-            ttk.Label(detail_frame, text=label, width=18, style="GlassSmall.TLabel").pack(side="left")
-            ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold'), 
-                     style="GlassStats.TLabel").pack(side="right")
+            ttk.Label(detail_frame, text=label, width=18).pack(side="left")
+            ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold')).pack(side="right")
         
         self._clear_frame(self.predictions_frame)
         
@@ -1479,261 +1328,12 @@ Perfect for learning and development!        """
             
             ttk.Label(detail_frame, text=label, width=18).pack(side="left")
             ttk.Label(detail_frame, text=value, font=('Segoe UI', 10, 'bold')).pack(side="right")
-          # Add to recent searches if not already there
+        
+        # Add to recent searches if not already there
         location = weather_data.get('location', 'Unknown')
         if location not in self.recent_searches:
             self.recent_searches.insert(0, location)
             self.recent_searches = self.recent_searches[:10]  # Keep last 10
-
-    def update_forecast_display(self, forecast_data: Dict[str, Any]) -> None:
-        """Update the forecast display with new data."""
-        if not self.forecast_frame or not forecast_data:
-            return
-        
-        self._clear_frame(self.forecast_frame)
-        
-        # Create forecast container
-        forecast_container = ttk.Frame(self.forecast_frame)
-        forecast_container.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Forecast title
-        ttk.Label(forecast_container, text="5-Day Forecast", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 8))
-        
-        # Get forecast items from data
-        forecast_items = forecast_data.get('daily', [])[:5]  # Get first 5 days
-        
-        for day_data in forecast_items:
-            day_frame = ttk.Frame(forecast_container)
-            day_frame.pack(fill="x", pady=2)
-            
-            # Day name
-            day_name = day_data.get('day', 'Unknown')
-            ttk.Label(day_frame, text=day_name, width=8, font=('Segoe UI', 9, 'bold')).pack(side="left")
-            
-            # Weather icon
-            icon = self._get_weather_icon(day_data.get('description', ''))
-            ttk.Label(day_frame, text=icon, font=('Segoe UI', 14)).pack(side="left", padx=(5, 8))
-            
-            # Temperature range
-            current_unit = self.settings.get('temperature_unit', 'C')
-            unit_symbol = "°F" if current_unit == 'F' else "°C"
-            
-            high_temp = day_data.get('temp_max', 0)
-            low_temp = day_data.get('temp_min', 0)
-            
-            if current_unit == 'F':
-                high_temp = self._celsius_to_fahrenheit(high_temp)
-                low_temp = self._celsius_to_fahrenheit(low_temp)
-            
-            temp_label = ttk.Label(day_frame, text=f"{high_temp:.0f}{unit_symbol}/{low_temp:.0f}{unit_symbol}", 
-                                 font=('Segoe UI', 9, 'bold'), width=8)
-            temp_label.pack(side="right")
-            
-            # Description - shorter
-            desc_text = day_data.get('description', '')[:12] + "..." if len(day_data.get('description', '')) > 12 else day_data.get('description', '')
-            ttk.Label(day_frame, text=desc_text, font=('Segoe UI', 8), foreground="gray").pack(side="right", padx=(0, 10))
-
-    def update_air_quality_display(self, air_quality_data: Dict[str, Any]) -> None:
-        """Update the air quality display with new data."""
-        if not self.air_quality_frame or not air_quality_data:
-            return
-        
-        self._clear_frame(self.air_quality_frame)
-        
-        # Create AQI display layout
-        aqi_container = ttk.Frame(self.air_quality_frame)
-        aqi_container.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Main AQI value and status
-        aqi_main_frame = ttk.Frame(aqi_container)
-        aqi_main_frame.pack(fill="x", pady=(0, 10))
-        
-        aqi_value = air_quality_data.get('aqi', 0)
-        aqi_color, aqi_text = self._get_aqi_info(aqi_value)
-        
-        aqi_value_label = ttk.Label(
-            aqi_main_frame,
-            text=f"AQI: {aqi_value}",
-            font=('Segoe UI', 32, 'bold'),
-            foreground=aqi_color
-        )
-        aqi_value_label.pack(side="left")
-        
-        aqi_status_frame = ttk.Frame(aqi_main_frame)
-        aqi_status_frame.pack(side="right", fill="x", expand=True)
-        
-        ttk.Label(aqi_status_frame, text=aqi_text, font=('Segoe UI', 16, 'bold'), foreground=aqi_color).pack(anchor="e")
-        ttk.Label(aqi_status_frame, text="Air quality assessment", font=('Segoe UI', 10), foreground="gray").pack(anchor="e")
-        
-        # Pollutant levels
-        pollutants_frame = ttk.LabelFrame(aqi_container, text="Pollutant Levels", padding=10)
-        pollutants_frame.pack(fill="both", expand=True)
-        
-        pollutants = [
-            ("PM2.5:", f"{air_quality_data.get('pm2_5', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('pm2_5', 0), 'pm2_5')),
-            ("PM10:", f"{air_quality_data.get('pm10', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('pm10', 0), 'pm10')),
-            ("NO₂:", f"{air_quality_data.get('no2', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('no2', 0), 'no2')),
-            ("O₃:", f"{air_quality_data.get('o3', 0):.1f} μg/m³", self._get_pollutant_color(air_quality_data.get('o3', 0), 'o3'))
-        ]
-        
-        for i, (label, value, color) in enumerate(pollutants):
-            row = i // 2
-            col = i % 2
-            
-            pollutant_frame = ttk.Frame(pollutants_frame)
-            pollutant_frame.grid(row=row, column=col, sticky="ew", padx=5, pady=2)
-            pollutants_frame.grid_columnconfigure(col, weight=1)
-            
-            ttk.Label(pollutant_frame, text=label, font=('Segoe UI', 9)).pack(side="left")
-            ttk.Label(pollutant_frame, text=value, font=('Segoe UI', 9, 'bold'), foreground=color).pack(side="right")
-
-    def update_predictions_display(self, forecast_data: Dict[str, Any]) -> None:
-        """Update the AI predictions display with forecast-based insights."""
-        if not self.predictions_frame:
-            return
-        
-        self._clear_frame(self.predictions_frame)
-        
-        # Create AI Weather Intelligence content
-        predictions_container = ttk.Frame(self.predictions_frame)
-        predictions_container.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # AI title
-        ttk.Label(predictions_container, text="Weather Insights & Predictions", font=('Segoe UI', 14, 'bold')).pack(pady=(0, 10))
-        
-        # AI insights list based on forecast data
-        insights_frame = ttk.Frame(predictions_container)
-        insights_frame.pack(fill="both", expand=True)
-        
-        # Generate insights based on actual forecast data
-        insights = self._generate_ai_insights(forecast_data)
-        
-        for insight in insights:
-            insight_frame = ttk.Frame(insights_frame)
-            insight_frame.pack(fill="x", pady=3)
-            
-            # Icon and text
-            content_frame = ttk.Frame(insight_frame)
-            content_frame.pack(side="left", fill="x", expand=True)
-            
-            ttk.Label(content_frame, text=insight["icon"], font=('Segoe UI', 12)).pack(side="left")
-            ttk.Label(content_frame, text=insight["text"], font=('Segoe UI', 10)).pack(side="left", padx=(8, 0))
-            
-            # Confidence
-            ttk.Label(insight_frame, text=insight["confidence"], font=('Segoe UI', 9, 'bold'), foreground="#4CAF50").pack(side="right")
-        
-        # Recommendations section
-        recommendations_frame = ttk.LabelFrame(predictions_container, text="AI Recommendations", padding=10)
-        recommendations_frame.pack(fill="x", pady=(10, 0))
-        
-        recommendations = self._generate_recommendations(forecast_data)
-        
-        for rec in recommendations:
-            ttk.Label(recommendations_frame, text=rec, font=('Segoe UI', 9)).pack(anchor="w", pady=1)
-
-    def _get_aqi_info(self, aqi: float) -> tuple:
-        """Get AQI color and description."""
-        if aqi <= 50:
-            return "#00E676", "Good"
-        elif aqi <= 100:
-            return "#FFEB3B", "Moderate"
-        elif aqi <= 150:
-            return "#FF9800", "Unhealthy for Sensitive"
-        elif aqi <= 200:
-            return "#F44336", "Unhealthy"
-        elif aqi <= 300:
-            return "#9C27B0", "Very Unhealthy"
-        else:
-            return "#8D6E63", "Hazardous"
-
-    def _get_pollutant_color(self, value: float, pollutant_type: str) -> str:
-        """Get color for pollutant based on value and type."""
-        # Simplified color coding - can be enhanced with WHO guidelines
-        if value < 15:
-            return "#00E676"  # Good
-        elif value < 35:
-            return "#FFEB3B"  # Moderate
-        elif value < 65:
-            return "#FF9800"  # Unhealthy for sensitive
-        else:
-            return "#F44336"  # Unhealthy
-
-    def _generate_ai_insights(self, forecast_data: Dict[str, Any]) -> List[Dict[str, str]]:
-        """Generate AI insights based on forecast data."""
-        insights = []
-        
-        if forecast_data:
-            # Analyze temperature trends
-            temps = [day.get('temp_max', 0) for day in forecast_data.get('daily', [])[:3]]
-            if len(temps) >= 2:
-                if temps[1] > temps[0]:
-                    insights.append({
-                        "icon": "🔹", 
-                        "text": "Temperature trend: Rising pattern detected", 
-                        "confidence": "92%"
-                    })
-                else:
-                    insights.append({
-                        "icon": "🔹", 
-                        "text": "Temperature trend: Stable conditions", 
-                        "confidence": "95%"
-                    })
-            
-            # Analyze precipitation
-            rain_chance = forecast_data.get('daily', [{}])[0].get('pop', 0) if forecast_data.get('daily') else 0
-            if rain_chance < 0.3:
-                insights.append({
-                    "icon": "🔹", 
-                    "text": "Low chance of precipitation today", 
-                    "confidence": "87%"
-                })
-            else:
-                insights.append({
-                    "icon": "🔹", 
-                    "text": f"Precipitation likely ({rain_chance*100:.0f}% chance)", 
-                    "confidence": "89%"
-                })
-        
-        # Default insights if no data
-        if not insights:
-            insights = [
-                {"icon": "🔹", "text": "Weather analysis in progress", "confidence": "85%"},
-                {"icon": "🔹", "text": "Monitoring atmospheric conditions", "confidence": "90%"},
-            ]
-        
-        return insights
-
-    def _generate_recommendations(self, forecast_data: Dict[str, Any]) -> List[str]:
-        """Generate weather recommendations based on forecast data."""
-        recommendations = []
-        
-        if forecast_data and forecast_data.get('daily'):
-            today = forecast_data['daily'][0]
-            temp_max = today.get('temp_max', 25)
-            rain_chance = today.get('pop', 0)
-            
-            if temp_max > 30:
-                recommendations.append("🧴 Apply sunscreen - high UV expected")
-                recommendations.append("💧 Stay hydrated - high temperatures")
-            elif temp_max < 10:
-                recommendations.append("🧥 Dress warmly - cold temperatures expected")
-            else:
-                recommendations.append("☀️ Perfect weather for outdoor activities")
-            
-            if rain_chance > 0.5:
-                recommendations.append("☂️ Carry an umbrella - rain likely")
-            elif rain_chance > 0.3:
-                recommendations.append("🌤️ Weather may change - be prepared")
-        
-        # Default recommendations
-        if not recommendations:
-            recommendations = [
-                "☀️ Check weather conditions before outdoor activities",
-                "💧 Stay hydrated throughout the day",
-                "📱 Keep weather app handy for updates"
-            ]
-        
-        return recommendations
 
     def _get_weather_icon(self, description: str) -> str:
         """Get weather icon based on description."""
@@ -1753,44 +1353,35 @@ Perfect for learning and development!        """
         else:
             return "🌤️"
 
-    def _apply_glassmorphic_effects(self) -> None:
-        """Apply glassmorphic visual effects to the interface."""
-        try:
-            # Set window transparency for glassmorphic effect
-            self.root.attributes('-alpha', 0.95)
-            
-            # Apply rounded window style (platform specific)
-            if hasattr(self.root, 'tk'):
-                try:
-                    # Windows-specific styling
-                    import platform
-                    import ctypes
-                    if platform.system() == "Windows":
-                        # Enable modern window styling
-                        self.root.attributes('-topmost', False)
-                        
-                        # Try to enable acrylic effect (Windows 10+)
-                        try:
-                            hwnd = self.root.winfo_id()
-                            
-                            # Enable composition
-                            ctypes.windll.dwmapi.DwmEnableComposition(1)
-                            
-                            # Enable dark mode
-                            DWMWA_USE_IMMERSIVE_DARK_MODE = 20
-                            value = ctypes.c_int(1)
-                            ctypes.windll.dwmapi.DwmSetWindowAttribute(
-                                hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, 
-                                ctypes.byref(value), ctypes.sizeof(value)
-                            )
-                            
-                        except Exception:
-                            pass  # Continue without advanced effects
-                            
-                except Exception:
-                    pass  # Continue without platform-specific effects
-                    
-        except Exception as e:
-            print(f"Glassmorphic effects not available: {e}")
+    def add_weather_to_history(self, weather_data: Dict[str, Any]) -> None:
+        """Add weather data to history table if available."""
+        if hasattr(self, 'weather_data_table') and self.weather_data_table:
+            try:
+                location = weather_data.get('location', 'Unknown Location')
+                self.weather_data_table.add_weather_data(weather_data, location)
+            except Exception as e:
+                print(f"Error adding to weather history: {e}")
 
-    # ...existing code...
+    def add_location_comparison(self, weather_data: Dict[str, Any]) -> None:
+        """Add location to comparison table if available."""
+        if hasattr(self, 'comparison_table') and self.comparison_table:
+            try:
+                location = weather_data.get('location', 'Unknown Location')
+                self.comparison_table.add_location_data(location, weather_data)
+            except Exception as e:
+                print(f"Error adding to comparison: {e}")
+
+    def update_analytics(self, weather_data: Dict[str, Any]) -> None:
+        """Update analytics table if available."""
+        if hasattr(self, 'analytics_table') and self.analytics_table:
+            try:
+                self.analytics_table.update_analytics(weather_data)
+            except Exception as e:
+                print(f"Error updating analytics: {e}")
+
+    def _debug_moderncard_creation(self, *args, **kwargs):
+        """Debug helper for ModernCard creation."""
+        print(f"Creating ModernCard with args: {args}, kwargs: {kwargs}")
+        if ModernCard:
+            return ModernCard(*args, **kwargs)
+        return None
