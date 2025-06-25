@@ -2096,10 +2096,34 @@ Historical processor not connected.
     def _import_current_location(self) -> None:
         """Import coordinates from the current weather location into the historical analysis form."""
         try:
+            # Use the callback to get current location data if available
+            if hasattr(self, 'get_current_location_callback') and self.get_current_location_callback:
+                current_location_data = self.get_current_location_callback()
+                if current_location_data:
+                    lat = current_location_data.get('lat')
+                    lon = current_location_data.get('lon')
+                    location_name = current_location_data.get('location', 'Current Location')
+                    
+                    if lat is not None and lon is not None:
+                        # Update the coordinate entry fields
+                        self.lat_entry.delete(0, tk.END)
+                        self.lat_entry.insert(0, str(round(lat, 2)))
+                        
+                        self.lon_entry.delete(0, tk.END)
+                        self.lon_entry.insert(0, str(round(lon, 2)))
+                        
+                        # Update status
+                        self.historical_status_var.set(f"✅ Imported coordinates from {location_name}: {lat:.2f}, {lon:.2f}")
+                        
+                        # Show success message
+                        self.show_notification(f"Imported coordinates from {location_name}: {lat:.2f}, {lon:.2f}", "success")
+                        return
+            
+            # Fallback: try to get coordinates from current weather data (if available)
             if hasattr(self, '_current_weather_data') and self._current_weather_data:
-                # Try to get coordinates from current weather data
-                lat = self._current_weather_data.get('latitude')
-                lon = self._current_weather_data.get('longitude')
+                # Try to get coordinates from current weather data (legacy approach)
+                lat = self._current_weather_data.get('latitude') or self._current_weather_data.get('lat')
+                lon = self._current_weather_data.get('longitude') or self._current_weather_data.get('lon')
                 
                 if lat is not None and lon is not None:
                     # Update the coordinate entry fields
@@ -2114,14 +2138,11 @@ Historical processor not connected.
                     
                     # Show success message
                     self.show_notification(f"Imported coordinates: {lat:.2f}, {lon:.2f}", "success")
-                else:
-                    # Fallback message
-                    self.historical_status_var.set("❌ No coordinate data available from current weather")
-                    self.show_notification("No coordinate data available from current weather", "warning")
-            else:
-                # No weather data available
-                self.historical_status_var.set("❌ No current weather data to import from")
-                self.show_notification("Please load current weather data first", "warning")
+                    return
+            
+            # No coordinate data available
+            self.historical_status_var.set("❌ No location data available to import")
+            self.show_notification("No current location data available. Please load weather data for a location first.", "warning")
                 
         except Exception as e:
             logger.error(f"Error importing current location: {e}")
@@ -2179,7 +2200,7 @@ Historical processor not connected.
         try:
             if hasattr(self, 'analysis_text'):
                 # Enable editing temporarily
-                self.analysis_text.config(state=tk.NORMAL)
+                self.analysis_text.configure(state=tk.NORMAL)
                 
                 # Clear existing content
                 self.analysis_text.delete(1.0, tk.END)
@@ -2188,7 +2209,7 @@ Historical processor not connected.
                 self.analysis_text.insert(1.0, analysis_text)
                 
                 # Disable editing again
-                self.analysis_text.config(state=tk.DISABLED)
+                self.analysis_text.configure(state=tk.DISABLED)
                 
                 # Scroll to top
                 self.analysis_text.see(1.0)
