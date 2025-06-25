@@ -2086,3 +2086,159 @@ Historical processor not connected.
             logger.error(f"Error populating custom historical table: {e}")
             # Fall back to sample data if there's an error
             self._populate_sample_historical_table()
+
+    def _import_current_location(self) -> None:
+        """Import current location data from the main dashboard."""
+        try:
+            if self.get_current_location_callback:
+                current_data = self.get_current_location_callback()
+                if current_data:
+                    # Extract coordinates from current location data
+                    lat = current_data.get('latitude', current_data.get('coord', {}).get('lat', 0))
+                    lon = current_data.get('longitude', current_data.get('coord', {}).get('lon', 0))
+                    
+                    # Update coordinate entries
+                    if hasattr(self, 'lat_entry') and self.lat_entry:
+                        self.lat_entry.delete(0, tk.END)
+                        self.lat_entry.insert(0, str(lat))
+                    
+                    if hasattr(self, 'lon_entry') and self.lon_entry:
+                        self.lon_entry.delete(0, tk.END)
+                        self.lon_entry.insert(0, str(lon))
+                    
+                    # Update status
+                    location_name = current_data.get('name', f"{lat}, {lon}")
+                    self.historical_status_var.set(f"✅ Imported coordinates for {location_name}")
+                    
+                    self.show_notification(f"Imported coordinates for {location_name}", "success")
+                else:
+                    self.historical_status_var.set("❌ No current location data available")
+                    self.show_notification("No current location data available", "warning")
+            else:
+                self.historical_status_var.set("❌ Current location callback not available")
+                self.show_notification("Current location feature not available", "warning")
+                
+        except Exception as e:
+            logger.error(f"Error importing current location: {e}")
+            self.historical_status_var.set("❌ Error importing current location")
+            self.show_notification("Error importing current location", "error")
+
+    def _export_historical_csv(self) -> None:
+        """Export historical weather data to CSV file."""
+        try:
+            from tkinter import filedialog
+            import csv
+            import os
+            from datetime import datetime
+            
+            # Ask user for save location
+            filename = filedialog.asksaveasfilename(
+                title="Export Historical Weather Data",
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                initialfile=f"historical_weather_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            )
+            
+            if filename:
+                # Ensure exports directory exists
+                exports_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'exports')
+                os.makedirs(exports_dir, exist_ok=True)
+                
+                # Get data from the historical tree
+                if hasattr(self, 'historical_tree') and self.historical_tree:
+                    # Prepare CSV data
+                    csv_data = []
+                    
+                    # Add header
+                    headers = ["Date", "Temperature_Mean", "Temperature_Max", "Temperature_Min", "Wind_Speed_Max", "Sunrise", "Sunset"]
+                    csv_data.append(headers)
+                    
+                    # Get all data from tree
+                    for item in self.historical_tree.get_children():
+                        values = self.historical_tree.item(item)['values']
+                        # Clean the values (remove units and formatting)
+                        clean_values = []
+                        for val in values:
+                            if isinstance(val, str):
+                                # Remove temperature units and other formatting
+                                clean_val = val.replace('°C', '').replace('°F', '').replace(' m/s', '').strip()
+                                clean_values.append(clean_val)
+                            else:
+                                clean_values.append(str(val))
+                        csv_data.append(clean_values)
+                    
+                    # Write to CSV
+                    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                        writer = csv.writer(csvfile)
+                        writer.writerows(csv_data)
+                    
+                    # Also copy to exports directory for backup
+                    backup_filename = os.path.join(exports_dir, os.path.basename(filename))
+                    with open(backup_filename, 'w', newline='', encoding='utf-8') as csvfile:
+                        writer = csv.writer(csvfile)
+                        writer.writerows(csv_data)
+                    
+                    self.historical_status_var.set(f"✅ Data exported to {os.path.basename(filename)}")
+                    self.show_notification(f"Historical data exported successfully!\nSaved to: {os.path.basename(filename)}", "success")
+                    
+                    logger.info(f"Historical weather data exported to {filename}")
+                else:
+                    self.historical_status_var.set("❌ No data available to export")
+                    self.show_notification("No historical data available to export", "warning")
+            else:
+                self.historical_status_var.set("Export cancelled")
+                
+        except Exception as e:
+            logger.error(f"Error exporting historical data: {e}")
+            self.historical_status_var.set("❌ Error exporting data")
+            self.show_notification("Error exporting historical data", "error")
+
+    def _update_historical_analysis_display(self, analysis_text: str) -> None:
+        """Update the historical analysis display with the provided text."""
+        try:
+            if hasattr(self, 'analysis_text') and self.analysis_text:
+                # Enable text widget for editing
+                self.analysis_text.configure(state=tk.NORMAL)
+                
+                # Clear existing content
+                self.analysis_text.delete(1.0, tk.END)
+                
+                # Insert new analysis text
+                self.analysis_text.insert(1.0, analysis_text)
+                
+                # Configure text formatting for better readability
+                self.analysis_text.tag_configure("title", font=('Segoe UI', 14, 'bold'), foreground="#2196F3")
+                self.analysis_text.tag_configure("section", font=('Segoe UI', 12, 'bold'), foreground="#FF9800")
+                self.analysis_text.tag_configure("highlight", font=('Segoe UI', 10, 'bold'), foreground="#4CAF50")
+                self.analysis_text.tag_configure("error", font=('Segoe UI', 10, 'bold'), foreground="#F44336")
+                
+                # Apply formatting based on content
+                lines = analysis_text.split('\n')
+                line_num = 1
+                for line in lines:
+                    line_start = f"{line_num}.0"
+                    line_end = f"{line_num}.end"
+                    
+                    if line.startswith('🌍') or 'Analysis' in line:
+                        self.analysis_text.tag_add("title", line_start, line_end)
+                    elif line.startswith(('📊', '🌡️', '🌪️', '📈', '💡', '🔄', '✅')):
+                        self.analysis_text.tag_add("section", line_start, line_end)
+                    elif '✅' in line or 'successfully' in line.lower():
+                        self.analysis_text.tag_add("highlight", line_start, line_end)
+                    elif '❌' in line or 'error' in line.lower() or 'failed' in line.lower():
+                        self.analysis_text.tag_add("error", line_start, line_end)
+                    
+                    line_num += 1
+                
+                # Disable text widget to prevent user editing
+                self.analysis_text.configure(state=tk.DISABLED)
+                
+                # Scroll to top
+                self.analysis_text.see(1.0)
+                
+                logger.info("Historical analysis display updated successfully")
+            else:
+                logger.warning("Analysis text widget not available")
+                
+        except Exception as e:
+            logger.error(f"Error updating historical analysis display: {e}")
