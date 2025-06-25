@@ -24,6 +24,8 @@ from src.business.settings_service import SettingsService
 from src.config.config import config_manager, APP_CONFIG, setup_environment
 from src.ui.dashboard_ui import WeatherDashboardUI
 from src.utils.logging import get_logger, get_ui_logger
+from src.utils.historical_weather import HistoricalWeatherProcessor
+from src.services.weather_api import WeatherAPIService
 
 # Initialize loggers
 logger = get_logger()
@@ -49,6 +51,12 @@ class WeatherDashboardApp:
         self.weather_service = WeatherService()
         self.notification_service = NotificationService()
         self.settings_service = SettingsService()
+        
+        # Initialize weather API service for historical data
+        self.weather_api_service = WeatherAPIService(config_manager.config)
+        
+        # Initialize historical weather processor
+        self.historical_processor = HistoricalWeatherProcessor(self.weather_api_service)
         
         # Initialize application controller
         self.app_controller = ApplicationController()
