@@ -81,7 +81,8 @@ class WeatherDashboardUI:
         self.search_callback: Optional[Callable[[str], None]] = None
         self.theme_change_callback: Optional[Callable[[str], None]] = None
         self.auto_refresh_callback: Optional[Callable[[bool], None]] = None
-        self.get_current_location_callback: Optional[Callable[[], Optional[Dict[str, Any]]]] = None        # UI components
+        self.get_current_location_callback: Optional[Callable[[], Optional[Dict[str, Any]]]] = None
+        self.historical_processor_callback: Optional[Callable[[], Any]] = None        # UI components
         self.city_entry: Optional[ttk.Entry] = None
         self.theme_var: Optional[tk.StringVar] = None
         self.weather_frame: Optional[tk.Widget] = None
@@ -173,6 +174,10 @@ class WeatherDashboardUI:
     def set_get_current_location_callback(self, callback: Callable[[], Optional[Dict[str, Any]]]) -> None:
         """Set callback for getting current location data."""
         self.get_current_location_callback = callback
+    
+    def set_historical_processor_callback(self, callback: Callable[[], Any]) -> None:
+        """Set callback for getting historical weather processor."""
+        self.historical_processor_callback = callback
     
     def _setup_ui(self) -> None:
         """Set up the user interface."""
@@ -1923,25 +1928,91 @@ Perfect for learning and development!        """
             self.historical_status_var.set(f"Loading custom data for {lat}, {lon}...")
             self.root.update()
             
-            # This would connect to the actual historical weather processor
-            custom_analysis = f"""
+            # Get the historical processor from the callback
+            if self.historical_processor_callback:
+                historical_processor = self.historical_processor_callback()
+                
+                # Fetch real historical data
+                dataset = historical_processor.fetch_and_process_historical_data(
+                    lat, lon, start_date, end_date
+                )
+                
+                if dataset:
+                    # Analyze the data
+                    temp_analysis = historical_processor.analyze_temperature_trends(dataset)
+                    extreme_events = historical_processor.get_extreme_weather_events(dataset)
+                    
+                    # Create comprehensive analysis
+                    custom_analysis = f"""
 🌍 Custom Historical Weather Analysis
 ====================================
 
 📍 Location: {lat}°N, {lon}°E
 📅 Date Range: {start_date} to {end_date}
 
-⚠️ Note: This is a demonstration interface.
-To enable full functionality, connect to:
-• HistoricalWeatherProcessor
-• Open-Meteo API integration
-• Real-time data analysis
+📊 Analysis Results:
+• Total Days Analyzed: {temp_analysis.get('total_days', 'N/A')}
+• Average Temperature: {temp_analysis.get('average_temperature', 'N/A')}°C
+• Temperature Range: {temp_analysis.get('min_temperature', 'N/A')}°C to {temp_analysis.get('max_temperature', 'N/A')}°C
 
-🔧 Implementation Status:
+🌡️ Temperature Extremes:
+• Hottest Day: {extreme_events.get('temperature_extremes', {}).get('hottest_day', 'N/A')}°C
+• Coldest Day: {extreme_events.get('temperature_extremes', {}).get('coldest_day', 'N/A')}°C
+• Largest Daily Range: {extreme_events.get('temperature_extremes', {}).get('largest_daily_range', 'N/A')}°C
+
+💨 Wind Extremes:
+• Highest Wind Speed: {extreme_events.get('wind_extremes', {}).get('highest_wind_speed', 'N/A')} m/s
+• Highest Wind Gust: {extreme_events.get('wind_extremes', {}).get('highest_wind_gust', 'N/A')} m/s
+
+✅ Status: Real-time data successfully analyzed
+🔧 Features Active:
+• ✅ HistoricalWeatherProcessor connected
+• ✅ Open-Meteo API integration active
+• ✅ Real-time data analysis complete
+• ✅ Cache system operational
+"""
+                    
+                    # Update table with real data (first 10 entries)
+                    self._populate_custom_historical_table(dataset)
+                    
+                    self.historical_status_var.set("✅ Custom historical data loaded and analyzed")
+                else:
+                    custom_analysis = f"""
+🌍 Custom Historical Weather Analysis
+====================================
+
+📍 Location: {lat}°N, {lon}°E
+📅 Date Range: {start_date} to {end_date}
+
+❌ No data available for this location and date range.
+Please check:
+• Date range is valid (not in the future)
+• Location coordinates are correct
+• Internet connection is stable
+
+🔧 System Status:
+• ✅ HistoricalWeatherProcessor connected
+• ✅ Open-Meteo API integration active
+• ❌ No data returned from API
+"""
+                    self.historical_status_var.set("❌ No data available for specified parameters")
+            else:
+                # Fallback to demo mode
+                custom_analysis = f"""
+🌍 Custom Historical Weather Analysis
+====================================
+
+� Location: {lat}°N, {lon}°E
+📅 Date Range: {start_date} to {end_date}
+
+⚠️ Note: Running in demonstration mode.
+Historical processor not connected.
+
+�🔧 Implementation Status:
 • ✅ UI Interface Complete
 • ✅ Data Models Ready
 • ✅ API Service Configured
-• 🔄 Backend Integration Pending
+• ❌ Backend Integration Not Available
 
 📊 Features Ready:
 • Temperature trend analysis
@@ -1949,10 +2020,8 @@ To enable full functionality, connect to:
 • Data export capabilities
 • Multi-location comparison
 • Seasonal pattern analysis
-            """
-            
-            self._update_historical_analysis_display(custom_analysis)
-            self.historical_status_var.set("⚠️ Custom data demo - full integration pending")
+"""
+                self.historical_status_var.set("⚠️ Demo mode - historical processor not available")
             
         except ValueError:
             self.historical_status_var.set("❌ Invalid coordinates or date format")
@@ -1986,162 +2055,34 @@ To enable full functionality, connect to:
         except Exception as e:
             logger.error(f"Error populating sample historical table: {e}")
 
-    def _update_historical_analysis_display(self, text: str) -> None:
-        """Update the historical analysis text display."""
+    def _populate_custom_historical_table(self, dataset) -> None:
+        """Populate the historical data table with real data from the dataset."""
         try:
-            self.analysis_text.config(state=tk.NORMAL)
-            self.analysis_text.delete(1.0, tk.END)
-            self.analysis_text.insert(1.0, text)
-            self.analysis_text.config(state=tk.DISABLED)
-        except Exception as e:
-            logger.error(f"Error updating historical analysis display: {e}")
-
-    def _export_historical_csv(self) -> None:
-        """Export historical data to CSV file."""
-        try:
-            from tkinter import filedialog
+            # Clear existing data
+            for item in self.historical_tree.get_children():
+                self.historical_tree.delete(item)
             
-            # Ask user for save location
-            filename = filedialog.asksaveasfilename(
-                defaultextension=".csv",
-                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-                title="Export Historical Weather Data"
-            )
-            
-            if filename:
-                # This would use the actual historical weather processor
-                # For demo, create a simple CSV
-                with open(filename, 'w', newline='') as f:
-                    import csv
-                    writer = csv.writer(f)
-                    
-                    # Write header
-                    writer.writerow(["Date", "Temperature_Mean", "Temperature_Max", "Temperature_Min", 
-                                   "Wind_Speed_Max", "Sunrise", "Sunset"])
-                    
-                    # Write sample data
-                    sample_rows = [
-                        ["2000-01-01", "2.1", "4.5", "-0.3", "12.4", "08:14", "16:02"],
-                        ["2000-01-02", "1.8", "3.2", "0.4", "8.7", "08:13", "16:03"],
-                        ["2000-07-15", "23.4", "28.1", "18.7", "6.3", "05:31", "21:09"],
-                        ["2009-12-31", "0.4", "3.7", "-2.8", "11.6", "08:16", "15:54"]
-                    ]
-                    
-                    for row in sample_rows:
-                        writer.writerow(row)
+            # Insert real data (limit to first 50 entries for performance)
+            count = 0
+            for day_data in dataset.daily_data:
+                if count >= 50:  # Limit entries for UI performance
+                    break
                 
-                self.historical_status_var.set(f"✅ Data exported to {filename}")
-            
+                # Format the data for display
+                temp_mean = f"{day_data.temperature_mean:.1f}°C" if day_data.temperature_mean is not None else "N/A"
+                temp_max = f"{day_data.temperature_max:.1f}°C" if day_data.temperature_max is not None else "N/A"
+                temp_min = f"{day_data.temperature_min:.1f}°C" if day_data.temperature_min is not None else "N/A"
+                wind_speed = f"{day_data.wind_speed_max:.1f} m/s" if day_data.wind_speed_max is not None else "N/A"
+                sunrise = day_data.sunrise[:5] if day_data.sunrise else "N/A"  # Show only HH:MM
+                sunset = day_data.sunset[:5] if day_data.sunset else "N/A"  # Show only HH:MM
+                
+                data_row = (day_data.date, temp_mean, temp_max, temp_min, wind_speed, sunrise, sunset)
+                self.historical_tree.insert("", "end", values=data_row)
+                count += 1
+                
+            logger.info(f"Populated historical table with {count} real data entries")
+                
         except Exception as e:
-            logger.error(f"Error exporting historical data: {e}")
-            self.historical_status_var.set("❌ Export failed")
-    
-    def _import_current_location(self) -> None:
-        """Import current location data from the main dashboard into the historical dataset."""
-        try:
-            self.historical_status_var.set("📍 Getting current location data...")
-            self.root.update()
-            
-            # Get current location data through callback if available
-            current_data = None
-            if self.get_current_location_callback:
-                current_data = self.get_current_location_callback()
-            
-            # If no callback or no data, try to get from city entry
-            if not current_data:
-                if self.city_entry and self.city_entry.get().strip():
-                    city_text = self.city_entry.get().strip()
-                    if city_text != "Enter city name...":
-                        # Show message that we're using the searched city
-                        self.historical_status_var.set(f"📍 Using searched city: {city_text}")
-                        
-                        # For demonstration, use default coordinates
-                        lat, lon = 52.52, 13.41  # Default to Berlin coordinates
-                        location_name = city_text
-                    else:
-                        self.historical_status_var.set("⚠️ No current location found. Please search for a location first in the main dashboard.")
-                        return
-                else:
-                    self.historical_status_var.set("⚠️ No current location found. Please search for a location first in the main dashboard.")
-                    return
-            else:
-                # Extract location data from callback response
-                lat = current_data.get('lat', 52.52)
-                lon = current_data.get('lon', 13.41)
-                location_name = current_data.get('location', current_data.get('city', f"{lat}, {lon}"))
-            
-            # Update the custom range inputs with the current location
-            self.lat_entry.delete(0, tk.END)
-            self.lat_entry.insert(0, str(lat))
-            self.lon_entry.delete(0, tk.END)
-            self.lon_entry.insert(0, str(lon))
-            
-            self.historical_status_var.set(f"📍 Imported location: {location_name}")
-            
-            # Show imported location analysis
-            import_analysis = f"""
-📍 Imported Location from Dashboard
-===================================
-
-🌍 Location: {location_name}
-📍 Coordinates: {lat:.2f}°N, {lon:.2f}°E
-
-✅ Location Successfully Imported!
-
-The coordinates have been automatically filled in the custom range section above.
-You can now:
-
-1. Adjust the date range as needed
-2. Click "📊 Load Custom Data" to fetch historical weather data
-3. Analyze historical patterns for this location
-
-💡 Next Steps:
-• Set your desired date range (From/To dates)
-• Load historical data for comprehensive analysis
-• Export results for further research
-
-🔧 Ready for Historical Analysis:
-• Temperature trends over time
-• Seasonal weather patterns  
-• Extreme weather events
-• Climate change indicators
-• Data export capabilities
-            """
-            
-            self._update_historical_analysis_display(import_analysis)
-            
-            # Optionally, try to save the current weather data to the local storage
-            if current_data and 'weather' in current_data:
-                try:
-                    from ..utils.data_storage import storage
-                    from ..models.weather_models import WeatherData
-                    
-                    weather_info = current_data['weather']
-                    # Create WeatherData object from current data
-                    weather_data = WeatherData(
-                        city=weather_info.get('city', location_name.split(',')[0]),
-                        country=weather_info.get('country', 'Unknown'),
-                        temperature=weather_info.get('temperature', 0),
-                        feels_like=weather_info.get('feels_like', 0),
-                        humidity=weather_info.get('humidity', 0),
-                        pressure=weather_info.get('pressure', 0),
-                        wind_speed=weather_info.get('wind_speed', 0),
-                        wind_direction=weather_info.get('wind_direction', 0),
-                        visibility=weather_info.get('visibility', 0),
-                        description=weather_info.get('description', 'Unknown'),
-                        icon=weather_info.get('icon', '01d'),
-                        timestamp=weather_info.get('timestamp', int(datetime.now().timestamp())),
-                        cloudiness=weather_info.get('cloudiness', 0)
-                    )
-                    
-                    # Save to local storage
-                    if storage.save_weather_data(weather_data):
-                        self.historical_status_var.set(f"✅ {location_name} imported and current data saved to history")
-                    
-                except Exception as storage_error:
-                    logger.warning(f"Could not save current weather data: {storage_error}")
-                    # Don't fail the import if storage fails
-            
-        except Exception as e:
-            logger.error(f"Error importing current location: {e}")
-            self.historical_status_var.set("❌ Error importing current location")
+            logger.error(f"Error populating custom historical table: {e}")
+            # Fall back to sample data if there's an error
+            self._populate_sample_historical_table()

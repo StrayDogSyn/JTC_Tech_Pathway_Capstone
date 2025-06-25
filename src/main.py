@@ -244,6 +244,10 @@ class WeatherDashboardApp:
             logger.error(f"Error getting current location data: {e}")
             return None
     
+    def _get_historical_processor(self) -> HistoricalWeatherProcessor:
+        """Get the historical weather processor for historical analysis."""
+        return self.historical_processor
+    
     def _update_displays(self) -> None:
         """Update all display areas with current data (legacy compatibility)."""
         weather_controller = self.app_controller.weather_controller
@@ -277,6 +281,7 @@ class WeatherDashboardApp:
             self.ui.set_search_callback(self._on_search)
             self.ui.set_theme_change_callback(self._on_theme_change)
             self.ui.set_get_current_location_callback(self._get_current_location_data)
+            self.ui.set_historical_processor_callback(self._get_historical_processor)
             
             # Start the UI
             self.ui.run()
