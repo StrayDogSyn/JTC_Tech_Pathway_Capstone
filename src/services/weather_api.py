@@ -128,40 +128,64 @@ class WeatherAPIService:
         }
 
     def _make_historical_request(self, url: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Make HTTP request to Open-Meteo API (no API key required)."""
+        """Make HTTP request to Open-Meteo API with retry logic (no API key required)."""
         logger.debug(f"Making historical API request to {url}")
         
-        response = None
-        try:
-            response = requests.get(url, params=params, timeout=self.timeout)
-            response.raise_for_status()
-            
-            data = response.json()
-            logger.debug(f"Historical API request successful: {response.status_code}")
-            return data
-            
-        except requests.exceptions.Timeout:
-            logger.error(f"Historical API request timeout after {self.timeout}s")
-            raise WeatherAPIError("Historical data request timed out")
-            
-        except requests.exceptions.HTTPError as e:
-            if response and response.status_code == 400:
-                logger.error("Invalid parameters for historical data request")
-                raise WeatherAPIError("Invalid historical data parameters")
-            elif response and response.status_code == 404:
-                logger.error("Historical data not found for specified location/date")
-                raise WeatherAPIError("Historical data not available")
-            else:
-                logger.error(f"Historical API HTTP error: {e}")
-                raise WeatherAPIError(f"Historical API error: {e}")
+        # Use longer timeout for historical data requests
+        historical_timeout = max(30, self.timeout * 3)  # At least 30 seconds
+        max_retries = getattr(self.config.api, 'max_retries', 3)
+        
+        for attempt in range(max_retries + 1):
+            response = None
+            try:
+                if attempt > 0:
+                    # Exponential backoff: 2, 4, 8 seconds
+                    wait_time = 2 ** attempt
+                    logger.info(f"Retrying historical API request in {wait_time} seconds (attempt {attempt + 1}/{max_retries + 1})")
+                    import time
+                    time.sleep(wait_time)
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Historical API request failed: {e}")
-            raise WeatherAPIError(f"Historical data network error: {e}")
-            
-        except ValueError as e:
-            logger.error(f"Invalid JSON response from historical API: {e}")
-            raise WeatherAPIError("Invalid historical data response format")
+                logger.debug(f"Historical API request attempt {attempt + 1} with {historical_timeout}s timeout")
+                response = requests.get(url, params=params, timeout=historical_timeout)
+                response.raise_for_status()
+                
+                data = response.json()
+                logger.debug(f"Historical API request successful: {response.status_code}")
+                return data
+                
+            except requests.exceptions.Timeout:
+                if attempt < max_retries:
+                    logger.warning(f"Historical API request timeout after {historical_timeout}s (attempt {attempt + 1}), retrying...")
+                    continue
+                else:
+                    logger.error(f"Historical API request timeout after {historical_timeout}s (final attempt)")
+                    raise WeatherAPIError("Historical data request timed out after multiple attempts")
+                
+            except requests.exceptions.HTTPError as e:
+                if response and response.status_code == 400:
+                    logger.error("Invalid parameters for historical data request")
+                    raise WeatherAPIError("Invalid historical data parameters")
+                elif response and response.status_code == 404:
+                    logger.error("Historical data not found for specified location/date")
+                    raise WeatherAPIError("Historical data not available")
+                elif response and response.status_code >= 500 and attempt < max_retries:
+                    logger.warning(f"Server error {response.status_code}, retrying...")
+                    continue
+                else:
+                    logger.error(f"Historical API HTTP error: {e}")
+                    raise WeatherAPIError(f"Historical API error: {e}")
+                    
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries:
+                    logger.warning(f"Historical API request failed: {e}, retrying...")
+                    continue
+                else:
+                    logger.error(f"Historical API request failed: {e}")
+                    raise WeatherAPIError(f"Historical data network error: {e}")
+                    
+            except ValueError as e:
+                logger.error(f"Invalid JSON response from historical API: {e}")
+                raise WeatherAPIError("Invalid historical data response format")
 
     def get_historical_weather(self, lat: float, lon: float, start_date: str, end_date: str) -> Optional[Dict[str, Any]]:
         """
