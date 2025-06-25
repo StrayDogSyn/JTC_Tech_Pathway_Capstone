@@ -52,8 +52,24 @@ class WeatherDashboardUI:
             minsize=(1400, 900)
         )
         
-        # Configure window for modern appearance
+        # Configure window for modern appearance and ensure visibility
         self.root.attributes('-alpha', 0.0)  # Start transparent for fade-in
+        
+        # Additional window configuration for Windows
+        try:
+            # Center the window on screen
+            self.root.place_window_center()
+            
+            # Ensure window appears on taskbar
+            self.root.iconify()  # Minimize first
+            self.root.deiconify()  # Then restore to ensure it appears
+            
+            # Set window state
+            self.root.state('normal')
+            
+        except Exception as e:
+            # Fallback configuration if advanced features fail
+            pass
         
         # Enhanced status variables
         self.status_var = tk.StringVar()
@@ -116,9 +132,16 @@ class WeatherDashboardUI:
                     self.root.update()
                     time.sleep(0.02)
                 except:
+                    # Ensure window is visible if fade fails
+                    self.root.attributes('-alpha', 1.0)
                     break
         
-        threading.Thread(target=fade, daemon=True).start()
+        # Run fade-in on main thread instead of separate thread for tkinter safety
+        try:
+            fade()
+        except:
+            # Fallback: ensure window is visible
+            self.root.attributes('-alpha', 1.0)
     
     def _apply_modern_styling(self):
         """Apply modern styling to the interface."""
@@ -886,6 +909,20 @@ Perfect for learning and development!        """
     
     def run(self) -> None:
         """Start the UI main loop."""
+        # Ensure window is visible and focused
+        self.root.deiconify()  # Ensure window is not minimized
+        self.root.lift()       # Bring window to front
+        self.root.focus_force()  # Force focus
+        self.root.attributes('-topmost', True)  # Temporarily bring to top
+        self.root.after(100, lambda: self.root.attributes('-topmost', False))  # Remove topmost after 100ms
+        
+        # Ensure window is fully visible (in case fade-in failed)
+        try:
+            self.root.attributes('-alpha', 1.0)
+        except:
+            pass
+            
+        # Start the main loop
         self.root.mainloop()
     
     def destroy(self) -> None:

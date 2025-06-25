@@ -58,13 +58,13 @@ def check_requirements() -> bool:
     required_modules = [
         'ttkbootstrap',
         'requests',
-        'python-dotenv'
+        'dotenv'  # python-dotenv imports as 'dotenv'
     ]
     
     missing_modules = []
     for module in required_modules:
         try:
-            __import__(module.replace('-', '_'))
+            __import__(module)
         except ImportError:
             missing_modules.append(module)
     
