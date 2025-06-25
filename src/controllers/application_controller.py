@@ -220,6 +220,49 @@ class ApplicationController:
             self._notify_error(error_msg)
             return False
     
+    def get_current_location_data(self) -> Optional[Dict[str, Any]]:
+        """Get current location and weather data for import functionality."""
+        try:
+            location = self.weather_controller.get_current_location()
+            weather = self.weather_controller.current_weather
+            
+            if not location:
+                return None
+            
+            # Create combined data structure
+            data = {
+                'lat': location.lat,
+                'lon': location.lon,
+                'location': location.display_name,
+                'city': location.name,
+                'country': location.country,
+                'state': location.state
+            }
+            
+            # Add weather data if available
+            if weather:
+                data['weather'] = {
+                    'city': weather.city,
+                    'country': weather.country,
+                    'temperature': weather.temperature,
+                    'feels_like': weather.feels_like,
+                    'humidity': weather.humidity,
+                    'pressure': weather.pressure,
+                    'wind_speed': weather.wind_speed,
+                    'wind_direction': weather.wind_direction,
+                    'visibility': weather.visibility,
+                    'description': weather.description,
+                    'icon': weather.icon,
+                    'timestamp': weather.timestamp,
+                    'cloudiness': weather.cloudiness
+                }
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Error getting current location data: {e}")
+            return None
+    
     # Private helper methods
     def _validate_configuration(self) -> bool:
         """Validate application configuration."""

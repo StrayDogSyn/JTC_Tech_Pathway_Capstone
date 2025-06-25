@@ -1,1 +1,4 @@
 date,city,country,temperature,feels_like,humidity,pressure,wind_speed,wind_direction,visibility,description,cloudiness
+2025-06-24 20:22:53,Providence,US,31.28,36.26,63,1014,0.45,52,10000,Clear Sky,0
+2025-06-24 20:23:12,Providence,US,31.28,36.26,63,1014,0.45,52,10000,Clear Sky,0
+2025-06-24 20:24:00,Providence,US,31.28,36.26,63,1014,0.45,52,10000,Clear Sky,0

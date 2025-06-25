@@ -7,7 +7,7 @@ maintaining clean separation of concerns and proper architectural patterns.
 
 import sys
 import os
-from typing import Optional
+from typing import Optional, Dict, Any
 from dataclasses import asdict
 
 # Add the src directory to the Python path
@@ -228,6 +228,14 @@ class WeatherDashboardApp:
                 self.ui.show_info("Theme Changed", 
                                  f"Theme changed to {theme}. Restart the app to see full effect.")
     
+    def _get_current_location_data(self) -> Optional[Dict[str, Any]]:
+        """Get current location data for import functionality (legacy compatibility)."""
+        try:
+            return self.app_controller.get_current_location_data()
+        except Exception as e:
+            logger.error(f"Error getting current location data: {e}")
+            return None
+    
     def _update_displays(self) -> None:
         """Update all display areas with current data (legacy compatibility)."""
         weather_controller = self.app_controller.weather_controller
@@ -260,6 +268,7 @@ class WeatherDashboardApp:
             # Set up legacy callbacks for backward compatibility
             self.ui.set_search_callback(self._on_search)
             self.ui.set_theme_change_callback(self._on_theme_change)
+            self.ui.set_get_current_location_callback(self._get_current_location_data)
             
             # Start the UI
             self.ui.run()

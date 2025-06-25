@@ -80,7 +80,8 @@ class WeatherDashboardUI:
         # Callbacks
         self.search_callback: Optional[Callable[[str], None]] = None
         self.theme_change_callback: Optional[Callable[[str], None]] = None
-        self.auto_refresh_callback: Optional[Callable[[bool], None]] = None        # UI components
+        self.auto_refresh_callback: Optional[Callable[[bool], None]] = None
+        self.get_current_location_callback: Optional[Callable[[], Optional[Dict[str, Any]]]] = None        # UI components
         self.city_entry: Optional[ttk.Entry] = None
         self.theme_var: Optional[tk.StringVar] = None
         self.weather_frame: Optional[tk.Widget] = None
@@ -168,6 +169,10 @@ class WeatherDashboardUI:
     def set_theme_change_callback(self, callback: Callable[[str], None]) -> None:
         """Set callback for theme change events."""
         self.theme_change_callback = callback
+    
+    def set_get_current_location_callback(self, callback: Callable[[], Optional[Dict[str, Any]]]) -> None:
+        """Set callback for getting current location data."""
+        self.get_current_location_callback = callback
     
     def _setup_ui(self) -> None:
         """Set up the user interface."""
@@ -2034,35 +2039,36 @@ To enable full functionality, connect to:
     def _import_current_location(self) -> None:
         """Import current location data from the main dashboard into the historical dataset."""
         try:
-            # For now, we'll use a placeholder approach since we don't have direct access to the weather controller
-            # In a real implementation, this would get the data from the application controller
+            self.historical_status_var.set("📍 Getting current location data...")
+            self.root.update()
             
-            # Check if we have current weather data available in the UI
-            current_location = None
-            current_weather = None
+            # Get current location data through callback if available
+            current_data = None
+            if self.get_current_location_callback:
+                current_data = self.get_current_location_callback()
             
-            # Try to extract current location info from the dashboard
-            # This is a simplified approach - in a full implementation, 
-            # this would be connected to the weather controller
-            if hasattr(self, '_current_location_data'):
-                current_location = self._current_location_data
-            if hasattr(self, '_current_weather_data'):
-                current_weather = self._current_weather_data
-            
-            # If no current data, show message asking user to search first
-            if not current_location and not current_weather:
-                self.historical_status_var.set("⚠️ No current location found. Please search for a location first in the main dashboard.")
-                return
-            
-            # For demonstration, we'll use example coordinates if no real data is available
-            if not current_location:
-                # Use default coordinates (Berlin) as example
-                lat, lon = 52.52, 13.41
-                location_name = "Berlin, Germany"
+            # If no callback or no data, try to get from city entry
+            if not current_data:
+                if self.city_entry and self.city_entry.get().strip():
+                    city_text = self.city_entry.get().strip()
+                    if city_text != "Enter city name...":
+                        # Show message that we're using the searched city
+                        self.historical_status_var.set(f"📍 Using searched city: {city_text}")
+                        
+                        # For demonstration, use default coordinates
+                        lat, lon = 52.52, 13.41  # Default to Berlin coordinates
+                        location_name = city_text
+                    else:
+                        self.historical_status_var.set("⚠️ No current location found. Please search for a location first in the main dashboard.")
+                        return
+                else:
+                    self.historical_status_var.set("⚠️ No current location found. Please search for a location first in the main dashboard.")
+                    return
             else:
-                lat = current_location.get('lat', 52.52)
-                lon = current_location.get('lon', 13.41)
-                location_name = current_location.get('display_name', f"{lat}, {lon}")
+                # Extract location data from callback response
+                lat = current_data.get('lat', 52.52)
+                lon = current_data.get('lon', 13.41)
+                location_name = current_data.get('location', current_data.get('city', f"{lat}, {lon}"))
             
             # Update the custom range inputs with the current location
             self.lat_entry.delete(0, tk.END)
@@ -2105,27 +2111,27 @@ You can now:
             self._update_historical_analysis_display(import_analysis)
             
             # Optionally, try to save the current weather data to the local storage
-            # This would connect to the WeatherDataStorage service
-            if current_weather:
+            if current_data and 'weather' in current_data:
                 try:
                     from ..utils.data_storage import storage
                     from ..models.weather_models import WeatherData
                     
+                    weather_info = current_data['weather']
                     # Create WeatherData object from current data
                     weather_data = WeatherData(
-                        city=current_weather.get('city', location_name.split(',')[0]),
-                        country=current_weather.get('country', 'Unknown'),
-                        temperature=current_weather.get('temperature', 0),
-                        feels_like=current_weather.get('feels_like', 0),
-                        humidity=current_weather.get('humidity', 0),
-                        pressure=current_weather.get('pressure', 0),
-                        wind_speed=current_weather.get('wind_speed', 0),
-                        wind_direction=current_weather.get('wind_direction', 0),
-                        visibility=current_weather.get('visibility', 0),
-                        description=current_weather.get('description', 'Unknown'),
-                        cloudiness=current_weather.get('cloudiness', 0),
-                        lat=lat,
-                        lon=lon
+                        city=weather_info.get('city', location_name.split(',')[0]),
+                        country=weather_info.get('country', 'Unknown'),
+                        temperature=weather_info.get('temperature', 0),
+                        feels_like=weather_info.get('feels_like', 0),
+                        humidity=weather_info.get('humidity', 0),
+                        pressure=weather_info.get('pressure', 0),
+                        wind_speed=weather_info.get('wind_speed', 0),
+                        wind_direction=weather_info.get('wind_direction', 0),
+                        visibility=weather_info.get('visibility', 0),
+                        description=weather_info.get('description', 'Unknown'),
+                        icon=weather_info.get('icon', '01d'),
+                        timestamp=weather_info.get('timestamp', int(datetime.now().timestamp())),
+                        cloudiness=weather_info.get('cloudiness', 0)
                     )
                     
                     # Save to local storage
