@@ -1932,10 +1932,28 @@ Perfect for learning and development!        """
             if self.historical_processor_callback:
                 historical_processor = self.historical_processor_callback()
                 
-                # Fetch real historical data
-                dataset = historical_processor.fetch_and_process_historical_data(
-                    lat, lon, start_date, end_date
-                )
+                try:
+                    # Show loading message with timeout warning
+                    self.historical_status_var.set(f"Fetching data from API... (this may take up to 30 seconds)")
+                    self.root.update()
+                    
+                    # Fetch real historical data with timeout handling
+                    dataset = historical_processor.fetch_and_process_historical_data(
+                        lat, lon, start_date, end_date
+                    )
+                    
+                except Exception as api_error:
+                    # Handle timeout and other API errors
+                    error_msg = str(api_error).lower()
+                    if 'timeout' in error_msg or 'timed out' in error_msg:
+                        self._handle_api_timeout(lat, lon, start_date, end_date)
+                        return
+                    elif 'connection' in error_msg or 'network' in error_msg:
+                        self._handle_connection_error(lat, lon, start_date, end_date)
+                        return
+                    else:
+                        self._handle_general_api_error(lat, lon, start_date, end_date, str(api_error))
+                        return
                 
                 if dataset:
                     # Analyze the data
@@ -1991,9 +2009,10 @@ Please check:
 • Internet connection is stable
 
 🔧 System Status:
-• ✅ HistoricalWeatherProcessor connected
-• ✅ Open-Meteo API integration active
-• ❌ No data returned from API
+• ✅ UI Interface: Working
+• ✅ Data Processing: Ready
+• ❌ API Service: Error occurred
+• ⚠️ Fallback: Sample data available
 """
                     self.historical_status_var.set("❌ No data available for specified parameters")
             else:
@@ -2029,216 +2048,127 @@ Historical processor not connected.
             logger.error(f"Error loading custom historical data: {e}")
             self.historical_status_var.set("❌ Error loading custom data")
 
-    def _populate_sample_historical_table(self) -> None:
-        """Populate the historical data table with sample data."""
-        try:
-            # Clear existing data
-            for item in self.historical_tree.get_children():
-                self.historical_tree.delete(item)
-            
-            # Sample historical data entries
-            sample_data = [
-                ("2000-01-01", "2.1°C", "4.5°C", "-0.3°C", "12.4 m/s", "08:14", "16:02"),
-                ("2000-01-02", "1.8°C", "3.2°C", "0.4°C", "8.7 m/s", "08:13", "16:03"),
-                ("2000-01-03", "3.5°C", "6.1°C", "0.9°C", "15.2 m/s", "08:12", "16:05"),
-                ("2000-07-15", "23.4°C", "28.1°C", "18.7°C", "6.3 m/s", "05:31", "21:09"),
-                ("2000-07-16", "25.2°C", "30.5°C", "19.9°C", "4.8 m/s", "05:32", "21:08"),
-                ("2005-12-25", "-2.1°C", "1.3°C", "-5.6°C", "18.9 m/s", "08:17", "15:53"),
-                ("2009-08-10", "26.8°C", "32.4°C", "21.2°C", "7.1 m/s", "06:08", "20:15"),
-                ("2009-12-31", "0.4°C", "3.7°C", "-2.8°C", "11.6 m/s", "08:16", "15:54")
-            ]
-            
-            # Insert sample data
-            for data_row in sample_data:
-                self.historical_tree.insert("", "end", values=data_row)
-                
-        except Exception as e:
-            logger.error(f"Error populating sample historical table: {e}")
+    def _handle_api_timeout(self, lat: float, lon: float, start_date: str, end_date: str) -> None:
+        """Handle API timeout errors with fallback options."""
+        timeout_analysis = f"""
+🌍 Custom Historical Weather Analysis
+====================================
 
-    def _populate_custom_historical_table(self, dataset) -> None:
-        """Populate the historical data table with real data from the dataset."""
-        try:
-            # Clear existing data
-            for item in self.historical_tree.get_children():
-                self.historical_tree.delete(item)
-            
-            # Insert real data (limit to first 50 entries for performance)
-            count = 0
-            for day_data in dataset.daily_data:
-                if count >= 50:  # Limit entries for UI performance
-                    break
-                
-                # Format the data for display
-                temp_mean = f"{day_data.temperature_mean:.1f}°C" if day_data.temperature_mean is not None else "N/A"
-                temp_max = f"{day_data.temperature_max:.1f}°C" if day_data.temperature_max is not None else "N/A"
-                temp_min = f"{day_data.temperature_min:.1f}°C" if day_data.temperature_min is not None else "N/A"
-                wind_speed = f"{day_data.wind_speed_max:.1f} m/s" if day_data.wind_speed_max is not None else "N/A"
-                sunrise = day_data.sunrise[:5] if day_data.sunrise else "N/A"  # Show only HH:MM
-                sunset = day_data.sunset[:5] if day_data.sunset else "N/A"  # Show only HH:MM
-                
-                data_row = (day_data.date, temp_mean, temp_max, temp_min, wind_speed, sunrise, sunset)
-                self.historical_tree.insert("", "end", values=data_row)
-                count += 1
-                
-            logger.info(f"Populated historical table with {count} real data entries")
-                
-        except Exception as e:
-            logger.error(f"Error populating custom historical table: {e}")
-            # Fall back to sample data if there's an error
-            self._populate_sample_historical_table()
+📍 Location: {lat}°N, {lon}°E
+📅 Date Range: {start_date} to {end_date}
 
-    def _import_current_location(self) -> None:
-        """Import current location data from the main dashboard."""
-        try:
-            if self.get_current_location_callback:
-                current_data = self.get_current_location_callback()
-                if current_data:
-                    # Extract coordinates from current location data
-                    lat = current_data.get('latitude', current_data.get('coord', {}).get('lat', 0))
-                    lon = current_data.get('longitude', current_data.get('coord', {}).get('lon', 0))
-                    
-                    # Update coordinate entries
-                    if hasattr(self, 'lat_entry') and self.lat_entry:
-                        self.lat_entry.delete(0, tk.END)
-                        self.lat_entry.insert(0, str(lat))
-                    
-                    if hasattr(self, 'lon_entry') and self.lon_entry:
-                        self.lon_entry.delete(0, tk.END)
-                        self.lon_entry.insert(0, str(lon))
-                    
-                    # Update status
-                    location_name = current_data.get('name', f"{lat}, {lon}")
-                    self.historical_status_var.set(f"✅ Imported coordinates for {location_name}")
-                    
-                    self.show_notification(f"Imported coordinates for {location_name}", "success")
-                else:
-                    self.historical_status_var.set("❌ No current location data available")
-                    self.show_notification("No current location data available", "warning")
-            else:
-                self.historical_status_var.set("❌ Current location callback not available")
-                self.show_notification("Current location feature not available", "warning")
-                
-        except Exception as e:
-            logger.error(f"Error importing current location: {e}")
-            self.historical_status_var.set("❌ Error importing current location")
-            self.show_notification("Error importing current location", "error")
+⏰ API Request Timeout
+======================
 
-    def _export_historical_csv(self) -> None:
-        """Export historical weather data to CSV file."""
-        try:
-            from tkinter import filedialog
-            import csv
-            import os
-            from datetime import datetime
-            
-            # Ask user for save location
-            filename = filedialog.asksaveasfilename(
-                title="Export Historical Weather Data",
-                defaultextension=".csv",
-                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-                initialfile=f"historical_weather_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-            )
-            
-            if filename:
-                # Ensure exports directory exists
-                exports_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'exports')
-                os.makedirs(exports_dir, exist_ok=True)
-                
-                # Get data from the historical tree
-                if hasattr(self, 'historical_tree') and self.historical_tree:
-                    # Prepare CSV data
-                    csv_data = []
-                    
-                    # Add header
-                    headers = ["Date", "Temperature_Mean", "Temperature_Max", "Temperature_Min", "Wind_Speed_Max", "Sunrise", "Sunset"]
-                    csv_data.append(headers)
-                    
-                    # Get all data from tree
-                    for item in self.historical_tree.get_children():
-                        values = self.historical_tree.item(item)['values']
-                        # Clean the values (remove units and formatting)
-                        clean_values = []
-                        for val in values:
-                            if isinstance(val, str):
-                                # Remove temperature units and other formatting
-                                clean_val = val.replace('°C', '').replace('°F', '').replace(' m/s', '').strip()
-                                clean_values.append(clean_val)
-                            else:
-                                clean_values.append(str(val))
-                        csv_data.append(clean_values)
-                    
-                    # Write to CSV
-                    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-                        writer = csv.writer(csvfile)
-                        writer.writerows(csv_data)
-                    
-                    # Also copy to exports directory for backup
-                    backup_filename = os.path.join(exports_dir, os.path.basename(filename))
-                    with open(backup_filename, 'w', newline='', encoding='utf-8') as csvfile:
-                        writer = csv.writer(csvfile)
-                        writer.writerows(csv_data)
-                    
-                    self.historical_status_var.set(f"✅ Data exported to {os.path.basename(filename)}")
-                    self.show_notification(f"Historical data exported successfully!\nSaved to: {os.path.basename(filename)}", "success")
-                    
-                    logger.info(f"Historical weather data exported to {filename}")
-                else:
-                    self.historical_status_var.set("❌ No data available to export")
-                    self.show_notification("No historical data available to export", "warning")
-            else:
-                self.historical_status_var.set("Export cancelled")
-                
-        except Exception as e:
-            logger.error(f"Error exporting historical data: {e}")
-            self.historical_status_var.set("❌ Error exporting data")
-            self.show_notification("Error exporting historical data", "error")
+❌ The historical weather data request timed out after 30 seconds.
 
-    def _update_historical_analysis_display(self, analysis_text: str) -> None:
-        """Update the historical analysis display with the provided text."""
-        try:
-            if hasattr(self, 'analysis_text') and self.analysis_text:
-                # Enable text widget for editing
-                self.analysis_text.configure(state=tk.NORMAL)
-                
-                # Clear existing content
-                self.analysis_text.delete(1.0, tk.END)
-                
-                # Insert new analysis text
-                self.analysis_text.insert(1.0, analysis_text)
-                
-                # Configure text formatting for better readability
-                self.analysis_text.tag_configure("title", font=('Segoe UI', 14, 'bold'), foreground="#2196F3")
-                self.analysis_text.tag_configure("section", font=('Segoe UI', 12, 'bold'), foreground="#FF9800")
-                self.analysis_text.tag_configure("highlight", font=('Segoe UI', 10, 'bold'), foreground="#4CAF50")
-                self.analysis_text.tag_configure("error", font=('Segoe UI', 10, 'bold'), foreground="#F44336")
-                
-                # Apply formatting based on content
-                lines = analysis_text.split('\n')
-                line_num = 1
-                for line in lines:
-                    line_start = f"{line_num}.0"
-                    line_end = f"{line_num}.end"
-                    
-                    if line.startswith('🌍') or 'Analysis' in line:
-                        self.analysis_text.tag_add("title", line_start, line_end)
-                    elif line.startswith(('📊', '🌡️', '🌪️', '📈', '💡', '🔄', '✅')):
-                        self.analysis_text.tag_add("section", line_start, line_end)
-                    elif '✅' in line or 'successfully' in line.lower():
-                        self.analysis_text.tag_add("highlight", line_start, line_end)
-                    elif '❌' in line or 'error' in line.lower() or 'failed' in line.lower():
-                        self.analysis_text.tag_add("error", line_start, line_end)
-                    
-                    line_num += 1
-                
-                # Disable text widget to prevent user editing
-                self.analysis_text.configure(state=tk.DISABLED)
-                
-                # Scroll to top
-                self.analysis_text.see(1.0)
-                
-                logger.info("Historical analysis display updated successfully")
-            else:
-                logger.warning("Analysis text widget not available")
-                
-        except Exception as e:
-            logger.error(f"Error updating historical analysis display: {e}")
+🔧 Troubleshooting Options:
+• Try a shorter date range (reduce the number of days)
+• Check your internet connection
+• The weather service may be experiencing high traffic
+• Consider using the sample Berlin data for demonstration
+
+📊 Suggested Actions:
+1. Reduce date range to 1-2 years maximum
+2. Try again in a few minutes
+3. Use the 'Load Berlin Historical Data' button for immediate results
+
+⚠️ Technical Details:
+• Request timeout: 30 seconds exceeded
+• Service: Open-Meteo Historical Weather API
+• Status: Connection established but response too slow
+• Recommended: Retry with smaller data range
+
+💡 Tip: Large date ranges (>5 years) may cause timeouts.
+Try breaking your analysis into smaller time periods.
+"""
+        
+        self._update_historical_analysis_display(timeout_analysis)
+        self.historical_status_var.set("⏰ Request timed out - try a shorter date range")
+        self.show_notification("API request timed out. Try a shorter date range.", "warning")
+
+    def _handle_connection_error(self, lat: float, lon: float, start_date: str, end_date: str) -> None:
+        """Handle network connection errors."""
+        connection_analysis = f"""
+🌍 Custom Historical Weather Analysis
+====================================
+
+📍 Location: {lat}°N, {lon}°E
+📅 Date Range: {start_date} to {end_date}
+
+🌐 Network Connection Error
+===========================
+
+❌ Unable to connect to the historical weather service.
+
+🔧 Troubleshooting Steps:
+• Check your internet connection
+• Verify network connectivity
+• Try refreshing the application
+• Check if firewall is blocking the connection
+
+📊 Connection Details:
+• Service: Open-Meteo Historical Weather API
+• Protocol: HTTPS
+• Status: Connection failed
+• Possible causes: Network issues, service downtime, firewall
+
+⚠️ What you can do:
+1. Check your internet connection
+2. Try the sample Berlin data instead
+3. Wait a few minutes and try again
+4. Contact your network administrator if behind corporate firewall
+
+💡 Alternative: Use the 'Load Berlin Historical Data' button
+to see the interface with sample historical weather data.
+"""
+        
+        self._update_historical_analysis_display(connection_analysis)
+        self.historical_status_var.set("🌐 Connection error - check your internet")
+        self.show_notification("Network connection error. Check your internet connection.", "error")
+
+    def _handle_general_api_error(self, lat: float, lon: float, start_date: str, end_date: str, error_msg: str) -> None:
+        """Handle general API errors."""
+        error_analysis = f"""
+🌍 Custom Historical Weather Analysis
+====================================
+
+📍 Location: {lat}°N, {lon}°E
+📅 Date Range: {start_date} to {end_date}
+
+⚠️ API Service Error
+====================
+
+❌ The historical weather service encountered an error.
+
+🔧 Error Details:
+{error_msg[:200]}{'...' if len(error_msg) > 200 else ''}
+
+📊 Possible Causes:
+• Invalid coordinates (check lat/lon values)
+• Date range too far in the past or future
+• Service temporarily unavailable
+• Rate limiting or quota exceeded
+
+⚠️ Solutions to try:
+1. Verify coordinates are valid:
+   - Latitude: -90 to +90
+   - Longitude: -180 to +180
+2. Check date format (YYYY-MM-DD)
+3. Ensure dates are not in the future
+4. Try a different location or date range
+5. Use sample data for testing
+
+💡 Quick Fix: Click 'Load Berlin Historical Data' 
+for immediate results with sample data.
+
+🔧 System Status:
+• ✅ UI Interface: Working
+• ✅ Data Processing: Ready
+• ❌ API Service: Error occurred
+• ⚠️ Fallback: Sample data available
+"""
+        
+        self._update_historical_analysis_display(error_analysis)
+        self.historical_status_var.set("⚠️ API error occurred - try sample data")
+        self.show_notification("API service error. Try the sample data instead.", "error")
