@@ -192,8 +192,13 @@ class WeatherController:
     
     # Private helper methods
     def _get_location_data(self, city_name: str) -> Optional[LocationData]:
-        """Get location data from city name."""
+        """Get location data from city name or handle GPS requests."""
         try:
+            # Handle GPS/Current Location requests
+            if city_name in ["Current Location (GPS)", "Current Location"]:
+                self._notify_status("Detecting your location...")
+                return self._get_current_location_data()
+            
             location_response = self.api_service.geocode_location(city_name, limit=1)
             if location_response:
                 return LocationData.from_api_response(location_response[0])
@@ -201,6 +206,64 @@ class WeatherController:
         except Exception as e:
             logger.error(f"Failed to get location data: {e}")
             return None
+    
+    def _get_current_location_data(self) -> Optional[LocationData]:
+        """Get current location using available methods."""
+        try:
+            logger.info("Attempting to get current location...")
+            
+            # Try IP-based location detection as fallback
+            location_data = self._try_ip_based_location()
+            if location_data:
+                self._notify_status(f"Location detected: {location_data.display_name}")
+                logger.info(f"Successfully detected location: {location_data.display_name}")
+                return location_data
+            
+            # If IP-based detection fails, inform user with helpful message
+            error_msg = "Location detection failed. Please enter a city name manually."
+            self._notify_error(error_msg)
+            logger.warning("All location detection methods failed - user should enter city manually")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Failed to get current location: {e}")
+            self._notify_error("Location detection error. Please enter a city name manually.")
+            return None
+    
+    def _try_ip_based_location(self) -> Optional[LocationData]:
+        """Try to get approximate location using IP-based geolocation."""
+        try:
+            import requests
+            # Using a free IP geolocation service as fallback
+            # Note: This is a basic implementation for demonstration
+            logger.info("Attempting IP-based location detection...")
+            
+            response = requests.get('http://ip-api.com/json/', timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    city = data.get('city', 'Unknown')
+                    lat = data.get('lat')
+                    lon = data.get('lon')
+                    country = data.get('country', 'Unknown')
+                    
+                    if lat is not None and lon is not None:
+                        logger.info(f"IP-based location found: {city}, {country} ({lat}, {lon})")
+                        
+                        # Create a LocationData object
+                        from ..models.weather_models import LocationData
+                        location_data = LocationData(
+                            name=city,
+                            country=country,
+                            lat=float(lat),
+                            lon=float(lon)
+                        )
+                        return location_data
+                        
+        except Exception as e:
+            logger.warning(f"IP-based location detection failed: {e}")
+        
+        return None
     
     def _load_all_weather_data(self, lat: float, lon: float) -> None:
         """Load all weather data for given coordinates."""

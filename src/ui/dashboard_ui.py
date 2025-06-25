@@ -943,9 +943,15 @@ Perfect for learning and development!        """
     def _quick_search(self, location: str) -> None:
         """Handle quick location search."""
         if location == "Current Location":
-            self.show_notification("Getting current location...", "info")
-            # In a real app, you'd use geolocation here
-            location = "Current Location (GPS)"
+            self.show_notification("Detecting your location...", "info")
+            # Try to use the current location detection
+            if self.city_entry:
+                self.city_entry.delete(0, tk.END)
+                self.city_entry.insert(0, "Current Location")
+                self.city_entry.configure(foreground="")
+            
+            self._on_search()
+            return
         
         if self.city_entry:
             self.city_entry.delete(0, tk.END)
